@@ -1,0 +1,5 @@
+<form>
+  % for f in form.base_fields:
+  <field name="${f}" />
+  % endfor
+</form>

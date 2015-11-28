@@ -1,0 +1,15 @@
+<%
+  from katrid.db import models
+  from katrid.utils.text import capfirst
+  list_fields = opts.list_fields or [f for f in form.base_fields]
+  list_fields = [opts.get_field(f) for f in list_fields]
+%>
+<list content-object="${opts}" view-title="${capfirst(opts.verbose_name_plural)}"${' help-text=%s' % opts.help_text if opts.help_text else ''}>
+% for field in list_fields:
+  % if hasattr(field, 'template_name') and field.template_name:
+    <field />
+  % elif not isinstance(field, models.ManyToManyField):
+    <field name="${field.name}" />
+  % endif
+% endfor
+</list>

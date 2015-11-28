@@ -1,0 +1,7 @@
+<form>
+  <field name="name" cols="8" />
+  <field name="action_type" cols="4" />
+  <field name="description" cols="8" />
+  <field name="short_description" cols="4" />
+  <field name="context" />
+</form>

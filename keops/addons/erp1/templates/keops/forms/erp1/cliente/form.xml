@@ -1,0 +1,7 @@
+<form>
+  <field name="nome"/>
+  <field name="sexo"/>
+  <field name="cidade"/>
+  <field name="revendas"/>
+  <field name="compras"/>
+</form>
