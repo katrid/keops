@@ -116,8 +116,10 @@ class Form(BaseView):
                 self.read_node(child, f)
 
     def _grid_field(self, el, field, attrs):
+        field_name = str(field).lower()
         # List UI
         s = ''
+        el.attrib['content-field'] = field_name
         list_fields = getattr(field, 'list_fields', None)
         rel = field.related
         form = get_model_form(rel.related_model, fields='__all__')
@@ -126,7 +128,7 @@ class Form(BaseView):
             if list_fields and rel.field.name in list_fields:
                 list_fields.remove(rel.field.name)
             s = ''.join(['<field name="%s" label="%s" />\n' % (f, form.base_fields[f].label) for f in list_fields])
-        g = et.fromstring('<grid content-field="%s">%s</grid>' % (str(field).lower(), s))
+        g = et.fromstring('<list content-field="%s">%s</list>' % (field_name, s))
         for k, v in attrs.items():
             g.attrib.setdefault(k, v)
         el.append(g)
@@ -139,7 +141,7 @@ class Form(BaseView):
             if fields and rel.field.name in fields:
                 fields.remove(rel.field.name)
             s = ''.join(['<field name="%s" label="%s" />\n' % (f, form.base_fields[f].label) for f in list_fields])
-        g = et.fromstring('<sub-form content-field="%s">%s</sub-form>' % (str(field).lower(), s))
+        g = et.fromstring('<sub-form content-field="%s">%s</sub-form>' % (field_name, s))
         for k, v in attrs.items():
             g.attrib.setdefault(k, v)
         el.append(g)

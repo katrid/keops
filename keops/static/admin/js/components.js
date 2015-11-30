@@ -4,7 +4,7 @@ ui.directive('field', function ($compile) {
     return {
         restrict: 'E',
         replace: true,
-        compile: function (element, attrs) {
+        template: function(element, attrs) {
             var html = pre = pos = lbl = cols = fieldAttrs = '';
             var tp = 'text';
             for (var attr in attrs) {
@@ -51,8 +51,8 @@ ui.directive('field', function ($compile) {
             } else if (tp === 'date') {
                 html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datepicker ui-mask="99/99/9999"/>';
             } else if (tp === 'grid') {
-                html = '<div>' + el.html() + '</div>';
-                console.log('grid', html)
+                html = '<grid ' + fieldAttrs + '>' + el.html() + '</grid>';
+                console.log(html);
             }
             if (lbl) {
                 lbl = '<label class="control-label" for="id_' + elname + '">' + lbl + '</label>';
@@ -61,7 +61,7 @@ ui.directive('field', function ($compile) {
                 cols = 'class="col-sm-' + cols + '"';
             } else cols = "class='col-sm-12'";
             html = '<section ' + cols + '>' + lbl + html + '</section>';
-            element.replaceWith($(html));
+            return html;
         }
     }
 });
@@ -245,15 +245,24 @@ var _subUpdate = function(dataSet, obj) {
 };
 
 ui.directive('subForm', function () {
+    var fields = '';
     return {
         restrict: 'E',
         replace: true,
-        compile: function (el, attrs) {
+        link: function (scope, el) {
+            scope.fields = fields;
+        },
+        template: function (el, attrs) {
+            el.find('field').each(function() {
+                var field = $(this).attr('name');
+                if (fields) fields += ',' + field;
+                else fields = field;
+            });
             var html = el.html();
             var nm = attrs.contentField.split('.')[2];
             html = '<div class="sub-form sub-form-hidden" name="' + nm + '" content-field="' + attrs.contentField +
                 '">' + html + '</div>';
-            el.replaceWith($(html));
+            return html;
         }
     }
 });
@@ -263,16 +272,20 @@ ui.directive('grid', function ($compile, $http) {
     return {
         restrict: 'E',
         replace: true,
+        scope: {},
         link: function (scope, el, attrs) {
-            var fname = attrs.grid.split('.');
+            var contentField = attrs.contentfield;
+            var fname = contentField.split('.');
             var url = '/api/content/' + fname[0] + '/' + fname[1] + '/';
-            var self = {};
+            var parentForm = scope.$parent.form;
+            scope.form = {};
 
             scope.gridItemClick = function (obj) {
-                var frm = el.next().clone();
+                scope.form.pk = obj.id;
+                var frm = $compile(el.find('.sub-form').clone())(scope);
                 frm.removeClass('sub-form-hidden');
                 frm.addClass('sub-form-visible');
-                el.append('<div class="modal fade" role="dialog">' +
+                var elHtml = '<div class="modal fade" role="dialog">' +
                     '<div class="modal-dialog">' +
                     '<div class="modal-content">' +
                     '<div class="modal-header">' +
@@ -281,15 +294,23 @@ ui.directive('grid', function ($compile, $http) {
                     '<div class="modal-footer">' +
                     '<button type="button" class="btn btn-danger" data-dismiss="modal">Save</button>' +
                     '<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>' +
-                    '</div></div></div></div>');
+                    '</div></div></div></div>';
+                el.append(elHtml);
                 var modal = $('.modal').last();
                 scope.gridItem = obj;
                 frm.appendTo(modal.find('.modal-body').first());
-                modal.modal();
+                var params = {id: obj.id, mode: 'subform', field: fname[2], fields: scope.fields};
+                $http({
+                    method: 'GET',
+                    url: url,
+                    params: params
+                }).success(function (data) {
+                    scope.form.data = data.items[0];
+                    modal.modal();
+                }.bind(true));
             };
 
             var masterChange = function (masterKey) {
-                console.log(masterKey);
                 var params = {
                     field: fname[2],
                     fields: fields,
@@ -300,24 +321,22 @@ ui.directive('grid', function ($compile, $http) {
                     url: url,
                     params: params
                 }).success(function (data) {
-                    self.items = data.items;
-                    console.log(data);
+                    scope.items = data.items;
                 }.bind(true));
             };
 
-            if (scope.form.grids == undefined) scope.form.grids = {};
-            var gname = attrs.contentField.split('.')[2];
-            scope.form.subItems.push({name: 'grid.' + gname, deleted: [], inserted: [], updated: []});
-            scope.form.grids[gname] = self;
+            var gname = attrs.contentfield.split('.')[2];
+            scope.dataset = {name: gname, deleted: [], inserted: [], updated: []};
+            //parentForm.grids[gname] = self;
 
-            scope.$watch(scope.form.pk, function() {
-                masterChange(scope.form.pk)
+            scope.$parent.$watch(parentForm.pk, function(value) {
+                masterChange(value);
             });
         },
         template: function(tElement, tAttrs) {
-            var cols = tElement.children();
             var th = '';
             var td = '';
+            var cols = tElement.find('list').children();
             var fld = tAttrs.contentField;
             for (var i=0;i<cols.length;i++) {
                 var col = $(cols[i]);
@@ -333,7 +352,8 @@ ui.directive('grid', function ($compile, $http) {
                 else fields += ',' + nm;
             }
 
-            var gridItems = 'item in form.grids.' + fld.split('.')[2] + '.items';
+            var gridItems = 'item in items';
+            var subForm = tElement.find('sub-form').prop('outerHTML');
 
             var nhtml = '<div class="data-grid" data-grid="' + fld + '"><table class="table table-hover table-bordered table-striped table-condensed">' +
                 '<thead>' +
@@ -342,8 +362,9 @@ ui.directive('grid', function ($compile, $http) {
                 '<tbody>' +
                 '<tr ng-repeat="' + gridItems + '" class="table-row-clickable">' +
                 td +
-                '</tr></tbody></table></div>';
-            console.log(nhtml);
+                '</tr></tbody></table>' +
+                subForm +
+                '</div>';
             return nhtml;
         }
     }
