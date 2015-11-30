@@ -10,24 +10,66 @@ WIDGET_TYPES = {
 }
 
 
+FIELD_LENGTH = (
+    (10, '2'),
+    (30, '3'),
+    (50, '4'),
+    (70, '5'),
+    (80, '6'),
+    (100, '12'),
+)
+
+FIELD_TYPE_LENGTH = {
+    'date': '2',
+    'lookup': '6',
+    'default': '6',
+    'multiple': '12',
+    'grid': '12',
+}
+
+DEFAULT_TYPE_LENGTH = 6
+
+
 def get_form_field(form, field):
     f = form.base_fields[field]
     attrs = f.widget_attrs(f.widget)
     db_field = form._meta.model._meta.get_field(field)
+    field_type = 'text'
     if isinstance(f, ModelChoiceField):
-        attrs['type'] = 'lookup'
         attrs['content-field'] = str(db_field).lower()
         if isinstance(f, ModelMultipleChoiceField):
             attrs['multiple'] = 'multiple'
+            field_type = 'multiple'
+        else:
+            field_type = 'lookup'
     elif isinstance(f, GridField):
-        attrs['type'] = 'grid'
+        field_type = 'grid'
     else:
-        attrs['type'] = WIDGET_TYPES.get(f.widget.__class__, 'text')
+        field_type = WIDGET_TYPES.get(f.widget.__class__, 'text')
     attrs['label'] = f.label
     if f.required:
         attrs['required'] = True
-    if isinstance(f.widget, widgets.Select) and attrs.get('type') != 'lookup':
+    if isinstance(f.widget, widgets.Select) and field_type not in ('lookup', 'multiple', 'grid'):
         attrs['choices'] = f.widget.choices
+        field_type = 'select'
+
+    if field_type == 'text' and isinstance(db_field, models.CharField):
+        maxlength = getattr(db_field, 'max_length')
+        if maxlength:
+            for k in FIELD_LENGTH:
+                if maxlength <= k[0]:
+                    attrs['cols'] = k[1]
+                    break
+        else:
+            attrs['cols'] = DEFAULT_TYPE_LENGTH
+    else:
+        attrs['cols'] = FIELD_TYPE_LENGTH.get(field_type, DEFAULT_TYPE_LENGTH)
+
+    if field_type == 'multiple':
+        attrs['type'] = 'lookup'
+    else:
+        attrs['type'] = field_type
+
     return attrs, db_field
 
 

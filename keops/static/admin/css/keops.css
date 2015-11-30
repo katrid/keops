@@ -54,7 +54,7 @@ textarea.form-control {
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 9px rgba(0, 0, 0, 0.1);
 }
 
-.list-content th {
+.list-content th, .data-grid th {
   text-transform: uppercase;
   font-size: 11px;
 }
@@ -111,8 +111,20 @@ label.nav-recno-info {
 }
 
 .data-grid {
-  height: 450px;
+  height: 150px;
   overflow-y: auto;
+}
+
+.sub-form-hidden {
+  display: none;
+}
+
+.sub-form-visible {
+  display: flex;
+}
+
+.modal-backdrop {
+  z-index: -1;
 }
 
 

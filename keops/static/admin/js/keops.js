@@ -194,6 +194,7 @@ keopsApp.controller('ListController', function ($scope, $location, List) {
 keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
     var Form = function () {
         this.item = {};
+        this.subItems = [];
         this.deleted = [];
         this.loading = false;
         this.start = -1;
@@ -203,7 +204,7 @@ keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
         this.model = null;
         this.element = null;
         this.readonly = null;
-        this.pk = $location.search()["id"];
+        this.pk = $location.search().id;
         this.url = "/api/content/";
         if (SharedData.list) {
             this.start = SharedData.list.index - 1;
@@ -264,21 +265,22 @@ keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
         this.loading = true;
         var model = this.model;
 
-        this.start++;
         var url = this.url + model.replace('.', '/') + '/?';
-        url = url + 'p=' + this.start;
-        if (this.pk == null) url += '&l=1';
-        else url += '&id=' + this.pk;
-        $http.get(url).success(
-            function (data) {
-                console.log(data);
-                this.data = data.items[0].data;
-                if (!this.pk) $location.search('pk', this.data.pk);
-                this.pk = null;
-                this.loading = false;
-                this.loaded = this.start == this.total - 1;
-                //this.masterChange();
-                delete SharedData.list;
+        var params = { mode: 'form' };
+        if (this.pk) params.id = this.pk;
+        $http({
+            method: 'GET',
+            url: url,
+            params: params
+        }).success(function (data) {
+            this.data = data.items[0].data;
+            var id = data.items[0].id;
+            if (!this.pk) $location.search('id', id);
+            this.pk = id;
+            this.loading = false;
+            this.loaded = this.start == this.total - 1;
+            //this.masterChangeNotification();
+            delete SharedData.list;
         }.bind(this));
     };
 
@@ -299,11 +301,11 @@ keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
         }.bind(this));
     };
 
-    Form.prototype.masterChange = function () {
-        // notify form remote items
+    Form.prototype.masterChangeNotification = function () {
+        // notify nested form remote items
         var formItem = this.item;
-        formItem.items = {};
-        var items = this.element.find('[remoteitem]');
+        formItem.subItems = {};
+        var items = this.element.find('[remote]');
         var remoteitems = [];
         for (var i = 0; i < items.length; i++) remoteitems.push(angular.element(items[i]).attr('name'));
         // make params
@@ -511,11 +513,12 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
     };
 
     $scope.submit = function () {
+        var i, item;
         var form = this.dataForm;
         if (form.$dirty) {
             var data = {};
-            for (var i in form) {
-                var item = form[i];
+            for (i in form) {
+                item = form[i];
                 if ((i[0] !== '$') && (i.indexOf('.') === -1) && item.$dirty) {
                     data[i] = item.$modelValue;
                 }
@@ -526,30 +529,33 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
             //var nested = $element.find('[ng-form]');
             // check item changes
             data = { data: data, nested: [] }
-            for (var i in this.form.deleted) {
+            for (i in this.form.deleted) {
                 data.nested.push({ pk: this.form.deleted[i].pk, __action__: 'delete', __model__: this.form.deleted[i].__model__ });
             }
-            for (var i in form) {
-                var item = form[i];
+            for (i in form) {
+                item = form[i];
                 if (item && item.$$parentForm && item.$dirty) {
                     data.nested.push(this.form.getNestedForm(item));
                 }
             }
 
-            var postUrl = '/db/write/?model=';
-            postUrl += this.form.model;
-            if ($scope.form.data && this.form.data.pk) postUrl += '&pk=' + this.form.data.pk;
-            return $http.post(
-                postUrl, data
-            ).
-            success(function (data, status, headers, config) {
+            var postUrl = '/api/content/' + this.form.model.replace('.', '/') + '/';
+            var params = {};
+            if ($scope.form.data && this.form.data.pk) params['id'] = this.form.data.pk;
+            return $http(
+                {
+                    url: postUrl,
+                    data: data,
+                    params: params
+                }
+            ).success(function (data, status, headers, config) {
                     if (data.success) {
                         console.log(data.message);
                         SharedData.addAlert('success', data['message']);
                         if ($scope.backUrl) window.location.href = $scope.backUrl;
                         else {
                             var params = $location.search();
-                            params['type'] = 'list';
+                            params['mode'] = 'list';
                             $location.search(params);
                         }
                     }
@@ -561,9 +567,9 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
         }
         else {
             SharedData.addAlert('warning', 'Não existem dados penendetes de gravação!');
-            var params = $location.search();
-            params['type'] = 'list';
-            $location.search(params);
+            var search = $location.search();
+            search['mode'] = 'list';
+            $location.search(search);
         }
     };
 
@@ -601,6 +607,7 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
     $scope.showList = function() {
         var params = $location.search();
         params['mode'] = 'list';
+        params['id'] = null;
         $location.search(params);
     }
 

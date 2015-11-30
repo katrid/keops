@@ -4,50 +4,35 @@ ui.directive('field', function ($compile) {
     return {
         restrict: 'E',
         replace: true,
-        link: function(tElement, tAttrs) {
-
-        },
         compile: function (element, attrs) {
-            var html = "";
-            var fieldAttrs = "";
-            var el = $(element[0]);
-            var tp = attrs.type;
-            if (!tp) tp = "text";
+            var html = pre = pos = lbl = cols = fieldAttrs = '';
+            var tp = 'text';
+            for (var attr in attrs) {
+                if (attr === 'label') lbl = attrs.label;
+                else if (attr === 'cols') cols = attrs.cols;
+                else if (attr === 'type') tp = attrs.type;
+                else if (attr === 'icon') pre = '<i class="icon-prepend ' + attrs.icon + '"></i>';
+                else if (attr === 'mask') fieldAttrs += ' ui-mask="' + attrs.mask + '"';
+                else if (attr === 'helpText') {
+                    pre += '<i class="icon-append fa fa-question-circle"></i>';
+                    pos += '<b class="tooltip tooltip-top-right"><i class="fa fa-warning txt-color-teal"></i> ' + attrs.helpText + ' </b>';
+                }
+                else if (attr[0] !== '$') fieldAttrs += ' ' + attr +'="' + attrs[attr] + '"';
+            }
             var nm = attrs.ngModel;
-            var lbl = attrs.label;
-            var cols = attrs.cols;
-            var cls = attrs.class;
-            if (!cls) cls = '';
-            if ((tp === "decimal") || (tp === "int")) cls = 'text-right';
-            if (cls) {
-                fieldAttrs += ' class="' + cls + '"';
+            if (!nm) {
+                nm = 'form.data.' + attrs.name;
+                fieldAttrs += ' ng-model="' + nm + '"';
             }
-            var v = attrs.required;
-            if (v) {
-                v = v.value;
-                if (v && (v !== 'false')) fieldAttrs += ' required="true"';
-            }
-            if (attrs.placeholder) fieldAttrs += ' placeholder="' + attrs.placeholder + '"';
-            if (attrs.required) fieldAttrs += ' required';
-            if (attrs.maxlength && !attrs.mask) fieldAttrs += ' maxlength="' + attrs.maxlength + '"';
-            if (attrs.ngMaxlength) fieldAttrs += ' ng-maxlength="' + attrs.ngMaxlength + '"';
-            if (attrs.ngMinlength) fieldAttrs += ' ng-minlength="' + attrs.ngMinlength + '"';
-            if (attrs.ngChange) fieldAttrs += ' ng-change="' + attrs.ngChange + '"';
             if (nm) {
                 var _nm = nm.split('.');
                 var elname = _nm[_nm.length - 1];
-                fieldAttrs += ' name="' + elname + '"';
-                fieldAttrs += ' id="id_' + elname + '"';
-                fieldAttrs += ' ng-model="' + nm + '"';
+                if (!attrs.name) fieldAttrs += ' name="' + elname + '"';
+                if (!attrs.id) fieldAttrs += ' id="id_' + elname + '"';
             }
-            var pre = '';
-            var pos = '';
-            if (attrs.icon) pre = '<i class="icon-prepend ' + attrs.icon + '"></i>';
-            if (attrs.mask) fieldAttrs += ' ui-mask="' + attrs.mask + '"';
-            if (attrs.helpText) {
-                pre += '<i class="icon-append fa fa-question-circle"></i>';
-                pos += '<b class="tooltip tooltip-top-right"><i class="fa fa-warning txt-color-teal"></i> ' + attrs.helpText + ' </b>';
-            }
+            console.log(fieldAttrs);
+            var el = $(element[0]);
+            //if ((tp === "decimal") || (tp === "int")) cls = 'text-right';
             if (tp === "decimal") {
                 html = '<label class="input">' + pre + '<input type="text" decimal="decimal" ' + fieldAttrs + '>' + pos + el.html() + '</label>';
             } else if (tp === "int") {
@@ -67,10 +52,9 @@ ui.directive('field', function ($compile) {
                 html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datepicker ui-mask="99/99/9999"/>';
             } else if (tp === 'grid') {
                 html = '<div>' + el.html() + '</div>';
-                console.log('html field', html);
+                console.log('grid', html)
             }
             if (lbl) {
-                console.log(lbl);
                 lbl = '<label class="control-label" for="id_' + elname + '">' + lbl + '</label>';
             } else lbl = '';
             if (cols) {
@@ -248,15 +232,93 @@ ui.directive('contentObject', function ($compile) {
     }
 });
 
-ui.directive('grid', function($compile) {
+var _subInsert = function(dataSet, obj) {
+    if (!(obj in dataSet.inserted)) dataSet.inserted.push(obj);
+};
+
+var _subDelete = function(dataSet, obj) {
+    if (!(obj in dataSet.deleted)) dataSet.deleted.push(obj);
+};
+
+var _subUpdate = function(dataSet, obj) {
+    if (!(obj in dataSet.updated)) dataSet.inserted.push(obj);
+};
+
+ui.directive('subForm', function () {
     return {
         restrict: 'E',
         replace: true,
+        compile: function (el, attrs) {
+            var html = el.html();
+            var nm = attrs.contentField.split('.')[2];
+            html = '<div class="sub-form sub-form-hidden" name="' + nm + '" content-field="' + attrs.contentField +
+                '">' + html + '</div>';
+            el.replaceWith($(html));
+        }
+    }
+});
+
+ui.directive('grid', function ($compile, $http) {
+    var fields = '';
+    return {
+        restrict: 'E',
+        replace: true,
+        link: function (scope, el, attrs) {
+            var fname = attrs.grid.split('.');
+            var url = '/api/content/' + fname[0] + '/' + fname[1] + '/';
+            var self = {};
+
+            scope.gridItemClick = function (obj) {
+                var frm = el.next().clone();
+                frm.removeClass('sub-form-hidden');
+                frm.addClass('sub-form-visible');
+                el.append('<div class="modal fade" role="dialog">' +
+                    '<div class="modal-dialog">' +
+                    '<div class="modal-content">' +
+                    '<div class="modal-header">' +
+                    '<button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">' + attrs.label +  '</h4></div>' +
+                    '<div class="modal-body"></div>' +
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-danger" data-dismiss="modal">Save</button>' +
+                    '<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>' +
+                    '</div></div></div></div>');
+                var modal = $('.modal').last();
+                scope.gridItem = obj;
+                frm.appendTo(modal.find('.modal-body').first());
+                modal.modal();
+            };
+
+            var masterChange = function (masterKey) {
+                console.log(masterKey);
+                var params = {
+                    field: fname[2],
+                    fields: fields,
+                    mode: 'grid',
+                    id: masterKey
+                };
+                $http({
+                    url: url,
+                    params: params
+                }).success(function (data) {
+                    self.items = data.items;
+                    console.log(data);
+                }.bind(true));
+            };
+
+            if (scope.form.grids == undefined) scope.form.grids = {};
+            var gname = attrs.contentField.split('.')[2];
+            scope.form.subItems.push({name: 'grid.' + gname, deleted: [], inserted: [], updated: []});
+            scope.form.grids[gname] = self;
+
+            scope.$watch(scope.form.pk, function() {
+                masterChange(scope.form.pk)
+            });
+        },
         template: function(tElement, tAttrs) {
             var cols = tElement.children();
             var th = '';
             var td = '';
-            var model = 'none';
+            var fld = tAttrs.contentField;
             for (var i=0;i<cols.length;i++) {
                 var col = $(cols[i]);
                 var css = col.attr('class');
@@ -264,15 +326,21 @@ ui.directive('grid', function($compile) {
                 else css = ' class="' + css + '"';
                 var lbl = col.attr('label');
                 if (!lbl) lbl = '';
+                var nm = col.attr('name');
                 th += '<th' + css + '>' + col.attr('label') + '</th>';
-                td += '<td ' + css + ' ng-click="item.click(item)" ng-bind="item.' + col.attr('name') + '"></td>';
+                td += '<td ' + css + ' ng-click="gridItemClick(item)" ng-bind="item.' + nm + '"></td>';
+                if (!fields) fields = nm;
+                else fields += ',' + nm;
             }
-            var nhtml = '<div class="data-grid"><table class="table table-hover table-bordered table-striped table-condensed" ng-init="list.init(\'' + model + '\', list.q);">' +
+
+            var gridItems = 'item in form.grids.' + fld.split('.')[2] + '.items';
+
+            var nhtml = '<div class="data-grid" data-grid="' + fld + '"><table class="table table-hover table-bordered table-striped table-condensed">' +
                 '<thead>' +
                 '<tr>' + th +
                 '</tr></thead>' +
                 '<tbody>' +
-                '<tr ng-repeat="item in list.items" class="table-row-clickable">' +
+                '<tr ng-repeat="' + gridItems + '" class="table-row-clickable">' +
                 td +
                 '</tr></tbody></table></div>';
             console.log(nhtml);
@@ -321,6 +389,7 @@ ui.directive('uiSelect', function ($location) {
                     var v = controller.$modelValue;
                     if (v) {
                         if (multiple) {
+                            console.log(v);
                             var values = [];
                             for (var i=0;i<v.length;i++) values.push({id: v[i][0], text: v[i][1]});
                             callback(values);

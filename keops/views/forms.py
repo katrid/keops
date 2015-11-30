@@ -88,8 +88,6 @@ class Form(BaseView):
                 if isinstance(parent_field, models.OneToManyField):
                     attrs.pop('ng-model', None)
                     field['ng-model'] = 'formset.' + field['name']
-                else:
-                    field['ng-model'] = 'form.data.' + field['name']
 
                 if 'choices' in attrs:
                     choices = attrs.pop('choices')
@@ -102,6 +100,7 @@ class Form(BaseView):
                 self._grid_field(el, f, attrs)
             elif isinstance(f, models.OneToManyField):
                 el.tag = 'formset'
+                print(attrs)
         elif el.tag == 'label':
             el.attrib.setdefault('class', 'label')
         elif el.tag == 'remove-button':
@@ -117,20 +116,33 @@ class Form(BaseView):
                 self.read_node(child, f)
 
     def _grid_field(self, el, field, attrs):
-        list_fields = getattr(field, 'list_fields', None)
+        # List UI
         s = ''
+        list_fields = getattr(field, 'list_fields', None)
+        rel = field.related
+        form = get_model_form(rel.related_model, fields='__all__')
         if list_fields is None:
-            rel = field.related
-            form = get_model_form(rel.related_model, fields='__all__')
             list_fields = rel.related_model._meta.list_fields or list(form.base_fields.keys())
             if list_fields and rel.field.name in list_fields:
                 list_fields.remove(rel.field.name)
             s = ''.join(['<field name="%s" label="%s" />\n' % (f, form.base_fields[f].label) for f in list_fields])
-        dg = et.fromstring('<grid>%s</grid>' % s)
+        g = et.fromstring('<grid content-field="%s">%s</grid>' % (str(field).lower(), s))
         for k, v in attrs.items():
-            print(k, v)
-            dg.attrib.setdefault(k, v)
-        el.append(dg)
+            g.attrib.setdefault(k, v)
+        el.append(g)
+
+        # Form UI
+        s = ''
+        fields = getattr(field, 'fields', None)
+        if fields is None:
+            fields = rel.related_model._meta.fields or list(form.base_fields.keys())
+            if fields and rel.field.name in fields:
+                fields.remove(rel.field.name)
+            s = ''.join(['<field name="%s" label="%s" />\n' % (f, form.base_fields[f].label) for f in list_fields])
+        g = et.fromstring('<sub-form content-field="%s">%s</sub-form>' % (str(field).lower(), s))
+        for k, v in attrs.items():
+            g.attrib.setdefault(k, v)
+        el.append(g)
 
     def read_subfield(self, el):
         pass
