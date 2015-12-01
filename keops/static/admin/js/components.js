@@ -266,7 +266,7 @@ ui.directive('subForm', function () {
 });
 
 ui.directive('grid', function ($compile, $http) {
-    var fields = '';
+    var formTempl, fields = [];
     return {
         restrict: 'E',
         replace: true,
@@ -280,24 +280,29 @@ ui.directive('grid', function ($compile, $http) {
 
             scope.gridItemClick = function (obj) {
                 scope.form.pk = obj.id;
-                var frm = $compile(el.find('.sub-form').clone())(scope);
-                frm.removeClass('sub-form-hidden');
-                frm.addClass('sub-form-visible');
                 var elHtml = '<div class="modal fade" role="dialog">' +
                     '<div class="modal-dialog">' +
                     '<div class="modal-content">' +
                     '<div class="modal-header">' +
                     '<button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">' + attrs.label +  '</h4></div>' +
-                    '<div class="modal-body"></div>' +
+                    '<div class="modal-body">' + formTempl + '</div>' +
                     '<div class="modal-footer">' +
                     '<button type="button" class="btn btn-danger" data-dismiss="modal">Save</button>' +
                     '<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>' +
                     '</div></div></div></div>';
+                console.log('form templ', formTempl);
+                elHtml = angular.element(elHtml);
                 el.append(elHtml);
+                $compile(elHtml)(scope);
+
+                var frm = elHtml.find('.sub-form');
+                frm.removeClass('sub-form-hidden');
+                frm.addClass('sub-form-visible');
+
                 var modal = $('.modal').last();
                 scope.gridItem = obj;
                 frm.appendTo(modal.find('.modal-body').first());
-                var params = {id: obj.id, mode: 'subform', field: fname[2], fields: scope.fields};
+                var params = {id: obj.id, mode: 'subform', field: fname[2], fields: fields};
                 modal.on('hide.bs.modal', function (){
                     modal.remove();
                 });
@@ -349,12 +354,11 @@ ui.directive('grid', function ($compile, $http) {
                 var nm = col.attr('name');
                 th += '<th' + css + '>' + col.attr('label') + '</th>';
                 td += '<td ' + css + ' ng-click="gridItemClick(item)" ng-bind="item.' + nm + '"></td>';
-                if (!fields) fields = nm;
-                else fields += ',' + nm;
+                fields.push(nm);
             }
 
             var gridItems = 'item in items';
-            var subForm = tElement.find('sub-form').prop('outerHTML');
+            formTempl = tElement.find('sub-form').prop('outerHTML');
 
             var nhtml = '<div class="data-grid" data-grid="' + fld + '"><table class="table table-hover table-bordered table-striped table-condensed">' +
                 '<thead>' +
@@ -364,7 +368,6 @@ ui.directive('grid', function ($compile, $http) {
                 '<tr ng-repeat="' + gridItems + '" class="table-row-clickable">' +
                 td +
                 '</tr></tbody></table>' +
-                subForm +
                 '</div>';
             return nhtml;
         }
