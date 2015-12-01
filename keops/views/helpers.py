@@ -7,6 +7,7 @@ WIDGET_TYPES = {
     widgets.Textarea: 'textarea',
     widgets.Select: 'select',
     widgets.DateInput: 'date',
+    widgets.DateTimeInput: 'datetime',
 }
 
 

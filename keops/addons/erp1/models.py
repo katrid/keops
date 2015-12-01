@@ -44,3 +44,6 @@ class ClienteProduto(models.Model):
     produto = models.ForeignKey(Produto)
     cliente = models.ForeignKey(Cliente)
     date_time = models.DateTimeField()
+
+    def __str__(self):
+        return '%s - %s' % (str(self.cliente), str(self.produto))

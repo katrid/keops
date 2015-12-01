@@ -49,6 +49,8 @@ ui.directive('field', function ($compile) {
                 html = '<input type="text" ' + fieldAttrs + ' ui-select="' + attrs.contentField + '" style="width: 100%;" />';
             } else if (tp === 'date') {
                 html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datepicker ui-mask="99/99/9999"/>';
+            } else if (tp === 'datetime') {
+                html = '<input class="form-control" type="text" ' + fieldAttrs + ' />';
             } else if (tp === 'grid') {
                 html = '<grid ' + fieldAttrs + ' label="' + attrs.label + '">' + el.html() + '</grid>';
             }
@@ -243,22 +245,21 @@ var _subUpdate = function(dataSet, obj) {
 };
 
 ui.directive('subForm', function () {
-    var fields = '';
+    var fields = [];
     return {
         restrict: 'E',
         replace: true,
         link: function (scope, el) {
-            scope.fields = fields;
+            scope.formFields = fields;
         },
         template: function (el, attrs) {
             el.find('field').each(function() {
                 var field = $(this).attr('name');
-                if (fields) fields += ',' + field;
-                else fields = field;
+                fields.push(field);
             });
             var html = el.html();
             var nm = attrs.contentField.split('.')[2];
-            html = '<div class="sub-form sub-form-hidden" name="' + nm + '" content-field="' + attrs.contentField +
+            html = '<div class="sub-form sub-form-hidden row" name="' + nm + '" content-field="' + attrs.contentField +
                 '">' + html + '</div>';
             return html;
         }
@@ -280,17 +281,17 @@ ui.directive('grid', function ($compile, $http) {
 
             scope.gridItemClick = function (obj) {
                 scope.form.pk = obj.id;
+                var lbl = attrs.label;
                 var elHtml = '<div class="modal fade" role="dialog">' +
-                    '<div class="modal-dialog">' +
+                    '<div class="modal-dialog modal-lg">' +
                     '<div class="modal-content">' +
                     '<div class="modal-header">' +
-                    '<button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">' + attrs.label +  '</h4></div>' +
+                    '<button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">' + lbl +  ': <span>{{ form.data.__str__ }}</span></h4></div>' +
                     '<div class="modal-body">' + formTempl + '</div>' +
                     '<div class="modal-footer">' +
                     '<button type="button" class="btn btn-danger" data-dismiss="modal">Save</button>' +
                     '<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>' +
                     '</div></div></div></div>';
-                console.log('form templ', formTempl);
                 elHtml = angular.element(elHtml);
                 el.append(elHtml);
                 $compile(elHtml)(scope);
@@ -302,7 +303,7 @@ ui.directive('grid', function ($compile, $http) {
                 var modal = $('.modal').last();
                 scope.gridItem = obj;
                 frm.appendTo(modal.find('.modal-body').first());
-                var params = {id: obj.id, mode: 'subform', field: fname[2], fields: fields};
+                var params = {id: obj.id, mode: 'subform', field: fname[2], fields: scope.formFields};
                 modal.on('hide.bs.modal', function (){
                     modal.remove();
                 });
