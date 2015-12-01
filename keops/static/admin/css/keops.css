@@ -115,6 +115,14 @@ label.nav-recno-info {
   overflow-y: auto;
 }
 
+.data-grid tbody tr, .data-grid tbody tr:nth-of-type(odd) {
+  background: #ffffff;
+}
+
+.data-grid tbody tr:hover {
+  background: #e0e0e0;
+}
+
 .sub-form-hidden {
   display: none;
 }

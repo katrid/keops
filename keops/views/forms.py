@@ -72,7 +72,7 @@ class BaseView(object):
 class Form(BaseView):
     _field_stack = []
 
-    def read_node(self, el, parent_field=None):
+    def read_node(self, el, parent_field=None, form=None):
         f = None
         attrs = None
         if el.tag == 'field' and 'name' in el.attrib:
@@ -83,7 +83,7 @@ class Form(BaseView):
             #    #attrs, f = helpers.get_form_field(parent_field._admin, field['name'])
             #else:
             #    attrs, f = helpers.get_form_field(self.admin, field['name'])
-            attrs, f = helpers.get_form_field(self.form, field['name'])
+            attrs, f = helpers.get_form_field(form, field['name'])
             if attrs is not None:
                 if isinstance(parent_field, models.OneToManyField):
                     attrs.pop('ng-model', None)
@@ -113,7 +113,7 @@ class Form(BaseView):
             f = parent_field
         if el.tag != 'field':
             for child in el:
-                self.read_node(child, f)
+                self.read_node(child, f, form=form)
 
     def _grid_field(self, el, field, attrs):
         field_name = str(field).lower()
@@ -142,6 +142,7 @@ class Form(BaseView):
                 fields.remove(rel.field.name)
             s = ''.join(['<field name="%s" label="%s" />\n' % (f, form.base_fields[f].label) for f in list_fields])
         g = et.fromstring('<sub-form content-field="%s">%s</sub-form>' % (field_name, s))
+        self.read_node(g, form=form)
         for k, v in attrs.items():
             g.attrib.setdefault(k, v)
         el.append(g)
@@ -156,7 +157,7 @@ class Form(BaseView):
                 xml.attrib['content-object'] = str(self.form._meta.model._meta)
             xml.attrib.setdefault('view-title', capfirst(self.form._meta.model._meta.verbose_name_plural))
             for field in xml:
-                self.read_node(field)
+                self.read_node(field, form=self.form)
             return et.tostring(xml)
         else:
             raise ValueError('Invalid root element type')

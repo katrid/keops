@@ -43,4 +43,4 @@ class Cliente(models.Model):
 class ClienteProduto(models.Model):
     produto = models.ForeignKey(Produto)
     cliente = models.ForeignKey(Cliente)
-
+    date_time = models.DateTimeField()

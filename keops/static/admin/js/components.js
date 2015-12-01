@@ -30,7 +30,6 @@ ui.directive('field', function ($compile) {
                 if (!attrs.name) fieldAttrs += ' name="' + elname + '"';
                 if (!attrs.id) fieldAttrs += ' id="id_' + elname + '"';
             }
-            console.log(fieldAttrs);
             var el = $(element[0]);
             //if ((tp === "decimal") || (tp === "int")) cls = 'text-right';
             if (tp === "decimal") {
@@ -51,8 +50,7 @@ ui.directive('field', function ($compile) {
             } else if (tp === 'date') {
                 html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datepicker ui-mask="99/99/9999"/>';
             } else if (tp === 'grid') {
-                html = '<grid ' + fieldAttrs + '>' + el.html() + '</grid>';
-                console.log(html);
+                html = '<grid ' + fieldAttrs + ' label="' + attrs.label + '">' + el.html() + '</grid>';
             }
             if (lbl) {
                 lbl = '<label class="control-label" for="id_' + elname + '">' + lbl + '</label>';
@@ -300,6 +298,9 @@ ui.directive('grid', function ($compile, $http) {
                 scope.gridItem = obj;
                 frm.appendTo(modal.find('.modal-body').first());
                 var params = {id: obj.id, mode: 'subform', field: fname[2], fields: scope.fields};
+                modal.on('hide.bs.modal', function (){
+                    modal.remove();
+                });
                 $http({
                     method: 'GET',
                     url: url,
@@ -315,7 +316,7 @@ ui.directive('grid', function ($compile, $http) {
                     field: fname[2],
                     fields: fields,
                     mode: 'grid',
-                    id: masterKey
+                    id: parentForm.pk
                 };
                 $http({
                     url: url,
