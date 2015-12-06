@@ -11491,6 +11491,8 @@ nav ul ul > li:hover b {
   border: none;
   background: rgba(255, 255, 255, 0.9);
   position: relative;
+  padding-top: 30px;
+  padding-left: 12px;
 }
 fieldset {
   position: relative;
@@ -11555,7 +11557,8 @@ legend,
 }
 legend {
   font-weight: 400;
-  margin-top: 0px;
+  margin-top: 0;
+  margin-left: 10px;
   background: none;
 }
 .input-group-addon {

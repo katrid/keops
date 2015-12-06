@@ -1,4 +1,5 @@
 from katrid.forms import widgets, ModelChoiceField, ModelMultipleChoiceField, GridField
+from katrid import forms
 from katrid.db import models
 
 
@@ -12,6 +13,7 @@ WIDGET_TYPES = {
 
 
 FIELD_LENGTH = (
+    (5, '1'),
     (10, '2'),
     (30, '3'),
     (50, '4'),
@@ -23,6 +25,7 @@ FIELD_LENGTH = (
 FIELD_TYPE_LENGTH = {
     'date': '2',
     'lookup': '6',
+    'decimal': '3',
     'default': '6',
     'multiple': '12',
     'grid': '12',
@@ -35,7 +38,6 @@ def get_form_field(form, field):
     f = form.base_fields[field]
     attrs = f.widget_attrs(f.widget)
     db_field = form._meta.model._meta.get_field(field)
-    field_type = 'text'
     if isinstance(f, ModelChoiceField):
         attrs['content-field'] = str(db_field).lower()
         if isinstance(f, ModelMultipleChoiceField):
@@ -45,6 +47,8 @@ def get_form_field(form, field):
             field_type = 'lookup'
     elif isinstance(f, GridField):
         field_type = 'grid'
+    elif isinstance(db_field, models.DecimalField):
+        field_type = 'decimal'
     else:
         field_type = WIDGET_TYPES.get(f.widget.__class__, 'text')
     attrs['label'] = f.label
@@ -75,6 +79,12 @@ def get_form_field(form, field):
 
 
 def get_list_field(form, field):
-    f = form.base_fields[field]
-    attrs = {'label': f.label}
-    return attrs, form._meta.model._meta.get_field(field)
+    m = form._meta.model
+    f = form.base_fields.get(field, None) or getattr(form._meta.model, field)
+    if field == '__str__':
+        attrs = {'label': m._meta.verbose_name}
+    else:
+        attrs = {'label': f.label}
+    if isinstance(f, forms.Field):
+        return attrs, form._meta.model._meta.get_field(field)
+    return attrs, f

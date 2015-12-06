@@ -143,25 +143,23 @@
 				</div>
 				<!-- end search mobile button -->
 				
-				<!-- fullscreen button -->
 				<div id="fullscreen" class="btn-header transparent pull-right">
-					<span> <a href="javascript:void(0);" data-action="launchFullscreen" title="Full Screen"><i class="fa fa-arrows-alt"></i></a> </span>
+					<span> <a href="javascript:void(0);" data-action="launchFullscreen" title="${_('Full Screen')}"><i class="fa fa-arrows-alt"></i></a> </span>
 				</div>
-				<!-- end fullscreen button -->
 
 				<div id="speech-btn" class="btn-header transparent pull-right hidden-sm hidden-xs">
 					<div>
 						<a href="javascript:void(0)" title="${_('Voice Command')}" data-action="voiceCommand"><i class="fa fa-microphone"></i></a>
 						<div class="popover bottom"><div class="arrow"></div>
 							<div class="popover-content">
-								<h4 class="vc-title">Voice command activated <br><small>Please speak clearly into the mic</small></h4>
+								<h4 class="vc-title">${_('Voice command activated')} <br><small>${_('Please speak clearly into the mic')}</small></h4>
 								<h4 class="vc-title-error text-center">
-									<i class="fa fa-microphone-slash"></i> Voice command failed
-									<br><small class="txt-color-red">Must <strong>"Allow"</strong> Microphone</small>
-									<br><small class="txt-color-red">Must have <strong>Internet Connection</strong></small>
+									<i class="fa fa-microphone-slash"></i> ${_('Voice command failed')}
+									<br><small class="txt-color-red">${_('Must <strong>"Allow"</strong> Microphone')}</small>
+									<br><small class="txt-color-red">${_('Must have <strong>Internet Connection</strong>')}</small>
 								</h4>
-								<a href="javascript:void(0);" class="btn btn-success" onclick="commands.help()">See Commands</a>
-								<a href="javascript:void(0);" class="btn bg-color-purple txt-color-white" onclick="$('#speech-btn .popover').fadeOut(50);">Close Popup</a>
+								<a href="javascript:void(0);" class="btn btn-success" onclick="commands.help()">${_('See Commands')}</a>
+								<a href="javascript:void(0);" class="btn bg-color-purple txt-color-white" onclick="$('#speech-btn .popover').fadeOut(50);">${_('Close Popup')}</a>
 							</div>
 						</div>
 					</div>
@@ -274,6 +272,7 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 		<script src="${STATIC_URL}libs/plugins/masked-input/jquery.maskedinput.min.js"></script>
+    <script src="${STATIC_URL}libs/plugins/masked-money/jquery.maskMoney.js"></script>
 		<script src="${STATIC_URL}libs/plugins/select2/select2.js"></script>
     <script src="${STATIC_URL}libs/plugins/select2/select2_locale_pt-BR.js"></script>
 

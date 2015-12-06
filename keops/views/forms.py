@@ -28,10 +28,14 @@ def show_form(request):
 def show_model(request, app_label, model_name):
     model = apps.get_model(app_label, model_name)
     mode = request.GET.get('mode', 'list')
-    form = get_model_form(model, fields='__all__')
+    kw = {'fields': '__all__'}
+    if model._meta.exclude:
+        kw['exclude'] = model._meta.exclude
+    form = get_model_form(model, **kw)
     # Find model form template
+    template_name = model._meta.form_template if mode == 'form' else model._meta.list_template
     template = select_template([
-        'keops/forms/%s/%s/%s.xml' % (app_label, model_name, mode),
+        template_name or ('keops/forms/%s/%s/%s.xml' % (app_label, model_name, mode)),
         'keops/forms/%s.xml' % mode,
     ])
     ctx = {
@@ -39,6 +43,7 @@ def show_model(request, app_label, model_name):
         'form': form,
         'opts': model._meta,
     }
+    print(template.render(ctx))
     if mode == 'list':
         xform = List(template.render(ctx))
     else:

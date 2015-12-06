@@ -5,7 +5,7 @@ ui.directive('field', function ($compile) {
         restrict: 'E',
         replace: true,
         template: function(element, attrs) {
-            var html = pre = pos = lbl = cols = fieldAttrs = '';
+            var html = pre = pos = lbl = cols = cls = fieldAttrs = '';
             var tp = 'text';
             for (var attr in attrs) {
                 if (attr === 'label') lbl = attrs.label;
@@ -13,12 +13,14 @@ ui.directive('field', function ($compile) {
                 else if (attr === 'type') tp = attrs.type;
                 else if (attr === 'icon') pre = '<i class="icon-prepend ' + attrs.icon + '"></i>';
                 else if (attr === 'mask') fieldAttrs += ' ui-mask="' + attrs.mask + '"';
+                else if (attr === 'class') cls = attrs.class;
                 else if (attr === 'helpText') {
                     pre += '<i class="icon-append fa fa-question-circle"></i>';
                     pos += '<b class="tooltip tooltip-top-right"><i class="fa fa-warning txt-color-teal"></i> ' + attrs.helpText + ' </b>';
                 }
                 else if (attr[0] !== '$') fieldAttrs += ' ' + attr +'="' + attrs[attr] + '"';
             }
+            attrs.class = '';
             var nm = attrs.ngModel;
             if (!nm) {
                 nm = 'form.data.' + attrs.name;
@@ -33,11 +35,11 @@ ui.directive('field', function ($compile) {
             var el = $(element[0]);
             //if ((tp === "decimal") || (tp === "int")) cls = 'text-right';
             if (tp === "decimal") {
-                html = '<label class="input">' + pre + '<input type="text" decimal="decimal" ' + fieldAttrs + '>' + pos + el.html() + '</label>';
+                html = pre + '<input type="text" decimal="decimal" class="form-control numeric-field ' + cls + '" ' + fieldAttrs + '>' + pos + el.html();
             } else if (tp === "int") {
                 html = '<label class="input">' + pre + '<input type="text" decimal="decimal" precision="0" ' + fieldAttrs + '>' + pos + el.html() + '</label>';
             } else if (tp === "text") {
-                html = pre + '<input class="form-control" type="text" ' + fieldAttrs + '/>' + pos + el.html();
+                html = pre + '<input type="text" class="form-control ' + cls + '" ' + fieldAttrs + '/>' + pos + el.html();
             } else if (tp === "select") {
                 html = '<select class="form-control" ' + fieldAttrs + '>' + el.html() + '</select>';
             } else if (tp === "checkbox") {

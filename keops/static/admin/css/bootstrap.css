@@ -2488,7 +2488,7 @@ table th[class*="col-"] {
   }
 }
 fieldset {
-  padding: 0;
+  padding-left: 0;
   margin: 0;
   border: 0;
   min-width: 0;
@@ -2496,7 +2496,7 @@ fieldset {
 legend {
   display: block;
   width: 100%;
-  padding: 0;
+  margin-left: 10px;
   margin-bottom: 18px;
   font-size: 19.5px;
   line-height: inherit;

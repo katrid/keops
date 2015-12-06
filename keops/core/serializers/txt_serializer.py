@@ -22,7 +22,7 @@ def Deserializer(stream_or_string, **options):
             row = 0
             objects = []
             adv = False
-            for line in stream_or_string.read().splitlines():
+            for line in stream_or_string.read().decode('utf-8').splitlines():
                 pk = None
                 row += 1
                 line = line.replace(chr(9), ';').split(';')
@@ -58,13 +58,13 @@ def Deserializer(stream_or_string, **options):
                     from keops.core.serializers.python import Deserializer as PythonDeserializer
                     return PythonDeserializer(objects, **options)
                 else:
-                    from django.core.serializers.python import Deserializer as PythonDeserializer
+                    from katrid.core.serializers.python import Deserializer as PythonDeserializer
                     return PythonDeserializer(objects, **options)
         except Exception as e:
             print('Error importing file: "%s", line: %i' % (filename, row), e)
             raise
 
-    filepath = options.pop('filepath')
+    filepath = options.pop('filepath', stream_or_string.name)
     if filepath:
         path = filepath.split(os.path.sep)
         model = '%s.%s' % (path[-3], os.path.splitext(path[-1])[0])

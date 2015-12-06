@@ -9,7 +9,7 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'base.user'
 
-INSTALLED_APPS.append('keops.apps.KeopsConfig')
+INSTALLED_APPS.append('keops')
 
 SERIALIZATION_MODULES = {
     'python': 'keops.core.serializers.python',
