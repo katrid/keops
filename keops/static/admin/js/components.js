@@ -5,13 +5,13 @@ ui.directive('field', function ($compile) {
         restrict: 'E',
         replace: true,
         template: function(element, attrs) {
-            var html = pre = pos = lbl = cols = cls = fieldAttrs = '';
+            var html = pre = pos = lbl = cols = icon = cls = fieldAttrs = '';
             var tp = 'text';
             for (var attr in attrs) {
                 if (attr === 'label') lbl = attrs.label;
                 else if (attr === 'cols') cols = attrs.cols;
                 else if (attr === 'type') tp = attrs.type;
-                else if (attr === 'icon') pre = '<i class="icon-prepend ' + attrs.icon + '"></i>';
+                else if (attr === 'icon') icon = '<i class="' + attrs.icon + '"></i>';
                 else if (attr === 'mask') fieldAttrs += ' ui-mask="' + attrs.mask + '"';
                 else if (attr === 'class') cls = attrs.class;
                 else if (attr === 'helpText') {
@@ -39,6 +39,7 @@ ui.directive('field', function ($compile) {
             } else if (tp === "int") {
                 html = '<label class="input">' + pre + '<input type="text" decimal="decimal" precision="0" ' + fieldAttrs + '>' + pos + el.html() + '</label>';
             } else if (tp === "text") {
+                if (icon) { pre += '<div class="input-group"><span class="input-group-addon">' + icon + '</span>'; pos = '</div>' + pos; }
                 html = pre + '<input type="text" class="form-control ' + cls + '" ' + fieldAttrs + '/>' + pos + el.html();
             } else if (tp === "select") {
                 html = '<select class="form-control" ' + fieldAttrs + '>' + el.html() + '</select>';
