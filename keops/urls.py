@@ -4,6 +4,7 @@ from katrid.conf.urls import url
 import keops.views.client
 import keops.views.actions
 import keops.views.forms
+import keops.views.auth
 
 
 urlpatterns = [
@@ -12,6 +13,7 @@ urlpatterns = [
     url(r'^client/menu/(?P<menu_id>.+)/$', keops.views.client.menu),
     url(r'^client/action/(?P<action_id>.+)/$', keops.views.actions.action),
     url(r'^client/form/show/(?P<form_id>.+)/$', keops.views.forms.show_form),
+    url(r'^login/$', keops.views.auth.login),
 ]
 
 if settings.DEBUG:

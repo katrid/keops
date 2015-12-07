@@ -26,6 +26,7 @@ FIELD_TYPE_LENGTH = {
     'date': '2',
     'lookup': '6',
     'decimal': '3',
+    'int': '3',
     'default': '6',
     'multiple': '12',
     'grid': '12',
