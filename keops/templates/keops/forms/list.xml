@@ -2,9 +2,8 @@
   from katrid.db import models
   from katrid.db.models.fields import related
   from katrid.utils.text import capfirst
-  list_fields = opts.list_display or [f for f in form.base_fields]
-  list_fields = [getattr(model, f, None) or opts.get_field(f) for f in list_fields]
-  print(list_fields)
+  list_display = opts.list_display or [f for f in form.base_fields]
+  list_fields = [opts._has_field(f) or getattr(model, f, None) for f in list_display]
 %>
 <list content-object="${opts}" view-title="${capfirst(opts.verbose_name_plural)}"${' help-text="%s"' % opts.help_text if opts.help_text else ''}>
 % for field in list_fields:
@@ -12,7 +11,7 @@
     <field />
   % elif callable(field):
     <field name="${field.__name__}" />
-  % elif not isinstance(field, (models.ManyToManyField, related.ReverseSingleRelatedObjectDescriptor)):
+  % elif not isinstance(field, (models.ManyToManyField,)):
     <field name="${field.name}" />
   % endif
 % endfor
