@@ -43,13 +43,11 @@ def show_model(request, app_label, model_name):
         'form': form,
         'opts': model._meta,
     }
-    print(template.render(ctx))
     if mode == 'list':
         xform = List(template.render(ctx))
     else:
         xform = Form(template.render(ctx))
     xform.form = form
-    print(xform.render())
     return HttpResponse(xform.render())
 
 

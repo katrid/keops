@@ -222,8 +222,8 @@ ui.directive('contentObject', function ($compile) {
                     '<button ng-click="showList()" class="btn btn-default view-toolbutton">Cancelar</button>' +
                     '<div class="btn-group pull-right view-mode-buttons"><button type="button" class="btn btn-default" title="Ir para pesquisa" ng-click="showList()"><i class="fa fa-table"></i></button><button type="button" class="btn btn-default active" title="Exibir formulário"><i class="fa fa-edit"></i></button></div>' +
                     '</div></div>' +
-                    '<div class="row">' +
-                    '<div class="form-content"> ' +
+                    '<div class="row form-content">' +
+                    '<div> ' +
                     '<div>' +
                     '<div class="widget-body">' +
                     '<form name="dataForm" ng-submit="submit()" novalidate>' +
@@ -410,10 +410,12 @@ ui.directive('uiSelect', function ($location) {
                         if (!multiple && (page === 1)) {
                             data.splice(0, 0, {id: null, text: '---------'});
                         }
-                        if (allowCreate && !more) data.data.push({id: {}, text: '<b><i>' + 'Create new...' + '</i></b>'});
+                            //data.push({id: {}, text: '<i>Search more...</i>'});
+                        if (allowCreate && !more) data.push({id: {}, text: '<i>Create new...</i>'});
                         return { results: data, more: more };
                     }
                 },
+                escapeMarkup: function(m) { return m; },
                 initSelection: function (element, callback) {
                     var v = controller.$modelValue;
                     if (v) {
