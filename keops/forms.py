@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
-from katrid.shortcuts import render
+from katrid.shortcuts import render, Http404
+from katrid.conf import settings
 import katrid.forms
 
 FORMS = {}
@@ -16,6 +17,8 @@ def register_form(form_name, form_class):
 def get_model_form(model, *args, **kwargs):
     if model in FORMS:
         return FORMS[model]
+    elif not settings.DEBUG and not getattr(model._meta, 'auto_create_form', False):
+        raise Http404()
     form = katrid.forms.modelform_factory(model, form=ModelForm, *args, **kwargs)
     register_form(model, form)
     return form
