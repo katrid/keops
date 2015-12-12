@@ -1,7 +1,7 @@
 keops
 =====
 
-The New Python ERP.
+The New Python/Django Based ERP.
 
 Keops is a Python modular business framework, to simplify the RIA business development,
 this is a RAD tool that's delivers really professionals products on less time, using all power of Django combined with the AngularJS and bootstrap framework as client side presentation.
