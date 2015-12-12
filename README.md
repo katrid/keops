@@ -11,7 +11,7 @@ The commercial license allows developers to build new apps, under any required l
 
 Community modules can be licensed under: AGPL, GPL, LGPL, Apache, MIT, BSD, and another compatible open source license.
 
-´´´python
+```python
 import keops.main
 
 class Application(keops.main.Application):
@@ -21,7 +21,7 @@ app = Application(debug=True)
 
 if __name__ == '__main__':
     app.execute_from_command_line(sys.argv)
-´´´
+```
 
 Enjoy creating powerful professional business apps.
 
