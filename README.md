@@ -20,7 +20,7 @@ class Application(keops.main.Application):
 app = Application(debug=True)
 
 if __name__ == '__main__':
-    app.execute_from_command_line(sys.argv)
+    app.execute_from_command_line()
 ```
 
 Enjoy creating powerful professional business apps.

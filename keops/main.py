@@ -14,4 +14,4 @@ class Application(katrid.core.app.Application):
 
 if __name__ == '__main__':
     app = Application(debug=True)
-    app.execute_from_command_line(sys.argv)
+    app.execute_from_command_line()
