@@ -9,6 +9,7 @@ WIDGET_TYPES = {
     widgets.Select: 'select',
     widgets.DateInput: 'date',
     widgets.DateTimeInput: 'datetime',
+    widgets.CheckboxInput: 'checkbox',
 }
 
 
@@ -73,6 +74,9 @@ def get_form_field(form, field):
 
     if field_type == 'multiple':
         attrs['type'] = 'lookup'
+    elif field_type == 'checkbox' and db_field.help_text:
+        attrs['help_text'] = db_field.help_text
+        attrs['type'] = field_type
     else:
         attrs['type'] = field_type
 

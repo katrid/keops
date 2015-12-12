@@ -19,8 +19,12 @@ ui.directive('field', function ($compile) {
                     fieldAttrs += ' ' + attr +'="' + attrs[attr] + '"';
                 }
                 else if (attr === 'helpText') {
-                    pre += '<i class="icon-append fa fa-question-circle"></i>';
-                    pos += '<b class="tooltip tooltip-top-right"><i class="fa fa-warning txt-color-teal"></i> ' + attrs.helpText + ' </b>';
+                    if (attrs.type === 'checkbox') {
+                        pos += attrs.helpText;
+                    } else {
+                        pre += '<i class="icon-append fa fa-question-circle"></i>';
+                        pos += '<b class="tooltip tooltip-top-right"><i class="fa fa-warning txt-color-teal"></i> ' + attrs.helpText + ' </b>';
+                    }
                 }
                 else if (attr[0] !== '$') fieldAttrs += ' ' + attr +'="' + attrs[attr] + '"';
             }
@@ -48,7 +52,11 @@ ui.directive('field', function ($compile) {
             } else if (tp === "select") {
                 html = '<select class="form-control" ' + fieldAttrs + '>' + el.html() + '</select>';
             } else if (tp === "checkbox") {
-                html = '<label class="checkbox"><input type="checkbox" ' + fieldAttrs + '><i></i>' + el.html() + '</label>';
+                if (attrs.label && !attrs.helpText) {
+                    pos += lbl;
+                    lbl = '';
+                }
+                html = '<div class="checkbox"><label><input type="checkbox" ' + fieldAttrs + '>' + el.html() + pos + '</label></div>';
             } else if (tp === "textarea") {
                 html = pre + '<textarea class="form-control" ' + fieldAttrs + '>' + el.html() + '</textarea>' + pos;
             } else if (tp === 'lookup') {
