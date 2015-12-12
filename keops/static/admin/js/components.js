@@ -14,6 +14,10 @@ ui.directive('field', function ($compile) {
                 else if (attr === 'icon') icon = '<i class="' + attrs.icon + '"></i>';
                 else if (attr === 'mask') fieldAttrs += ' ui-mask="' + attrs.mask + '"';
                 else if (attr === 'class') cls = attrs.class;
+                else if ((attr === 'maxlength') && (attrs.mask)) {
+                    attrs.maxlength = '';
+                    fieldAttrs += ' ' + attr +'="' + attrs[attr] + '"';
+                }
                 else if (attr === 'helpText') {
                     pre += '<i class="icon-append fa fa-question-circle"></i>';
                     pos += '<b class="tooltip tooltip-top-right"><i class="fa fa-warning txt-color-teal"></i> ' + attrs.helpText + ' </b>';
