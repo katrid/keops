@@ -35,8 +35,8 @@ def show_model(request, app_label, model_name):
     # Find model form template
     template_name = model._meta.form_template if mode == 'form' else model._meta.list_template
     template = select_template([
-        template_name or ('keops/forms/%s/%s/%s.xml' % (app_label, model_name, mode)),
-        'keops/forms/%s.xml' % mode,
+        template_name or ('keops/%s/%s/%s.xml' % (app_label, model_name, mode)),
+        'keops/%s.xml' % mode,
     ])
     ctx = {
         'model': model,

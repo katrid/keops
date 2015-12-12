@@ -1,3 +1,4 @@
+import json
 from urllib.parse import urlencode
 from katrid.shortcuts import render, Http404
 from katrid.conf import settings
@@ -19,13 +20,14 @@ def get_model_form(model, *args, **kwargs):
         return FORMS[model]
     elif not settings.DEBUG and not getattr(model._meta, 'auto_create_form', False):
         raise Http404()
+    kwargs.setdefault('fields', '__all__')
     form = katrid.forms.modelform_factory(model, form=ModelForm, *args, **kwargs)
     register_form(model, form)
     return form
 
 
 class FormMixin(object):
-    def submit(self, request):
+    def submit(self):
         pass
 
     def render(self, request, view='form'):
@@ -37,44 +39,50 @@ class FormMixin(object):
             'current_url': urlencode({'back': request.get_full_path()})
         })
 
-    def list_fields(self):
-        return self
-
-    def list_queryset(self):
-        return self.queryset()
-
-    def queryset(self):
-        return []
-
     class Meta:
         form_template = 'keops/forms/form.html'
         list_template = 'keops/forms/list.html'
 
 
 class ModelFormMixin(FormMixin):
-    def submit(self, request):
-        super(ModelFormMixin, self).submit(request)
+    def submit(self):
+        super(ModelFormMixin, self).submit()
+        request = self.request
         if request.method == 'POST':
-            self.post(request)
+            return self._post(request)
         elif request.method == 'DELETE':
-            self.delete(request)
+            self._delete(request)
 
-    def delete(self, request):
-        pass
+    def _delete(self, request):
+        m = self.Meta.model
+        m.get(pk=request.GET['id']).delete()
+        return {'success': True, 'message': 'Record succesfully deleted!'}
 
-    def post(self, request):
+    def _post(self, request, data=None):
         if self.is_valid():
             self.save()
-            return True
+            return {'success': True, 'message': 'Data successfully saved!'}
+        else:
+            return {'success': False, 'message': 'Errors found while saving data!'}
 
-    def list_queryset(self):
+    def list_queryset(self, request):
         return self.Meta.model.objects.all()
 
 
 class Form(katrid.forms.Form, FormMixin):
-    pass
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.get('request')
+        super(Form, self).__init__(*args, **kwargs)
 
 
 class ModelForm(katrid.forms.ModelForm, ModelFormMixin):
-    pass
-
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
+        data = kwargs.get('data')
+        if self.request:
+            pk = data.get('id', self.request.GET.get('id'))
+            if pk:
+                kwargs['instance'] = self._meta.model.objects.get(pk=pk)
+        super(ModelForm, self).__init__(*args, **kwargs)
+        self.initial.update(data)
+        self.data = self.initial

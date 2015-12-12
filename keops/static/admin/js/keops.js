@@ -265,9 +265,10 @@ keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
         this.loading = true;
         var model = this.model;
 
-        var url = this.url + model.replace('.', '/') + '/?';
+        var url = this.url + model.replace('.', '/') + '/';
         var params = { mode: 'form' };
         if (this.pk) params.id = this.pk;
+        console.log(url, this.pk);
         $http({
             method: 'GET',
             url: url,
@@ -513,7 +514,26 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
     };
 
     $scope.submit = function () {
-        var i, item;
+        var form = this.dataForm;
+        var data = {};
+        for (var i in form) {
+            var field = form[i];
+            if ((i[0] !== '$') && (field.$dirty)) data[i] = field.$modelValue;
+        }
+        var postUrl = '/api/content/' + this.form.model.replace('.', '/') + '/';
+        var params = {};
+        if (this.form.pk) params['id'] = this.form.pk;
+        return $http({
+            method: 'POST',
+            url: postUrl,
+            data: data,
+            headers: { 'Content-Type': 'application/json' },
+            params: params
+        }).success(function (data) {
+            console.log('success!!');
+            console.log(data);
+        });
+/*        var i, item;
         var form = this.dataForm;
         if (form.$dirty) {
             var data = {};
@@ -570,7 +590,7 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
             var search = $location.search();
             search['mode'] = 'list';
             $location.search(search);
-        }
+        }*/
     };
 
     $scope.adminAction = function (action, data) {

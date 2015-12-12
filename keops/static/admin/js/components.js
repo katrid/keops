@@ -130,13 +130,22 @@ ui.directive('contentObject', function ($compile) {
         replace: true,
         template: function(tElement, tAttrs) {
             var attrs = tAttrs;
+
+            var children = tElement.children();
+            var sparks = '';
+            for (var i=0;i<children.length;i++) {
+                var child = children[i];
+                if (child.nodeName === 'SPARKS') sparks = '<ul id="sparks">' + child.innerHTML + '</ul>';
+            }
+            tElement.find('sparks').remove();
+
             var html = tElement.html();
             var node = tElement[0].nodeName;
             if (node === 'LIST') {
                 var cols = tElement.children();
                 var th = '<th class="checkbox-action"><input id="action-toggle" type="checkbox" ng-click="toggleCheckAll();" /></th>';
                 var td = '<td><input type="checkbox" class="action-select" ng-click="selectItem(item)" /></td>';
-                for (var i=0;i<cols.length;i++) {
+                for (i=0;i<cols.length;i++) {
                     var col = $(cols[i]);
                     if (col[0].nodeName === 'ACTIONS') { var actions = col[0]; continue; }
                     var css = col.attr('class');
@@ -209,18 +218,24 @@ ui.directive('contentObject', function ($compile) {
                 var model = attrs.contentObject;
                 var nhtml = '<div ng-controller="FormController" ng-init="form.init(\'' + model + '\')">' +
                     '<div class="row view-header">' +
-                    '<div class="col-sm-12">' +
-                    '<div class="pull-right nav-paginator" style="margin-top: 10px">' +
+                    '<div>' +
+                    '<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">' +
+                    '<h1 class="page-title txt-color-blueDark">' +
+                    '<i class="fa-fw fa fa-pencil-square-o"></i>' + attrs.viewTitle + ' <span>/ {{ form.data.__str__ }}</span><span ng-show="!form.data.pk">&nbsp;</span></h1>' +
+                    '</div><div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">' +
+                        sparks +
+                    '</div></div>' +
+                    '<div class="col-sm-12 view-toolbar">' +
+                    '<button type="button" class="btn btn-danger view-toolbutton" title="Salvar" ng-click="submit()">Salvar</button>' +
+                    '<button ng-click="showList()" class="btn btn-default view-toolbutton">Cancelar</button>' +
+                    '<div class="btn-group pull-right view-mode-buttons"><button type="button" class="btn btn-default" title="Ir para pesquisa" ng-click="showList()"><i class="fa fa-table"></i></button><button type="button" class="btn btn-default active" title="Exibir formulário"><i class="fa fa-edit"></i></button></div>' +
+
+                    '<div class="pull-right nav-paginator" style="margin-right: 10px;">' +
                     '<label class="nav-recno-info">1 / 1</label>' +
                     '<a class="btn btn-default"><i class="fa fa-chevron-left"></i></a>' +
                     '<a class="btn btn-default"><i class="fa fa-chevron-right"></i></a>' +
                     '</div>' +
-                    '<h1 class="page-title txt-color-blueDark">' +
-                    '<i class="fa-fw fa fa-pencil-square-o"></i>' + attrs.viewTitle + ' <span>/ {{ form.data.__str__ }}</span><span ng-show="!form.data.pk">&nbsp;</span></h1>' +
-                    '</div><div class="col-sm-12 view-toolbar">' +
-                    '<button type="button" class="btn btn-danger view-toolbutton" title="Salvar" ng-click="submit()">Salvar</button>' +
-                    '<button ng-click="showList()" class="btn btn-default view-toolbutton">Cancelar</button>' +
-                    '<div class="btn-group pull-right view-mode-buttons"><button type="button" class="btn btn-default" title="Ir para pesquisa" ng-click="showList()"><i class="fa fa-table"></i></button><button type="button" class="btn btn-default active" title="Exibir formulário"><i class="fa fa-edit"></i></button></div>' +
+
                     '</div></div>' +
                     '<div class="row form-content">' +
                     '<div> ' +
