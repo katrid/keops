@@ -11,6 +11,8 @@ The commercial license allows developers to build new apps, under any required l
 
 Community modules can be licensed under: AGPL, GPL, LGPL, Apache, MIT, BSD, and another compatible open source license.
 
+Basic usage:
+
 ```python
 import keops.main
 

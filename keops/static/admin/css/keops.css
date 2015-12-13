@@ -129,7 +129,7 @@ label.nav-recno-info {
 }
 
 .sub-form-visible {
-  display: flex;
+  display: block;
 }
 
 .modal-backdrop {
@@ -181,6 +181,10 @@ label.nav-recno-info {
   border: 1px solid #C8C8D3;
   box-shadow: 0 4px 20px rgba(2, 2, 2, 0.15);
   background-color: #ffffff;
+}
+
+.bold-field {
+  font-weight: 600;
 }
 
 

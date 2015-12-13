@@ -43,11 +43,14 @@ def show_model(request, app_label, model_name):
         'form': form,
         'opts': model._meta,
     }
+    if 'template' in request.GET:
+        return HttpResponse(template.render(ctx))
     if mode == 'list':
         xform = List(template.render(ctx))
     else:
         xform = Form(template.render(ctx))
     xform.form = form
+    print(xform.render())
     return HttpResponse(xform.render())
 
 
@@ -78,32 +81,35 @@ class Form(BaseView):
     def read_node(self, el, parent_field=None, form=None):
         f = None
         attrs = None
-        if el.tag == 'field' and 'name' in el.attrib:
-            field = el.attrib
-            #if isinstance(parent_field, models.OneToManyField):
-            #    if not hasattr(parent_field, '_admin'):
-            #        parent_field._admin = self.form.admin_site.get_admin(parent_field.related.related_model)
-            #    #attrs, f = helpers.get_form_field(parent_field._admin, field['name'])
-            #else:
-            #    attrs, f = helpers.get_form_field(self.admin, field['name'])
-            attrs, f = helpers.get_form_field(form, field['name'])
-            if attrs is not None:
-                if isinstance(parent_field, models.OneToManyField):
-                    attrs.pop('ng-model', None)
-                    field['ng-model'] = 'formset.' + field['name']
+        if el.tag == 'field':
+            if 'name' in el.attrib:
+                field = el.attrib
+                #if isinstance(parent_field, models.OneToManyField):
+                #    if not hasattr(parent_field, '_admin'):
+                #        parent_field._admin = self.form.admin_site.get_admin(parent_field.related.related_model)
+                #    #attrs, f = helpers.get_form_field(parent_field._admin, field['name'])
+                #else:
+                #    attrs, f = helpers.get_form_field(self.admin, field['name'])
+                attrs, f = helpers.get_form_field(form, field['name'])
+                if attrs is not None:
+                    if isinstance(parent_field, models.OneToManyField):
+                        attrs.pop('ng-model', None)
+                        field['ng-model'] = 'formset.' + field['name']
 
-                if 'choices' in attrs:
-                    choices = attrs.pop('choices')
-                    for choice in choices:
-                        el.append(et.fromstring('<option value="%s">%s</option>' % choice))
+                    if 'choices' in attrs:
+                        choices = attrs.pop('choices')
+                        for choice in choices:
+                            el.append(et.fromstring('<option value="%s">%s</option>' % choice))
 
-                for k, v in attrs.items():
-                    field.setdefault(k, str(v))
-            if attrs.get('type') == 'grid':
-                self._grid_field(el, f, attrs)
-            elif isinstance(f, models.OneToManyField):
-                el.tag = 'formset'
-                print(attrs)
+                    for k, v in attrs.items():
+                        field.setdefault(k, str(v))
+                if attrs.get('type') == 'grid':
+                    self._grid_field(el, f, attrs)
+                elif isinstance(f, models.OneToManyField):
+                    el.tag = 'formset'
+                    print(attrs)
+            else:
+                el.attrib.setdefault('type', 'static')
         elif el.tag == 'label':
             el.attrib.setdefault('class', 'label')
         elif el.tag == 'remove-button':
@@ -120,35 +126,51 @@ class Form(BaseView):
 
     def _grid_field(self, el, field, attrs):
         field_name = str(field).lower()
-        # List UI
-        s = ''
-        el.attrib['content-field'] = field_name
+        has_form = has_list = False
+        form_node = None
+        for child in el:
+            if child.tag == 'list':
+                has_list = True
+            elif child.tag == 'form':
+                has_form = True
+                child.tag = 'sub-form'
+            if child.tag == 'sub-form':
+                has_form = True
+                child.attrib.setdefault('content-field', field_name)
+                form_node = child
+
         list_fields = getattr(field, 'list_fields', None)
         rel = field.related
         form = get_model_form(rel.related_model, fields='__all__')
-        if list_fields is None:
-            list_fields = rel.related_model._meta.list_fields or list(form.base_fields.keys())
-            if list_fields and rel.field.name in list_fields:
-                list_fields.remove(rel.field.name)
-            s = ''.join(['<field name="%s" label="%s" />\n' % (f, form.base_fields[f].label) for f in list_fields])
-        g = et.fromstring('<list content-field="%s">%s</list>' % (field_name, s))
-        for k, v in attrs.items():
-            g.attrib.setdefault(k, v)
-        el.append(g)
+        if not has_list:
+            # List UI
+            s = ''
+            el.attrib['content-field'] = field_name
+            if list_fields is None:
+                list_fields = rel.related_model._meta.list_display or list(form.base_fields.keys())
+                if list_fields and rel.field.name in list_fields:
+                    list_fields.remove(rel.field.name)
+                s = ''.join(['<field name="%s" label="%s" />\n' % (f, form.base_fields[f].label) for f in list_fields])
+            g = et.fromstring('<list content-field="%s">%s</list>' % (field_name, s))
+            for k, v in attrs.items():
+                g.attrib.setdefault(k, v)
+            el.append(g)
 
-        # Form UI
-        s = ''
-        fields = getattr(field, 'fields', None)
-        if fields is None:
-            fields = rel.related_model._meta.fields or list(form.base_fields.keys())
-            if fields and rel.field.name in fields:
-                fields.remove(rel.field.name)
-            s = ''.join(['<field name="%s" label="%s" />\n' % (f, form.base_fields[f].label) for f in list_fields])
-        g = et.fromstring('<sub-form content-field="%s">%s</sub-form>' % (field_name, s))
-        self.read_node(g, form=form)
-        for k, v in attrs.items():
-            g.attrib.setdefault(k, v)
-        el.append(g)
+        if not has_form:
+            # Form UI
+            s = ''
+            fields = getattr(field, 'fields', None)
+            if fields is None:
+                fields = rel.related_model._meta.fields or list(form.base_fields.keys())
+                if fields and rel.field.name in fields:
+                    fields.remove(rel.field.name)
+                s = ''.join(['<field name="%s" label="%s" />\n' % (f, form.base_fields[f].label) for f in list_fields])
+            form_node = et.fromstring('<sub-form content-field="%s">%s</sub-form>' % (field_name, s))
+            for k, v in attrs.items():
+                form_node.attrib.setdefault(k, v)
+            el.append(form_node)
+
+        self.read_node(form_node, form=form)
 
     def read_subfield(self, el):
         pass
