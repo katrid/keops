@@ -571,11 +571,14 @@ ui.directive('uiDatepicker', function ($location) {
                 if (controller.$viewValue) {
                     var dt = controller.$viewValue.split(/\-|\s/);
                     var dt = new Date(dt);
-                    console.log(dt);
-
                     element.val(dt.toLocaleDateString('pt-br'));
                 }
             };
+
+            element.on('change', function (v) {
+                var val = $(this).val();
+                controller.$viewValue = new Date().toLocaleString();
+            });
 
         }
     }

@@ -2,6 +2,7 @@ import json
 from urllib.parse import urlencode
 from katrid.shortcuts import render, Http404
 from katrid.conf import settings
+from katrid.utils.translation import gettext as _
 import katrid.forms
 
 FORMS = {}
@@ -56,14 +57,15 @@ class ModelFormMixin(FormMixin):
     def _delete(self, request):
         m = self.Meta.model
         m.get(pk=request.GET['id']).delete()
-        return {'success': True, 'message': 'Record succesfully deleted!'}
+        return {'success': True, 'message': _('Record succesfully deleted!')}
 
     def _post(self, request, data=None):
         if self.is_valid():
             self.save()
-            return {'success': True, 'message': 'Data successfully saved!'}
+            return {'success': True, 'message': _('Data successfully saved!')}
         else:
-            return {'success': False, 'message': 'Errors found while saving data!'}
+            details = str(self.errors)
+            return {'success': False, 'message': _('Errors found while saving data!'), 'details': details}
 
     def list_queryset(self, request):
         return self.Meta.model.objects.all()

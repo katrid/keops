@@ -523,6 +523,7 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
         var postUrl = '/api/content/' + this.form.model.replace('.', '/') + '/';
         var params = {};
         if (this.form.pk) params['id'] = this.form.pk;
+        console.log('submit data', data);
         return $http({
             method: 'POST',
             url: postUrl,
