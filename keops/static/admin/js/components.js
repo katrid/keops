@@ -205,16 +205,16 @@ ui.directive('contentObject', function ($compile) {
                         '<div>' +
                         '<h1 class="page-title txt-color-blueDark col-sm-6"><i class="fa fa-table fa-fw "></i>' + attrs.viewTitle + '</h1>' +
                         '<form class="header-search pull-right">' +
-                        '<input id="search-fld" type="text" placeholder="Busca rápida" ng-model="queryField" ng-enter="list.query(queryField)">' +
+                        '<input id="search-fld" type="text" placeholder="' + katrid.gettext('Quick Search') + '" ng-model="queryField" ng-enter="list.query(queryField)">' +
                         '<button type="button" ng-click="list.query(queryField)"><i class="fa fa-search"></i></button><a href="javascript:void(0);" id="cancel-search-js" title="Cancel Search"><i class="fa fa-times"></i></a></form>' +
                         '</div>' +
                         '<div class="col-sm-12 view-toolbar">' +
-                        '<button class="btn btn-danger view-toolbutton" ng-click="newItem()"> Criar </button>' +
+                        '<button class="btn btn-danger view-toolbutton" ng-click="newItem()"> ' + katrid.gettext('Create') + ' </button>' +
                         '<button class="btn btn-default view-toolbutton" ng-show="selection" ng-click="list.deleteSelection();">' +
-                        '<span class="glyphicon glyphicon-trash"></span> Excluir</button>' +
+                        '<span class="glyphicon glyphicon-trash"></span> ' + katrid.gettext('Delete') + '</button>' +
                         //actions.outerHTML +
                         '<div class="btn-group view-toolbutton">' +
-                        '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);">Ações <span class="caret"></span></a>' +
+                        '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);">' + katrid.gettext('Actions') + ' <span class="caret"></span></a>' +
                         '<ul class="dropdown-menu"><li><a href="javascript:void(0);">Exportar Dados</a></li></ul>' +
                         '</div>' +
                         '<div class="btn-group pull-right view-mode-buttons"><button type="button" class="btn btn-default active" title="Ir para pesquisa"><i class="fa fa-table"></i></button><button type="button" class="btn btn-default" title="Exibir formulário" ng-click="showForm(list.items[0].pk)"><i class="fa fa-edit"></i></button></div>' +
@@ -224,9 +224,9 @@ ui.directive('contentObject', function ($compile) {
                         '<div>' +
                         '<div role="content">' +
                         '<div class="list-content">' +
-                        '<div><div class="col-sm-6"><p class="row" ng-show="selection === 1">{{ selection }} Item selecionado.</p>' +
-                        '<p class="row" ng-show="selection > 1">{{ selection }} Itens selecionados.</p>' +
-                        '<p class="row" ng-show="!selection">Nenhum item selecionado.</p></div>' +
+                        '<div><div class="col-sm-6"><p class="row" ng-show="selection === 1">' + katrid.gettext('1 Item selected.') + '</p>' +
+                        '<p class="row" ng-show="selection > 1">' + katrid.gettext('{{ selection }} Items selected.') + '</p>' +
+                        '<p class="row" ng-show="!selection">' + katrid.gettext('No selected data.') + '</p></div>' +
                         '<div class="pull-right" style="margin-top: -4px;">' +
                         paginator +
                         '</div>' +

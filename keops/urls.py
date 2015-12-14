@@ -1,5 +1,6 @@
 from katrid.conf import settings
 from katrid.conf.urls import url
+from katrid.views.i18n import javascript_catalog
 
 import keops.views.client
 import keops.views.actions
@@ -15,6 +16,13 @@ urlpatterns = [
     url(r'^client/form/show/(?P<form_id>.+)/$', keops.views.forms.show_form),
     url(r'^login/$', keops.views.auth.login),
 ]
+
+if settings.USE_I18N:
+    js_info_dict = {
+        'domain': 'katridjs',
+        'packages': ('keops',),
+    }
+    urlpatterns.append(url(r'^jsi18n/(?P<packages>\S+?)/$', javascript_catalog, js_info_dict))
 
 if settings.DEBUG:
     # Simplify the prototype process
