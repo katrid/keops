@@ -91,5 +91,12 @@ def get_list_field(form, field):
     else:
         attrs = {'label': f.label}
     if isinstance(f, forms.Field):
-        return attrs, form._meta.model._meta.get_field(field)
+        db_field = form._meta.model._meta.get_field(field)
+        if isinstance(db_field, models.DateTimeField):
+            attrs['type'] = 'datetime'
+        elif isinstance(db_field, models.DateField):
+            attrs['type'] = 'date'
+        elif isinstance(db_field, models.DecimalField):
+            attrs['type'] = 'decimal'
+        return attrs, db_field
     return attrs, f

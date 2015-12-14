@@ -37,7 +37,8 @@ ui.directive('field', function ($compile) {
             }
             attrs.class = '';
             attrs.ngBind = null;
-            attrs.label = null;
+            //attrs.label = null;
+            delete attrs.cols;
             var nm = attrs.ngModel;
             if (!nm) {
                 nm = 'form.data.' + attrs.name;
@@ -63,12 +64,13 @@ ui.directive('field', function ($compile) {
                 html = '<select class="form-control" ' + fieldAttrs + '>' + elHtml + '</select>';
             } else if (tp === "checkbox") {
                 if (attrs.label && !attrs.helpText) {
-                    pos += lbl;
+                    pos += attrs.label;
                     lbl = '';
                 }
-                html = '<div class="checkbox"><label><input type="checkbox" ' + fieldAttrs + '>' + el.html() + pos + '</label></div>';
+                console.log('checkbox', attrs.lbl);
+                html = '<div class="checkbox"><label><input type="checkbox" ' + fieldAttrs + '>' + elHtml + pos + '</label></div>';
             } else if (tp === "textarea") {
-                html = pre + '<textarea class="form-control" ' + fieldAttrs + '>' + el.html() + '</textarea>' + pos;
+                html = pre + '<textarea class="form-control" ' + fieldAttrs + '>' + elHtml + '</textarea>' + pos;
             } else if (tp === 'lookup') {
                 if (attrs.multiple) fieldAttrs += ' multiple';
                 html = '<input type="text" ' + fieldAttrs + ' ui-select="' + attrs.contentField + '" style="width: 100%;" />';
@@ -77,9 +79,9 @@ ui.directive('field', function ($compile) {
             } else if (tp === 'datetime') {
                 html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datepicker ui-mask="99/99/9999 99:99"/>';
             } else if (tp === 'grid') {
-                html = '<grid ' + fieldAttrs + ' label="' + attrs.label + '">' + el.html() + '</grid>';
+                html = '<grid ' + fieldAttrs + ' label="' + attrs.label + '">' + elHtml + '</grid>';
             } else if (tp === 'static') {
-                html = '<p class="form-control-static ' + cls + '" ' + fieldAttrs + '>' + el.html() + '</p>';
+                html = '<p class="form-control-static ' + cls + '" ' + fieldAttrs + '>' + elHtml + '</p>';
             }
             if (lbl !== null) {
                 lbl = '<label class="control-label" for="' + widgetId + '">' + lbl + '</label>';
@@ -178,7 +180,16 @@ ui.directive('contentObject', function ($compile) {
                     var lbl = col.attr('label');
                     if (!lbl) lbl = '';
                     th += '<th' + css + '>' + col.attr('label') + '</th>';
-                    td += '<td ' + css + ' ng-click="list.itemClick(item)" ng-bind="item.' + col.attr('name') + '"></td>';
+                    var modelField = 'item.' + col.attr('name');
+                    switch (col.attr('type')) {
+                        case 'date':
+                            modelField = '(' + modelField + '|date)';
+                            break;
+                        case 'decimal':
+                            modelField = '(' + modelField + '|number)';
+                            break;
+                    }
+                    td += '<td ' + css + ' ng-click="list.itemClick(item)" ng-bind="' + modelField + '"></td>';
                 }
 
                     var model = attrs.contentObject;
@@ -554,6 +565,18 @@ ui.directive('uiDatepicker', function ($location) {
                 prevText: '<i class="fa fa-chevron-left"></i>',
 			    nextText: '<i class="fa fa-chevron-right"></i>'
             });
+
+            controller.$render = function () {
+                console.log(controller.$viewValue, controller.$modelValue);
+                if (controller.$viewValue) {
+                    var dt = controller.$viewValue.split(/\-|\s/);
+                    var dt = new Date(dt);
+                    console.log(dt);
+
+                    element.val(dt.toLocaleDateString('pt-br'));
+                }
+            };
+
         }
     }
 });
