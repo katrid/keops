@@ -37,6 +37,8 @@ DEFAULT_TYPE_LENGTH = 6
 
 
 def get_form_field(form, field):
+    if field not in form.base_fields:
+        return {}, None
     f = form.base_fields[field]
     attrs = f.widget_attrs(f.widget)
     db_field = form._meta.model._meta.get_field(field)

@@ -67,7 +67,6 @@ ui.directive('field', function ($compile) {
                     pos += attrs.label;
                     lbl = '';
                 }
-                console.log('checkbox', attrs.lbl);
                 html = '<div class="checkbox"><label><input type="checkbox" ' + fieldAttrs + '>' + elHtml + pos + '</label></div>';
             } else if (tp === "textarea") {
                 html = pre + '<textarea class="form-control" ' + fieldAttrs + '>' + elHtml + '</textarea>' + pos;
@@ -210,7 +209,7 @@ ui.directive('contentObject', function ($compile) {
                         '<button type="button" ng-click="list.query(queryField)"><i class="fa fa-search"></i></button><a href="javascript:void(0);" id="cancel-search-js" title="Cancel Search"><i class="fa fa-times"></i></a></form>' +
                         '</div>' +
                         '<div class="col-sm-12 view-toolbar">' +
-                        '<button class="btn btn-danger view-toolbutton" ng-click="showForm()"> Criar </button>' +
+                        '<button class="btn btn-danger view-toolbutton" ng-click="newItem()"> Criar </button>' +
                         '<button class="btn btn-default view-toolbutton" ng-show="selection" ng-click="list.deleteSelection();">' +
                         '<span class="glyphicon glyphicon-trash"></span> Excluir</button>' +
                         //actions.outerHTML +
@@ -567,10 +566,8 @@ ui.directive('uiDatepicker', function ($location) {
             });
 
             controller.$render = function () {
-                console.log(controller.$viewValue, controller.$modelValue);
                 if (controller.$viewValue) {
-                    var dt = controller.$viewValue.split(/\-|\s/);
-                    var dt = new Date(dt);
+                    var dt = new Date(controller.$viewValue.split(/\-|\s/));
                     element.val(dt.toLocaleDateString('pt-br'));
                 }
             };

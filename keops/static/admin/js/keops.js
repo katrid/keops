@@ -179,11 +179,17 @@ keopsApp.controller('ListController', function ($scope, $location, List) {
         window.location.href = url;
     };
 
+    $scope.newItem = function () {
+        var params = $location.search();
+        params['mode'] = 'form';
+        params['state'] = 'new';
+        $location.search(params);
+    };
+
     $scope.showForm = function(id) {
         var params = $location.search();
         params['mode'] = 'form';
         params['id'] = id;
-        console.log(id);
         $location.search(params);
     }
 
@@ -204,6 +210,7 @@ keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
         this.model = null;
         this.element = null;
         this.readonly = null;
+        this.state = null;
         this.pk = $location.search().id;
         this.url = "/api/content/";
         if (SharedData.list) {
@@ -267,8 +274,8 @@ keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
 
         var url = this.url + model.replace('.', '/') + '/';
         var params = { mode: 'form' };
-        if (this.pk) params.id = this.pk;
-        console.log(url, this.pk);
+        if (this.state === 'new') params.state = 'new';
+        else if (this.pk) params.id = this.pk;
         $http({
             method: 'GET',
             url: url,
@@ -393,8 +400,10 @@ keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
     Form.prototype.init = function (model) {
         this.model = model;
         this.subitems = {};
+        var src = $location.search();
         if ($routeParams["id"]) this.pk = $routeParams["id"];
         else this.pk = $location.search()["id"];
+        if (src.state === 'new') this.state = 'new';
         this.nextPage();
     };
 
