@@ -183,7 +183,7 @@ class Form(BaseView):
             xml.attrib.setdefault('view-title', capfirst(self.form._meta.model._meta.verbose_name_plural))
             for field in xml:
                 self.read_node(field, form=self.form)
-            return et.tostring(xml)
+            return et.tostring(xml, method='html')
         else:
             raise ValueError('Invalid root element type')
 

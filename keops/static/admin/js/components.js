@@ -8,7 +8,7 @@ ui.directive('field', function ($compile) {
         replace: true,
         transclude: false,
         template: function(element, attrs) {
-            var html = pre = pos = cols = icon = cls = fieldAttrs = '';
+            var html = pre = pos = cols = icon = cls = fieldAttrs = contentField = '';
             var lbl = null;
             var tp = 'text';
             _keopsWidgetCount++;
@@ -20,6 +20,10 @@ ui.directive('field', function ($compile) {
                 else if (attr === 'icon') icon = '<i class="' + attrs.icon + '"></i>';
                 else if (attr === 'mask') fieldAttrs += ' ui-mask="' + attrs.mask + '"';
                 else if (attr === 'class') cls = attrs.class;
+                else if (attr === 'contentField') {
+                    contentField = attrs.contentField;
+                    delete attrs.contentField;
+                }
                 else if (attr === 'calcExpression') fieldAttrs += ' ng-bind="' + attrs.calcExpression + '"';
                 else if ((attr === 'maxlength') && (attrs.mask)) {
                     attrs.maxlength = '';
@@ -33,7 +37,10 @@ ui.directive('field', function ($compile) {
                         pos += '<b class="tooltip tooltip-top-right"><i class="fa fa-warning txt-color-teal"></i> ' + attrs.helpText + ' </b>';
                     }
                 }
-                else if (attr[0] !== '$') fieldAttrs += ' ' + attr +'="' + attrs[attr] + '"';
+                else if (attr[0] !== '$') {
+                    fieldAttrs += ' ' + attr +'="' + attrs[attr] + '"';
+                    if (attr !== 'name') delete attrs[attr];
+                }
             }
             attrs.class = '';
             attrs.ngBind = null;
@@ -72,13 +79,13 @@ ui.directive('field', function ($compile) {
                 html = pre + '<textarea class="form-control" ' + fieldAttrs + '>' + elHtml + '</textarea>' + pos;
             } else if (tp === 'lookup') {
                 if (attrs.multiple) fieldAttrs += ' multiple';
-                html = '<input type="text" ' + fieldAttrs + ' ui-select="' + attrs.contentField + '" style="width: 100%;" />';
+                html = '<input type="text" ' + fieldAttrs + ' ui-select="' + contentField + '" style="width: 100%;" />';
             } else if (tp === 'date') {
-                html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datepicker ui-mask="99/99/9999"/>';
+                html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datepicker />';
             } else if (tp === 'datetime') {
                 html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datepicker ui-mask="99/99/9999 99:99"/>';
             } else if (tp === 'grid') {
-                html = '<grid ' + fieldAttrs + ' label="' + attrs.label + '">' + elHtml + '</grid>';
+                html = '<grid ' + fieldAttrs + ' label="' + attrs.label + '" content-field="' + contentField + '">' + elHtml + '</grid>';
             } else if (tp === 'static') {
                 html = '<p class="form-control-static ' + cls + '" ' + fieldAttrs + '>' + elHtml + '</p>';
             }
@@ -89,6 +96,7 @@ ui.directive('field', function ($compile) {
                 cols = 'class="col-sm-' + cols + '"';
             } else cols = "class='col-sm-12'";
             html = '<section ' + cols + '>' + lbl + html + '</section>';
+            delete attrs.name;
             return html;
         }
     }
@@ -325,7 +333,7 @@ ui.directive('grid', function ($compile, $http) {
         replace: true,
         scope: {},
         link: function (scope, el, attrs) {
-            var contentField = attrs.contentfield;
+            var contentField = attrs.contentField;
             var fname = contentField.split('.');
             var url = '/api/content/' + fname[0] + '/' + fname[1] + '/';
             var parentForm = scope.$parent.form;
@@ -345,8 +353,8 @@ ui.directive('grid', function ($compile, $http) {
                     '<button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">' + lbl +  ': <span>{{ form.data.__str__ }}</span></h4></div>' +
                     '<div class="modal-body">' + formTempl + '</div>' +
                     '<div class="modal-footer">' +
-                    '<button type="button" class="btn btn-danger" data-dismiss="modal">Save</button>' +
-                    '<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>' +
+                    '<button type="button" class="btn btn-danger" data-dismiss="modal">' + katrid.gettext('Save') + '</button>' +
+                    '<button type="button" class="btn btn-default" data-dismiss="modal">' + katrid.gettext('Cancel') + '</button>' +
                     '</div></div></div></div>';
                 elHtml = angular.element(elHtml);
                 el.append(elHtml);
@@ -393,7 +401,7 @@ ui.directive('grid', function ($compile, $http) {
                 }.bind(true));
             };
 
-            var gname = attrs.contentfield.split('.')[2];
+            var gname = attrs.contentField.split('.')[2];
             scope.dataset = {name: gname, deleted: [], inserted: [], updated: []};
             //parentForm.grids[gname] = self;
 
@@ -423,7 +431,7 @@ ui.directive('grid', function ($compile, $http) {
             formTempl = tElement.find('sub-form').prop('outerHTML');
 
             var nhtml = '<div class="data-grid" data-grid="' + fld + '">' +
-                '<button class="btn btn-default btn-xs" ng-click="gridAddItem()">Add</button>' +
+                '<button class="btn btn-default btn-xs" ng-click="gridAddItem()">' + katrid.gettext('Add') + '</button>' +
                 '<table class="table table-hover table-bordered table-striped table-condensed">' +
                 '<thead>' +
                 '<tr>' + th +
@@ -557,24 +565,29 @@ ui.directive('uiDatepicker', function ($location) {
     return {
         restrict: 'A',
         require : 'ngModel',
-        priority: 1,
         link: function(scope, element, attrs, controller) {
             var el = element.datepicker({
                 dateFormat: 'dd/mm/yy',
                 prevText: '<i class="fa fa-chevron-left"></i>',
 			    nextText: '<i class="fa fa-chevron-right"></i>'
             });
+            el = el.mask('00/00/0000');
 
             controller.$render = function () {
-                if (controller.$viewValue) {
+                if (controller.$modelValue instanceof Date) {
+                    el.datepicker('setDate', controller.$modelValue);
+                } else if (controller.$modelValue) {
                     var dt = new Date(controller.$viewValue.split(/\-|\s/));
-                    element.val(dt.toLocaleDateString('pt-br'));
+                    el.datepicker('setDate', dt);
                 }
             };
 
-            element.on('change', function (v) {
-                var val = $(this).val();
-                controller.$viewValue = new Date().toLocaleString();
+            el.on('change', function() {
+                var s = el.val();
+                if (s.length === 5) {
+                    var dt = new Date();
+                    el.datepicker('setDate', s + '/' + dt.getFullYear().toString());
+                }
             });
 
         }

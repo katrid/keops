@@ -217,19 +217,28 @@
 	 		
 		var commands = {
 					
-			'clientes' : function() { $('nav a[href="#/content/show/myerp/cliente/"]').trigger("click"); },
-			'cliente' : function() { $('nav a[href="#/content/show/myerp/cliente/"]').trigger("click"); },
+			'clientes' : function() { window.location.href = '#/content/show/myerp/cliente/'; },
+			'cliente' : function() { window.location.href = '#/content/show/myerp/cliente/'; },
+			'venda' : function() { window.location.href = '#/content/show/myerp/venda/'; },
+			'vendas' : function() { window.location.href = '#/content/show/myerp/venda/'; },
+			'produtos' : function() { window.location.href = '#/content/show/myerp/produto/'; },
+			'produto' : function() { window.location.href = '#/content/show/myerp/produto/'; },
+			'serviço' : function() { window.location.href = '#/content/show/myerp/servico/'; },
+			'serviços' : function() { window.location.href = '#/content/show/myerp/servico/'; },
+			'buscar' : function() {
+				$('#search-fld').focus();
+			},
 			'voltar' :  function() { history.back(1); },
 			'rolar pra cima' : function () { $('html, body').animate({ scrollTop: 0 }, 100); },
 			'rolar pra baixo' : function () { $('html, body').animate({ scrollTop: $(document).height() }, 100);},
-			'esconder navegação' : function() {
+			'mostrar navegação' : function() {
 				if ($.root_.hasClass("container") && !$.root_.hasClass("menu-on-top")){
 					$('span.minifyme').trigger("click");
 				} else {
 					$('#hide-menu > span > a').trigger("click"); 
 				}
 			},
-			'mostrar navegação' : function() {
+			'esconder navegação' : function() {
 				if ($.root_.hasClass("container") && !$.root_.hasClass("menu-on-top")){
 					$('span.minifyme').trigger("click");
 				} else {

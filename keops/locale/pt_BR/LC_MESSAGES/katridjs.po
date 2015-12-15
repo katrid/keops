@@ -20,6 +20,9 @@ msgstr ""
 msgid "Create"
 msgstr "Criar"
 
+msgid "Add"
+msgstr "Adicionar"
+
 msgid "Delete"
 msgstr "Excluir"
 
