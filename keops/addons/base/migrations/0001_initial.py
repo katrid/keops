@@ -5,6 +5,7 @@ import katrid.contrib.auth.models
 import katrid.core.validators
 from katrid.db import migrations, models
 import katrid.db.models.deletion
+import katrid.db.models.virtual
 import katrid.utils.timezone
 
 
@@ -60,9 +61,9 @@ class Migration(migrations.Migration):
                 ('owner', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.User', verbose_name='owner')),
             ],
             options={
-                'db_table': 'base_attachment',
-                'verbose_name_plural': 'attachments',
                 'verbose_name': 'attachment',
+                'verbose_name_plural': 'attachments',
+                'db_table': 'base_attachment',
             },
         ),
         migrations.CreateModel(
@@ -91,7 +92,7 @@ class Migration(migrations.Migration):
                 ('file_value', models.BinaryField(blank=True, null=True)),
                 ('ref_value', models.PositiveIntegerField(blank=True, null=True)),
                 ('int_value', models.BigIntegerField(blank=True, null=True)),
-                ('decimal_value', models.MoneyField(blank=True, decimal_places=2, max_digits=18, null=True)),
+                ('decimal_value', katrid.db.models.virtual.MoneyField(blank=True, decimal_places=2, default=0, max_digits=18, null=True)),
                 ('float_value', models.FloatField(blank=True, null=True)),
                 ('date_value', models.DateTimeField(blank=True, null=True)),
                 ('attribute', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.Attribute')),
@@ -109,9 +110,9 @@ class Migration(migrations.Migration):
                 ('parent', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.Category', verbose_name='parent category')),
             ],
             options={
-                'db_table': 'base_contact_category',
-                'verbose_name_plural': 'Contact Categories',
                 'verbose_name': 'Contact Category',
+                'verbose_name_plural': 'Contact Categories',
+                'db_table': 'base_contact_category',
             },
         ),
         migrations.CreateModel(
@@ -125,9 +126,9 @@ class Migration(migrations.Migration):
                 ('report_footer', models.TextField(blank=True, null=True, verbose_name='report footer')),
             ],
             options={
-                'db_table': 'base_company',
-                'verbose_name_plural': 'companies',
                 'verbose_name': 'company',
+                'verbose_name_plural': 'companies',
+                'db_table': 'base_company',
             },
         ),
         migrations.CreateModel(
@@ -151,8 +152,8 @@ class Migration(migrations.Migration):
                 ('value', models.TextField(blank=True, null=True, verbose_name='value')),
             ],
             options={
-                'db_table': 'base_config_parameter',
                 'verbose_name': 'config',
+                'db_table': 'base_config_parameter',
             },
         ),
         migrations.CreateModel(
@@ -181,8 +182,8 @@ class Migration(migrations.Migration):
                 ('company', models.ForeignKey(blank=True, default=False, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.Company')),
             ],
             options={
-                'db_table': 'base_contact',
                 'verbose_name': 'contact',
+                'db_table': 'base_contact',
             },
         ),
         migrations.CreateModel(
@@ -194,8 +195,8 @@ class Migration(migrations.Migration):
                 ('phone_code', models.CharField(blank=True, max_length=10, null=True, verbose_name='phone code')),
             ],
             options={
-                'verbose_name_plural': 'countries',
                 'verbose_name': 'country',
+                'verbose_name_plural': 'countries',
             },
         ),
         migrations.CreateModel(
@@ -227,9 +228,9 @@ class Migration(migrations.Migration):
                 ('user', models.ForeignKey(blank=True, help_text='Leave blank for all users', null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.User', verbose_name='user')),
             ],
             options={
-                'db_table': 'base_default',
-                'verbose_name_plural': 'default field value',
                 'verbose_name': 'default field value',
+                'verbose_name_plural': 'default field value',
+                'db_table': 'base_default',
             },
         ),
         migrations.CreateModel(
@@ -287,9 +288,9 @@ class Migration(migrations.Migration):
                 ('country', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.Country', verbose_name='country')),
             ],
             options={
-                'db_table': 'base_state',
-                'verbose_name': 'state',
                 'ordering': ('name',),
+                'verbose_name': 'state',
+                'db_table': 'base_state',
             },
         ),
         migrations.CreateModel(
@@ -303,8 +304,8 @@ class Migration(migrations.Migration):
                 ('language', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.Language', verbose_name='language')),
             ],
             options={
-                'verbose_name_plural': 'translations',
                 'verbose_name': 'translation',
+                'verbose_name_plural': 'translations',
             },
         ),
         migrations.CreateModel(
@@ -329,9 +330,9 @@ class Migration(migrations.Migration):
                 ('model', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='contenttypes.ContentType', verbose_name='model')),
             ],
             options={
-                'db_table': 'base_field',
-                'verbose_name_plural': 'fields',
                 'verbose_name': 'field',
+                'verbose_name_plural': 'fields',
+                'db_table': 'base_field',
             },
             bases=('base.element',),
         ),
@@ -460,9 +461,8 @@ class Migration(migrations.Migration):
                 ('context', models.TextField(blank=True, null=True, verbose_name='context')),
             ],
             options={
-                'field_groups': {'list_fields': ('name', 'short_description', 'description', 'action_type')},
-                'verbose_name_plural': 'actions',
                 'verbose_name': 'action',
+                'verbose_name_plural': 'actions',
             },
             bases=('base.moduleelement',),
         ),
@@ -476,9 +476,9 @@ class Migration(migrations.Migration):
                 ('sequence', models.PositiveIntegerField(blank=True, db_index=True, default=0, help_text='menu item sequence', null=True, verbose_name='sequence')),
             ],
             options={
+                'ordering': ('sequence', 'id'),
                 'verbose_name': 'menu item',
                 'verbose_name_plural': 'menu items',
-                'ordering': ('sequence', 'id'),
             },
             bases=('base.moduleelement',),
         ),
@@ -500,17 +500,16 @@ class Migration(migrations.Migration):
             fields=[
                 ('moduleelement_ptr', models.OneToOneField(auto_created=True, on_delete=katrid.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='base.ModuleElement')),
                 ('name', models.CharField(blank=True, max_length=128, null=True, unique=True, verbose_name='name')),
-                ('sequence', models.SmallIntegerField(blank=True, default=32, null=True, verbose_name='sequence')),
-                ('description', models.CharField(blank=True, max_length=256, null=True, verbose_name='description')),
-                ('view_format', models.CharField(blank=True, choices=[('django', 'Django template'), ('mako', 'Mako template'), ('html', 'HTML'), ('xml', 'XML'), ('json', 'JSON'), ('yaml', 'YAML')], default='django', max_length=16, null=True, verbose_name='format')),
+                ('priority', models.SmallIntegerField(blank=True, default=32, null=True, verbose_name='priority')),
+                ('description', models.TextField(blank=True, null=True, verbose_name='description')),
                 ('view_type', models.CharField(blank=True, default='tree', max_length=16, null=True, verbose_name='type')),
                 ('definition', models.TextField(blank=True, null=True, verbose_name='definition')),
                 ('ancestor', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.View', verbose_name='ancestor view')),
-                ('content_type', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='contenttypes.ContentType', verbose_name='content type')),
+                ('content_type', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='contenttypes.ContentType', verbose_name='model')),
             ],
             options={
-                'verbose_name_plural': 'views',
                 'verbose_name': 'view',
+                'verbose_name_plural': 'views',
             },
             bases=('base.moduleelement',),
         ),
@@ -524,7 +523,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='state',
-            unique_together=set([('country', 'code'), ('country', 'name')]),
+            unique_together=set([('country', 'name'), ('country', 'code')]),
         ),
         migrations.AddField(
             model_name='moduleelement',
@@ -548,9 +547,9 @@ class Migration(migrations.Migration):
                 ('report', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.Report', verbose_name='report')),
             ],
             options={
-                'db_table': 'base_report_action',
-                'verbose_name_plural': 'report actions',
                 'verbose_name': 'report action',
+                'verbose_name_plural': 'report actions',
+                'db_table': 'base_report_action',
             },
             bases=('base.action',),
         ),
@@ -562,9 +561,9 @@ class Migration(migrations.Migration):
                 ('target', models.CharField(blank=True, max_length=32, null=True, verbose_name='target')),
             ],
             options={
-                'db_table': 'base_url_action',
-                'verbose_name_plural': 'URL actions',
                 'verbose_name': 'URL action',
+                'verbose_name_plural': 'URL actions',
+                'db_table': 'base_url_action',
             },
             bases=('base.action',),
         ),
@@ -580,10 +579,9 @@ class Migration(migrations.Migration):
                 ('view', models.ForeignKey(blank=True, help_text='View to show', null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.View', verbose_name='view')),
             ],
             options={
-                'db_table': 'base_view_action',
-                'field_groups': {'list_fields': ('name', 'short_description', 'description', 'view', 'model')},
-                'verbose_name_plural': 'form actions',
                 'verbose_name': 'form action',
+                'verbose_name_plural': 'form actions',
+                'db_table': 'base_view_action',
             },
             bases=('base.action',),
         ),
