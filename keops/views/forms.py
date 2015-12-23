@@ -78,12 +78,12 @@ class BaseView(object):
 class Form(BaseView):
     _field_stack = []
 
-    def read_node(self, el, parent_field=None, form=None):
+    def read_node(self, el, parent_field=None, form=None, **kwargs):
         f = None
         attrs = None
+        field = el.attrib
         if el.tag == 'field':
             if 'name' in el.attrib:
-                field = el.attrib
                 #if isinstance(parent_field, models.OneToManyField):
                 #    if not hasattr(parent_field, '_admin'):
                 #        parent_field._admin = self.form.admin_site.get_admin(parent_field.related.related_model)
@@ -107,11 +107,16 @@ class Form(BaseView):
                     self._grid_field(el, f, attrs)
                 elif isinstance(f, models.OneToManyField):
                     el.tag = 'formset'
-                    print(attrs)
+
+                if 'ngmodel_suffix' in kwargs and 'ng-model' not in field:
+                    field['ngModel'] = kwargs['ngmodel_suffix'] + field['name']
             else:
                 el.attrib.setdefault('type', 'static')
         elif el.tag == 'label':
             el.attrib.setdefault('class', 'label')
+        elif el.tag == 'formset':
+            if not len(el):
+                return
         elif el.tag == 'remove-button':
             el.tag = 'button'
             el.attrib['class'] = 'btn btn-default pull-right btn-sm text-danger margin-right-5'
@@ -120,9 +125,21 @@ class Form(BaseView):
             el.append(et.Element('span', {'class': 'glyphicon glyphicon-trash'}))
         if f is None:
             f = parent_field
-        if el.tag != 'field':
+        if el.tag == 'formset' and 'name' in el.attrib:
+            field = el.attrib
+            f = self.form._meta.model._meta._has_field(el.attrib['name'])
+            self._formset_field(el, f, attrs)
+        elif el.tag != 'field':
             for child in el:
                 self.read_node(child, f, form=form)
+
+    def _formset_field(self, el, field, attrs):
+        field_name = str(field).lower()
+        rel = field.related
+        form = get_model_form(rel.related_model, fields='__all__')
+        el.attrib.setdefault('content-field', field_name)
+        for child in el:
+            self.read_node(child, form=form, ngmodel_suffix='item.')
 
     def _grid_field(self, el, field, attrs):
         field_name = str(field).lower()

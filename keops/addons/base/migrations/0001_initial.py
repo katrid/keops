@@ -5,7 +5,6 @@ import katrid.contrib.auth.models
 import katrid.core.validators
 from katrid.db import migrations, models
 import katrid.db.models.deletion
-import katrid.db.models.virtual
 import katrid.utils.timezone
 
 
@@ -92,7 +91,7 @@ class Migration(migrations.Migration):
                 ('file_value', models.BinaryField(blank=True, null=True)),
                 ('ref_value', models.PositiveIntegerField(blank=True, null=True)),
                 ('int_value', models.BigIntegerField(blank=True, null=True)),
-                ('decimal_value', katrid.db.models.virtual.MoneyField(blank=True, decimal_places=2, default=0, max_digits=18, null=True)),
+                ('decimal_value', models.MoneyField(blank=True, decimal_places=2, default=0, max_digits=18, null=True)),
                 ('float_value', models.FloatField(blank=True, null=True)),
                 ('date_value', models.DateTimeField(blank=True, null=True)),
                 ('attribute', models.ForeignKey(blank=True, null=True, on_delete=katrid.db.models.deletion.CASCADE, to='base.Attribute')),

@@ -1,5 +1,8 @@
 import json
+from itertools import chain
 from urllib.parse import urlencode
+from katrid.db import models
+from katrid.forms.models import inlineformset_factory
 from katrid.shortcuts import render, Http404
 from katrid.conf import settings
 from katrid.utils.translation import gettext as _
@@ -63,9 +66,8 @@ class ModelFormMixin(FormMixin):
         if self.is_valid():
             self.save()
             return {'success': True, 'message': _('Data successfully saved!')}
-        else:
-            details = str(self.errors)
-            return {'success': False, 'message': _('Errors found while saving data!'), 'details': details}
+        details = str(self.errors)
+        return {'success': False, 'message': _('Errors found while saving data!'), 'details': details}
 
     def list_queryset(self, request):
         return self.Meta.model.objects.all()
@@ -81,6 +83,8 @@ class ModelForm(katrid.forms.ModelForm, ModelFormMixin):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request')
         data = kwargs.get('data')
+        self._data = data
+        print(data)
         if self.request:
             pk = data.get('id', self.request.GET.get('id'))
             if pk:

@@ -112,7 +112,7 @@ label.nav-recno-info {
 }
 
 .data-grid {
-  height: 150px;
+  min-height: 100px;
   overflow-y: auto;
 }
 
@@ -186,6 +186,30 @@ label.nav-recno-info {
 .bold-field {
   font-weight: 600;
 }
+
+.animation {
+  -webkit-transition: 400ms;
+  -moz-transition: 400ms;
+  -ms-transition: 400ms;
+  -o-transition: 400ms;
+  transition: 400ms;
+}
+.animation.ng-enter {
+  opacity: 0;
+}
+
+.animation.ng-leave {
+  opacity: 1;
+}
+
+.animation.ng-enter.ng-enter-active {
+  opacity: 1;
+}
+
+.animation.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+
 
 
 

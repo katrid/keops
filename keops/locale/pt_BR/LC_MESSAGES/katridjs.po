@@ -26,6 +26,12 @@ msgstr "Adicionar"
 msgid "Delete"
 msgstr "Excluir"
 
+msgid "Save"
+msgstr "Salvar"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
 msgid "Actions"
 msgstr "Ações"
 
