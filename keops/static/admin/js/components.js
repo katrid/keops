@@ -579,6 +579,11 @@ ui.directive('grid', function ($compile, $http) {
         modal.modal();
       };
 
+      var refreshCounters = function () {
+        var n = scope.$parent._counters['form.data.' + gname];
+        if (n) for (var i=0;i< n.length;i++) n[i]();
+      };
+
       scope.submitItem = function () {
         var modal = el.find('.modal').last();
         var data, cols, row;
@@ -611,18 +616,23 @@ ui.directive('grid', function ($compile, $http) {
         modal.modal('hide');
 
         scope.$parent.form.data[gname] = scope.items;
-
-        var n = scope.$parent._counters['form.data.' + gname];
-        if (n) for (var i=0;i< n.length;i++) n[i]();
+        refreshCounters();
       };
 
       scope.deleteItem = function (idx) {
-        var data = scope.items[idx];
-        var row = data.__row__;
-        if (row && row.id) {
-          row.op = 'delete';
-          parentForm.addSubItem(row);
-        } else parentForm.removeSubItem(row);
+        if (confirm(katrid.gettext('Confirm delete record?'))) {
+          var data = scope.items[idx];
+          var row = data.__row__;
+          if (row && row.id) {
+            row.op = 'delete';
+            parentForm.addSubItem(row);
+          } else if (data.id) {
+            if (!angular.isDefined(row)) row = { id: data.id, name: gname, op: 'delete' };
+            parentForm.addSubItem(row);
+          } else parentForm.removeSubItem(row);
+          scope.items.splice(idx, 1);
+          refreshCounters();
+        }
       };
 
       scope.showDialog = function () {
@@ -668,6 +678,7 @@ ui.directive('grid', function ($compile, $http) {
             scope.$parent.form.data[attrs['name']] = scope.items;
           }.bind(true));
         } else {
+          console.log('init grid');
           scope.items = [];
           if (scope.$parent.form.data) scope.$parent.form.data[attrs['name']] = scope.items;
         }
@@ -724,6 +735,8 @@ ui.directive('grid', function ($compile, $http) {
         td += '<td ' + css + ' ng-click="gridItemClick(item)" ng-bind="' + modelField + '"></td>';
         fields.push(nm);
       }
+      th += '<th class="data-grid-col-remove"><span></span></th>';
+      td += '<td class="data-grid-col-remove" ng-click="deleteItem($index)" title="' + katrid.gettext('Remove item') + '"><i class="fa fa-remove"></i></td>';
 
       var gridItems = 'item in items';
       formTempl = tElement.find('sub-form').prop('outerHTML');
@@ -733,7 +746,7 @@ ui.directive('grid', function ($compile, $http) {
           '<thead>' +
           '<tr>' + th +
           '</tr></thead>' +
-          '<tfoot><tr><td colspan="' + cols.length + '">' +
+          '<tfoot><tr><td colspan="' + (cols.length + 1) + '">' +
           '<button type="button" class="btn btn-default btn-xs" ng-click="gridAddItem()">' + katrid.gettext('Add') + '</button>' +
           '</td></tr></tfoot>' +
           '<tbody>' +

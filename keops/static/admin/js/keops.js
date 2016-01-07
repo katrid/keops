@@ -246,6 +246,7 @@ keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
 
   Form.prototype.removeSubItem = function (obj) {
     var cf = obj.name;
+    if (!this.subItems[cf]) this.subItems[cf] = [];
     var s = this.subItems[cf];
     if (s && (s.indexOf(obj))) s.splice(s.indexOf(obj), 1);
   };
@@ -613,6 +614,7 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
     var subItems = this.form.subItems;
 
     var collect = function (obj) {
+      if (obj.op === 'delete') return obj;
       var r = {};
       for (var i in obj) {
         if (obj.hasOwnProperty(i)) {
@@ -647,6 +649,7 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
     var data = this.collectData(true, true);
     var postUrl = '/api/content/' + this.form.model.replace('.', '/') + '/';
     var params = {};
+    console.log(data);
     return $http({
       method: 'POST',
       url: postUrl,

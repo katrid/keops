@@ -5,7 +5,6 @@ from katrid.apps import apps
 from katrid.core.management import call_command
 from katrid.core.management.base import BaseCommand, CommandError
 from katrid.db import DEFAULT_DB_ALIAS
-from keops.db import scripts
 from keops.apps import AppConfig
 
 
@@ -34,7 +33,8 @@ class Command(BaseCommand):
         if sqls:
             for sql in sqls:
                 try:
-                    scripts.runfile(sql, db)
+                    #scripts.runfile(sql, db)
+                    pass
                 except Exception as e:
                     sys.stderr.write('Couldn\'t execute "%s" SQL file.' % sql)
                     import traceback

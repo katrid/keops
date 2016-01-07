@@ -224,6 +224,19 @@ td.total-summary-separator span {
   font-size: 18px;
 }
 
+.data-grid-col-remove {
+  width: 20px;
+  text-align: center;
+}
+
+td.data-grid-col-remove {
+  padding: 0 !important;
+}
+
+td.data-grid-col-remove a {
+  display: block;
+}
+
 
 
 .animation {
