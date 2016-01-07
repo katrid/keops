@@ -14,13 +14,19 @@ form section {
     margin-bottom: 1px;
 }
 
-input.ng-invalid.ng-dirty, select.ng-invalid.ng-dirty {
+input.ng-invalid, select.ng-invalid {
     background: #fff0f0;
     border-color: #A90329;
 }
 
+.select2-container.ng-invalid-required .select2-choice {
+    background: #fff0f0;
+    border: 1px solid #A90329;
+}
+
 textarea.form-control {
     resize: none;
+    height: 85px;
 }
 
 .view-toolbar {
@@ -187,10 +193,42 @@ label.nav-recno-info {
   font-weight: 600;
 }
 
+/* table column styles */
+
+th.date, td.date {
+  width: 100px;
+}
+
+th.datetime, td.datetime {
+  width: 150px;
+}
+
+th.decimal, td.decimal {
+  width: 120px;
+  text-align: right;
+}
+.hasDatepicker {
+    position: relative;
+    z-index: 9999;
+}
+
+table.total-summary {
+  width: 100%;
+}
+
+td.total-summary-separator {
+  border-top: thin solid #aeaead;
+}
+
+td.total-summary-separator span {
+  font-size: 18px;
+}
+
+
+
 .animation {
   -webkit-transition: 400ms;
   -moz-transition: 400ms;
-  -ms-transition: 400ms;
   -o-transition: 400ms;
   transition: 400ms;
 }

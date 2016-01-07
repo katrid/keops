@@ -5,6 +5,7 @@ from katrid.db import models
 
 WIDGET_TYPES = {
     widgets.Input: 'text',
+    widgets.NumberInput: 'int',
     widgets.Textarea: 'textarea',
     widgets.Select: 'select',
     widgets.DateInput: 'date',
@@ -25,6 +26,7 @@ FIELD_LENGTH = (
 
 FIELD_TYPE_LENGTH = {
     'date': '2',
+    'datetime': '3',
     'lookup': '6',
     'decimal': '3',
     'int': '3',

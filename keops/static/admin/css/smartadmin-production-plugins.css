@@ -214,7 +214,7 @@
 }
 .md-editor > textarea {
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-  font-size: 13px;
+  font-size: 12px;
   outline: 0;
   outline: thin dotted  \9;
   /* IE6-9 */
@@ -494,7 +494,7 @@
   position: relative;
 }
 .modal-open .bootstrap-timepicker-widget.dropdown-menu.open {
-  z-index: 1051 !important;
+  z-index: 100000 !important;
 }
 .bootstrap-timepicker.pull-right .bootstrap-timepicker-widget.dropdown-menu {
   left: auto;
@@ -5663,13 +5663,13 @@ Version: 3.4.5 Timestamp: Mon Nov  4 08:22:42 PST 2013
 }
 .select2-container .select2-choice {
   display: block;
-  height: 32px;
+  height: 31px;
   padding: 2px 0 0 8px;
   overflow: hidden;
   position: relative;
   border: 1px solid #ccc;
   white-space: nowrap;
-  line-height: 26px;
+  line-height: 28px;
   color: #444;
   text-decoration: none;
   background-clip: padding-box;
@@ -5726,7 +5726,7 @@ Version: 3.4.5 Timestamp: Mon Nov  4 08:22:42 PST 2013
   height: auto;
   width: auto;
   opacity: 0;
-  z-index: 9998;
+  z-index: 99999;
   /* styles required for IE to work */
   background: #fff;
   filter: alpha(opacity=0);
@@ -5735,7 +5735,7 @@ Version: 3.4.5 Timestamp: Mon Nov  4 08:22:42 PST 2013
   margin-top: -1px;
   width: 100%;
   position: absolute;
-  z-index: 9999;
+  z-index: 100000;
   top: 100%;
   background: #fff;
   color: #000;
@@ -5807,7 +5807,7 @@ Version: 3.4.5 Timestamp: Mon Nov  4 08:22:42 PST 2013
   padding-left: 4px;
   padding-right: 4px;
   position: relative;
-  z-index: 10000;
+  z-index: 100000;
   white-space: nowrap;
 }
 .select2-search input {
@@ -6213,7 +6213,7 @@ disabled look for disabled choices in the results dropdown
 }
 .ui-chatbox-titlebar > span {
   font-weight: normal;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 36px;
   margin-left: 10px;
   overflow: hidden;
@@ -6737,7 +6737,7 @@ a.editable-click.editable-disabled:hover {
 }
 .editable-input .datepicker th.next,
 .editable-input .datepicker th.prev {
-  font-size: 19.5px;
+  font-size: 18px;
 }
 .editable-input .datepicker thead tr:first-child th {
   cursor: pointer;
@@ -7148,7 +7148,7 @@ a.editable-click.editable-disabled:hover {
 }
 .jqstooltip .jqsfield {
   font-family: "Segoe UI", "Open Sans", Calibri, Candara, Arial, sans-serif;
-  font-size: 11px;
+  font-size: 10px;
 }
 #sparks {
   display: block;

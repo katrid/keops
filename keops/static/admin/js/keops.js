@@ -6,7 +6,11 @@ var getval = function (val) {
   else return val;
 };
 
-var keopsApp = angular.module('keopsApp', ['ngRoute', 'ngCookies', 'ngSanitize', 'ui.erp', 'ui.bootstrap'], function ($routeProvider, $locationProvider, $httpProvider) {
+var extraMods = [];
+
+if (window.ngKeopsExtraModules) extraMods = window.ngKeopsExtraModules;
+
+var keopsApp = angular.module('keopsApp', ['ngRoute', 'ngCookies', 'ngSanitize', 'ui.validate', 'ui.erp', 'ui.bootstrap', 'ui.mask'].concat(extraMods), function ($routeProvider, $locationProvider, $httpProvider) {
   $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 }).config(['$routeProvider', '$locationProvider',
   function ($routeProvider, $locationProvider) {
@@ -58,6 +62,7 @@ keopsApp.factory('List', function ($http, SharedData, $location) {
     this.total = null;
     this.loaded = false;
     this.index = 0;
+    this.selection = 0;
     this.selItems = [];
     SharedData.list = this;
   };
@@ -106,22 +111,24 @@ keopsApp.factory('List', function ($http, SharedData, $location) {
       var delItems = [];
       var selItems = this.selItems;
       var items = this.items;
+      var self = this;
       for (var i = 0; i < this.selItems.length; i++) {
         var row = this.selItems[i];
-        delItems.push(row.pk);
+        delItems.push(row.id);
       }
-      var params = {model: this.model, pk: delItems.join()};
+      var params = {model: this.model, id: delItems};
       $http({
-        url: '/db/destroy/',
+        url: '/api/content/' + this.model.replace('.', '/') + '/',
         method: 'DELETE',
         params: params
       }).success(function (data) {
         if (data.success) {
           SharedData.addAlert("success", data.message);
-          for (var i = 0; i < selItems.length; i++) {
+          for (var i=0;i<selItems.length;i++) {
             items.splice(items.indexOf(selItems[i]), 1);
           }
           selItems.length = 0;
+          self.selection = 0;
         }
       });
     }
@@ -147,7 +154,6 @@ keopsApp.controller('AppController', function ($scope, $rootScope, $location, Sh
 
 keopsApp.controller('ListController', function ($scope, $location, List) {
   $scope.list = new List();
-  $scope.selection = 0;
 
   $scope.itemClick = function (url, search, index) {
     window.location.href = $scope.controllerUrl + url;
@@ -162,7 +168,7 @@ keopsApp.controller('ListController', function ($scope, $location, List) {
       $(this).checked = true;
       $(this).prop('checked', c);
     });
-    $scope.selection = $('.action-select:checked').length;
+    $scope.list.selection = $('.action-select:checked').length;
     if (c)
       $scope.list.selItems = $scope.list.items;
     else
@@ -178,7 +184,7 @@ keopsApp.controller('ListController', function ($scope, $location, List) {
         $scope.list.selItems.splice(idx, 1);
     }
     $('#action-toggle').prop('checked', $('.action-select:not(:checked)').length === 0);
-    $scope.selection = $('.action-select:checked').length;
+    $scope.list.selection = $('.action-select:checked').length;
   };
 
   $scope.goto = function (url, target) {
@@ -205,6 +211,7 @@ keopsApp.controller('ListController', function ($scope, $location, List) {
 // Form factory/controller
 keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
   var Form = function () {
+    this.data = {};
     this.item = {};
     this.subItems = {};
     this.children = [];
@@ -441,6 +448,7 @@ keopsApp.factory('Form', function ($http, SharedData, $location, $routeParams) {
 
 keopsApp.controller('FormController', function ($scope, $http, Form, $location, $element, $modal, $timeout, $sce, SharedData) {
   $scope.form = new Form();
+  $scope._counters = {};
   $scope.form.scope = $scope;
   $scope.form.element = $element;
 
@@ -465,15 +473,17 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
     $location.path(url).search(search).replace();
   };
 
-  $scope.fieldChangeCallback = function (field) {
-    var v = $scope.form.item[field];
+  $scope.fieldChangeNotification = function (field) {
+    var data = this.collectData(false, false);
     $http({
-      method: 'GET',
-      url: '/db/field/change',
-      params: {model: $scope.form.model, field: field, value: v}
+      method: 'POST',
+      url: '/api/change/' + $scope.form.model.replace('.', '/') + '/',
+      params: {field: field},
+      headers: {'Content-Type': 'application/json'},
+      data: data
     }).
     success(function (data) {
-      jQuery.extend($scope.form.item, data.values);
+      //jQuery.extend($scope.form.item, data.values);
     });
   };
 
@@ -543,10 +553,11 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
 
   $scope.sum = function (item, attr) {
     var r = 0;
-    for (var i in item) {
-      if (attr) r += parseFloat(item[i][attr]);
-      else r += item[i];
-    }
+    if (item)
+      for (var i=0;i<item.length;i++) {
+        var obj = item[i];
+        r += obj[attr] || 0;
+      }
     return r;
   };
 
@@ -554,8 +565,9 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
     return obj.__state__ !== 'deleted';
   };
 
-  $scope.submit = function () {
+  $scope.collectData = function (dirtyOnly, validOnly) {
     var form = this.dataForm;
+    if (validOnly && !form.$valid) return;
     var data = {};
 
     // formset items
@@ -588,7 +600,7 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
 
     for (var i in this.form.data) {
       var field = form[i];
-      if (field && field.$dirty) data[i] = getval(field.$modelValue);
+      if (field && (!dirtyOnly || field.$dirty)) data[i] = getval(field.$modelValue);
       // check children (formsets)
       else if (this.form.children.indexOf(i) > -1) {
         s = getSubItemObj(this, i);
@@ -600,19 +612,41 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
 
     var subItems = this.form.subItems;
 
+    var collect = function (obj) {
+      var r = {};
+      for (var i in obj) {
+        if (obj.hasOwnProperty(i)) {
+          if (i[0] !== '_') r[i] = obj[i];
+        }
+      }
+      if (obj._modifiedFields.length) {
+        var data = {};
+        for (var i in obj._modifiedFields) {
+          var s = obj._modifiedFields[i];
+          data[s] = getval(obj.data[s]);
+        }
+        r.data = data;
+        return r;
+      }
+    };
+
     for (i in subItems) {
       var rows = subItems[i];
       var items = [];
       for (var x=0;x<rows.length;x++) {
-        items.push(rows[x]);
+        var childObj = collect(rows[x]);
+        if (childObj) items.push(childObj);
       }
-      if (items.length) data[i] = {items: items};
+      if (items.length) data[i] = items;
     }
+    if (this.form.pk) data['id'] = this.form.pk;
+    return [data];
+  };
 
+  $scope.submit = function () {
+    var data = this.collectData(true, true);
     var postUrl = '/api/content/' + this.form.model.replace('.', '/') + '/';
     var params = {};
-    if (this.form.pk) params['id'] = this.form.pk;
-    console.log(data);
     return $http({
       method: 'POST',
       url: postUrl,
@@ -620,8 +654,7 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
       headers: {'Content-Type': 'application/json'},
       params: params
     }).success(function (data) {
-      console.log('success!!');
-      console.log(data);
+      if (data.success) $scope.showList();
     });
     /*        var i, item;
      var form = this.dataForm;

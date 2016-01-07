@@ -41,8 +41,8 @@ msgstr "Busca Rápida"
 msgid "1 Item selected."
 msgstr "1 Item selecionado."
 
-msgid "{{ selection }} Items selected."
-msgstr "{{ selection }} Itens selecionados."
+msgid "{{ list.selection }} Items selected."
+msgstr "{{ list.selection }} Itens selecionados."
 
 msgid "No selected data."
 msgstr "Nenhum item selecionado."

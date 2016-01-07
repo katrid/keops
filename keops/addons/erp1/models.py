@@ -47,3 +47,10 @@ class ClienteProduto(models.Model):
 
     def __str__(self):
         return '%s - %s' % (str(self.cliente), str(self.produto))
+
+
+class Cidade2(Cidade):
+    campo2 = models.CharField(max_length=100)
+
+    class Meta:
+        extension = True

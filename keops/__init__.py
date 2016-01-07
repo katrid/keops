@@ -1,4 +1,3 @@
-from . import db
 from .import addons
 
 

@@ -2,17 +2,21 @@ var ui = angular.module('ui.erp', []);
 
 var _keopsWidgetCount = 0;
 
+var getFormat = function (fmtName) {
+  return katrid.get_format(fmtName);
+};
+
 ui.directive('field', function ($compile) {
   return {
     restrict: 'E',
     replace: true,
-    transclude: false,
     template: function (element, attrs) {
       var html = pre = pos = cols = icon = cls = fieldAttrs = contentField = nm = '';
       var lbl = nolabel = null;
       var tp = 'text';
       _keopsWidgetCount++;
       var widgetId = 'k-input-' + _keopsWidgetCount.toString();
+
       for (var attr in attrs) {
         if (attr === 'label') lbl = attrs.label;
         else if (attr === 'cols') cols = attrs.cols;
@@ -22,7 +26,7 @@ ui.directive('field', function ($compile) {
           delete attrs.nolabel;
         }
         else if (attr === 'icon') icon = '<i class="' + attrs.icon + '"></i>';
-        else if (attr === 'mask') fieldAttrs += ' ui-mask="' + attrs.mask + '"';
+        else if (attr === 'mask') fieldAttrs += ' ui-mask="' + attrs.mask + '" ui-mask-placeholder-char="space"';
         else if (attr === 'class') cls = attrs.class;
         else if (attr === 'ngShow') continue;
         else if (attr === 'ngmodel') {
@@ -30,11 +34,30 @@ ui.directive('field', function ($compile) {
           fieldAttrs += ' ng-model="' + nm + '"';
           delete attrs.ngmodel;
         }
+        else if (attr === 'ngServerChange') {
+          fieldAttrs += ' server-change="' + attrs[attr] + '"';
+          delete attrs.ngServerChange;
+        }
+        else if (attr === 'ngClientChange') {
+          fieldAttrs += ' ng-change="' + attrs[attr] + '"';
+          delete attrs.ngServerChange;
+        }
+        else if (attr === 'ngSubfieldChange') {
+          fieldAttrs += ' subfield-change="' + attrs[attr] + '"';
+          delete attrs.ngSubfieldChange;
+        }
+        else if (attr === 'ngCalcExpression') {
+          fieldAttrs += ' calc-expression="' + attrs[attr] + '"';
+          delete attrs.ngCalcExpression;
+        }
+        else if (attr.substring(0, 2) === 'ng') {
+          fieldAttrs += ' ng-' + attr.substring(2) + '="' + attrs[attr] + '"';
+          delete attrs[attr];
+        }
         else if (attr === 'contentField') {
           contentField = attrs.contentField;
           delete attrs.contentField;
         }
-        else if (attr === 'calcExpression') fieldAttrs += ' ng-bind="' + attrs.calcExpression + '"';
         else if ((attr === 'maxlength') && (attrs.mask)) {
           attrs.maxlength = '';
           fieldAttrs += ' ' + attr + '="' + attrs[attr] + '"';
@@ -96,7 +119,7 @@ ui.directive('field', function ($compile) {
       } else if (tp === 'date') {
         html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datepicker />';
       } else if (tp === 'datetime') {
-        html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datepicker ui-mask="99/99/9999 99:99"/>';
+        html = '<input class="form-control" type="text" ' + fieldAttrs + ' ui-datetimepicker />';
       } else if (tp === 'grid') {
         html = '<grid ' + fieldAttrs + ' label="' + attrs.label + '" content-field="' + contentField + '">' + elHtml + '</grid>';
       } else if (tp === 'static') {
@@ -115,6 +138,70 @@ ui.directive('field', function ($compile) {
   }
 });
 
+ui.directive('calcExpression', function () {
+  return {
+    restrict: 'A',
+    require: 'ngModel',
+    link: function(scope, el, attrs, ctrl) {
+      scope.$watch(attrs.calcExpression, function(newValue, oldValue) {
+        if (scope.form.data) scope.form.data[attrs.name] = newValue;
+      });
+    }
+  }
+});
+
+ui.directive('ngSum', function () {
+  return {
+    restrict: 'A',
+    priority: 11,
+    require: '?ngModel',
+    link: function (scope, el, attrs, ctrl) {
+      if (attrs.ngSum) {
+        var f = attrs.ngSum.split('.');
+        var s = f.pop();
+        f = f.join('.');
+        var fn = function() {
+          if (scope.form.data) {
+            var v = 0;
+            var lst = scope.$eval(f);
+            for (var i=0;i<scope.form.data[f.split('.').pop()].length;i++) v += parseFloat(lst[i][s]);
+            scope.form.data[attrs.name] = v;
+            if (ctrl) ctrl.$setDirty();
+          }
+        };
+        if (!scope._counters[f]) scope._counters[f] = [];
+        scope._counters[f].push(fn);
+      }
+    }
+  }
+});
+
+ui.directive('subfieldChange', function () {
+  return {
+    restrict: 'A',
+    require: 'ngModel',
+    priority: 10,
+    link: function(scope, element, attrs, ctrl) {
+      var parent = $(element).closest('[content-field]').attr('content-field');
+      ctrl.$viewChangeListeners.push(function() {
+        if (parent) scope.fieldChangeNotification(parent, attrs.subfieldChange);
+      });
+    }
+}});
+
+ui.directive('serverChange', function () {
+  return {
+    restrict: 'A',
+    require: 'ngModel',
+    priority: 11,
+    link: function(scope, element, attrs, ctrl) {
+      var nm = attrs.serverChange;
+      ctrl.$viewChangeListeners.push(function() {
+        if (nm.indexOf('.')) scope.$parent.fieldChangeNotification(attrs.serverChange);
+        else scope.fieldChangeNotification(attrs.serverChange);
+      });
+    }
+}});
 
 ui.directive('actions', function ($compile) {
   return {
@@ -180,20 +267,36 @@ ui.directive('contentObject', function ($compile) {
             continue;
           }
           var css = col.attr('class');
-          if (!css) css = '';
+          var tp = col.attr('type');
+          if (!css) css = tp ? ' class="' + tp + '"' : '';
           else css = ' class="' + css + '"';
           var lbl = col.attr('label');
           if (!lbl) lbl = '';
           th += '<th' + css + '>' + col.attr('label') + '</th>';
           var modelField = 'item.' + col.attr('name');
-          switch (col.attr('type')) {
+          var fmt = col.attr('format');
+
+          switch (tp) {
             case 'date':
-              modelField = '(' + modelField + '|date)';
+              modelField = '(' + modelField + '|';
+              if (fmt) modelField += fmt;
+              else modelField += "date:'shortDate'";
+              modelField += ')';
+              break;
+            case 'datetime':
+              modelField = '(' + modelField + '|';
+              if (fmt) modelField += fmt;
+              else modelField += "date:'short'";
+              modelField += ')';
               break;
             case 'decimal':
-              modelField = '(' + modelField + '|number)';
+              modelField = '(' + modelField + '|';
+              if (fmt) modelField += fmt;
+              else modelField += 'number:2';
+              modelField += ')';
               break;
           }
+
           td += '<td ' + css + ' ng-click="list.itemClick(item)" ng-bind="' + modelField + '"></td>';
         }
 
@@ -216,7 +319,7 @@ ui.directive('contentObject', function ($compile) {
             '</div>' +
             '<div class="col-sm-12 view-toolbar">' +
             '<button class="btn btn-danger view-toolbutton" ng-click="newItem()"> ' + katrid.gettext('Create') + ' </button>' +
-            '<button class="btn btn-default view-toolbutton" ng-show="selection" ng-click="list.deleteSelection();">' +
+            '<button class="btn btn-default view-toolbutton" ng-show="list.selection" ng-click="list.deleteSelection();">' +
             '<span class="glyphicon glyphicon-trash"></span> ' + katrid.gettext('Delete') + '</button>' +
               //actions.outerHTML +
             '<div class="btn-group view-toolbutton">' +
@@ -230,9 +333,9 @@ ui.directive('contentObject', function ($compile) {
             '<div>' +
             '<div role="content">' +
             '<div class="list-content">' +
-            '<div><div class="col-sm-6"><p class="row" ng-show="selection === 1">' + katrid.gettext('1 Item selected.') + '</p>' +
-            '<p class="row" ng-show="selection > 1">' + katrid.gettext('{{ selection }} Items selected.') + '</p>' +
-            '<p class="row" ng-show="!selection">' + katrid.gettext('No selected data.') + '</p></div>' +
+            '<div><div class="col-sm-6"><p class="row" ng-show="list.selection === 1">' + katrid.gettext('1 Item selected.') + '</p>' +
+            '<p class="row" ng-show="list.selection > 1">' + katrid.gettext('{{ list.selection }} Items selected.') + '</p>' +
+            '<p class="row" ng-show="!list.selection">' + katrid.gettext('No selected data.') + '</p></div>' +
             '<div class="pull-right" style="margin-top: -4px;">' +
             paginator +
             '</div>' +
@@ -303,29 +406,6 @@ var _subUpdate = function (dataSet, obj) {
 };
 
 
-ui.directive('subForm', function () {
-  var fields = [];
-  return {
-    restrict: 'E',
-    replace: true,
-    link: function (scope, el) {
-      scope.formFields = fields;
-    },
-    template: function (el, attrs) {
-      el.find('field').each(function () {
-        var field = $(this).attr('name');
-        if (field) fields.push(field);
-      });
-      var html = el.html();
-      var nm = attrs.contentField.split('.')[2];
-      html = '<div class="sub-form sub-form-hidden row" name="' + nm + '" content-field="' + attrs.contentField +
-          '">' + html + '</div>';
-      return html;
-    }
-  }
-});
-
-
 ui.directive('formset', function ($compile, $http) {
   var fields = [];
   return {
@@ -385,11 +465,79 @@ ui.directive('formset', function ($compile, $http) {
 });
 
 
+ui.directive('subForm', function ($http) {
+  var fields = [];
+  return {
+    restrict: 'E',
+    replace: true,
+    link: function (scope, el) {
+      scope.formFields = fields;
+      scope.parent = scope.$parent;
+
+      scope.collectData = function (dirtyOnly, validOnly) {
+        var form = this.subForm;
+        if (validOnly && !form.$valid) return;
+        var data = {};
+
+        // save data
+
+        for (var i=0;i<scope.formFields.length;i++) {
+          var fieldName = scope.formFields[i];
+          var field = form[fieldName];
+          if (field && (!dirtyOnly || field.$dirty)) data[fieldName] = getval(field.$modelValue);
+        }
+
+        if (scope.form.pk) data['id'] = scope.form.pk;
+        return [data];
+      };
+
+      scope.fieldChangeNotification = function(parent, field) {
+        //var data = this.collectData(false, false);
+        var data = scope.collectData(false, false);
+        var model = parent.split('.');
+        parent = model[2];
+        model = model[0] + '/' + model[1];
+        $http({
+          method: 'POST',
+          url: '/api/change/' + model + '/',
+          params: {field: parent, subfield: field},
+          headers: {'Content-Type': 'application/json'},
+          data: data
+        }).
+        success(function (data) {
+          if (data && data.data) {
+              var form = data.data[0];
+            for (var i in form) {
+              scope.form.data[i] = form[i];
+              if (scope.subForm) scope.subForm[i].$setDirty();
+            }
+          }
+          //jQuery.extend($scope.form.item, data.values);
+        });
+      };
+    },
+    template: function (el, attrs) {
+      el.find('field').each(function () {
+        var field = $(this).attr('name');
+        if (field) fields.push(field);
+      });
+      var html = el.html();
+      var nm = attrs.contentField.split('.')[2];
+      html = '<div class="sub-form sub-form-hidden row" name="' + nm + '" content-field="' + attrs.contentField +
+          '">' + html + '</div>';
+      return html;
+    }
+  }
+});
+
+
+
 ui.directive('grid', function ($compile, $http) {
   var formTempl, fields = [];
   return {
     restrict: 'E',
     replace: true,
+    priority: 0,
     scope: {},
     link: function (scope, el, attrs) {
       var contentField = attrs.contentField;
@@ -398,49 +546,81 @@ ui.directive('grid', function ($compile, $http) {
       var gname = attrs.contentField.split('.')[2];
       var parentForm = scope.$parent.form;
       scope.form = {};
+      scope._counters = [];
 
       scope.gridAddItem = function () {
+        scope.form.pk = null;
+        scope.form._data = {};
+        scope.form.data = {};
         var modal = scope.showDialog();
+        modal.modal();
+      };
+
+      scope.gridItemClick = function (obj) {
+        scope.form.pk = obj.id;
+        scope.form._data = obj;
+        var modal = scope.showDialog();
+        if (obj.__row__)
+          scope.form.data = obj.__row__.data;
+        else if (obj.id) {
+          var params = {id: obj.id, mode: 'subform', field: gname, fields: scope.formFields};
+          $http({
+            method: 'GET',
+            url: url,
+            params: params
+          }).success(function (data) {
+            scope.form.data = data.items[0];
+            if (!obj.__row__) {
+              obj.__row__ = { op: 'update', data: scope.form.data, name: gname, _modifiedFields: [] };
+              obj.__row__.id = scope.form.data.id;
+            }
+          }.bind(true));
+        }
         modal.modal();
       };
 
       scope.submitItem = function () {
         var modal = el.find('.modal').last();
+        var data, cols, row;
         if (scope.form._data && (scope.items.indexOf(scope.form._data) > -1)) {
-          var data = scope.form._data;
-          var cols = data.__row__.data;
-          var row = data.__row__;
+          data = scope.form._data;
+          cols = data.__row__.data;
+          row = data.__row__;
         } else {
-          var cols = {};
-          var row = {action: 'create', data: cols, name: gname};
-          var data = {__row__: row};
+          cols = {};
+          row = { op: 'create', data: cols, name: gname, _modifiedFields: [] };
+          data = { __row__: row };
         }
         for (var i=0;i<scope.formFields.length;i++) {
           var f = scope.formFields[i];
           if (f) {
             var v = scope.form.data[f];
+            var fld = scope.subForm[f];
+            if (fld.$dirty) row._modifiedFields.push(f);
             if (v instanceof Array) {
-              cols[f] = v[0];
+              cols[f] = v;
               data[f] = v[1];
             } else if ((typeof(v) === 'object') && v) {
               data[f] = v.text;
-              cols[f] = v.id;
-            } else {
               cols[f] = v;
-              data[f] = v;
-            }
+            } else cols[f] = data[f] = v;
           }
         }
         if (scope.items.indexOf(data) === -1) scope.items.push(data);
         parentForm.addSubItem(row);
         modal.modal('hide');
+
+        scope.$parent.form.data[gname] = scope.items;
+
+        var n = scope.$parent._counters['form.data.' + gname];
+        if (n) for (var i=0;i< n.length;i++) n[i]();
       };
 
       scope.deleteItem = function (idx) {
         var data = scope.items[idx];
         var row = data.__row__;
         if (row && row.id) {
-          row.action = 'delete';
+          row.op = 'delete';
           parentForm.addSubItem(row);
         } else parentForm.removeSubItem(row);
       };
@@ -472,26 +652,6 @@ ui.directive('grid', function ($compile, $http) {
         return elHtml;
       };
 
-      scope.gridItemClick = function (obj) {
-        scope.form.pk = obj.id;
-        scope.form._data = obj;
-        var modal = scope.showDialog();
-
-        var params = {id: obj.id, mode: 'subform', field: gname, fields: scope.formFields};
-        $http({
-          method: 'GET',
-          url: url,
-          params: params
-        }).success(function (data) {
-          scope.form.data = data.items[0];
-          if (!obj.__row__) {
-            obj.__row__ = {action: 'update', data: scope.form.data, name: gname};
-            obj.__row__.id = scope.form.data.id;
-          }
-          modal.modal();
-        }.bind(true));
-      };
-
       var masterChange = function (masterKey) {
         if (parentForm.pk) {
           var params = {
@@ -505,9 +665,11 @@ ui.directive('grid', function ($compile, $http) {
             params: params
           }).success(function (data) {
             scope.items = data.items;
+            scope.$parent.form.data[attrs['name']] = scope.items;
           }.bind(true));
         } else {
           scope.items = [];
+          if (scope.$parent.form.data) scope.$parent.form.data[attrs['name']] = scope.items;
         }
       };
 
@@ -517,6 +679,7 @@ ui.directive('grid', function ($compile, $http) {
       scope.$parent.$watch(parentForm.pk, function (value) {
         masterChange(value);
       });
+
     },
     template: function (tElement, tAttrs) {
       var th = '';
@@ -526,13 +689,39 @@ ui.directive('grid', function ($compile, $http) {
       for (var i = 0; i < cols.length; i++) {
         var col = $(cols[i]);
         var css = col.attr('class');
-        if (!css) css = '';
+        var tp = col.attr('type');
+        if (!css) css = tp ? ' class="' + tp + '"' : '';
         else css = ' class="' + css + '"';
         var lbl = col.attr('label');
         if (!lbl) lbl = '';
         var nm = col.attr('name');
+        var fmt = col.attr('format');
+
+        modelField = 'item.' + nm;
+
+        switch (tp) {
+          case 'date':
+            modelField = '(' + modelField + '|';
+            if (fmt) modelField += fmt;
+            else modelField += "date:'shortDate'";
+            modelField += ')';
+            break;
+          case 'datetime':
+            modelField = '(' + modelField + '|';
+            if (fmt) modelField += fmt;
+            else modelField += "date:'short'";
+            modelField += ')';
+            break;
+          case 'decimal':
+            modelField = '(' + modelField + '|';
+            if (fmt) modelField += fmt;
+            else modelField += 'number:2';
+            modelField += ')';
+            break;
+        }
+
         th += '<th' + css + '>' + col.attr('label') + '</th>';
-        td += '<td ' + css + ' ng-click="gridItemClick(item)" ng-bind="item.' + nm + '"></td>';
+        td += '<td ' + css + ' ng-click="gridItemClick(item)" ng-bind="' + modelField + '"></td>';
         fields.push(nm);
       }
 
@@ -540,13 +729,15 @@ ui.directive('grid', function ($compile, $http) {
       formTempl = tElement.find('sub-form').prop('outerHTML');
 
       var nhtml = '<div class="data-grid" data-grid="' + fld + '">' +
-          '<button type="button" class="btn btn-default btn-xs" ng-click="gridAddItem()">' + katrid.gettext('Add') + '</button>' +
           '<table class="table table-hover table-bordered table-striped table-condensed">' +
           '<thead>' +
           '<tr>' + th +
           '</tr></thead>' +
+          '<tfoot><tr><td colspan="' + cols.length + '">' +
+          '<button type="button" class="btn btn-default btn-xs" ng-click="gridAddItem()">' + katrid.gettext('Add') + '</button>' +
+          '</td></tr></tfoot>' +
           '<tbody>' +
-          '<tr ng-repeat="' + gridItems + '" class="table-row-clickable animation">' +
+          '<tr ng-repeat="' + gridItems + '" class="table-row-clickable">' +
           td +
           '</tr></tbody></table>' +
           '</div>';
@@ -602,8 +793,7 @@ ui.directive('uiSelect', function ($location) {
               for (var i = 0; i < v.length; i++) values.push({id: v[i][0], text: v[i][1]});
               callback(values);
             }
-            else
-              callback({id: v[0], text: v[1]})
+            else callback({id: v[0], text: v[1]});
           }
         }
       };
@@ -665,6 +855,7 @@ ui.directive('decimal', function ($filter) {
       }).
       bind('keyup blur', function (event) {
             controller.$setViewValue(element.val().replace(RegExp('\\' + thousands, 'g'), '').replace(RegExp('\\' + decimal, 'g'), '.'));
+            controller.$modelValue = parseFloat(element.val().replace(RegExp('\\' + thousands, 'g'), '').replace(RegExp('\\' + decimal, 'g'), '.'));
             scope.$apply();
           }
       );
@@ -721,11 +912,44 @@ ui.directive('uiDatepicker', function ($location) {
   }
 });
 
-ui.directive('uiMask', function ($location) {
+ui.directive('uiDatetimepicker', function ($location) {
   return {
     restrict: 'A',
+    require: 'ngModel',
     link: function (scope, element, attrs, controller) {
-      var el = element.mask(attrs.uiMask);
+      var el = element.datepicker({
+        dateFormat: 'dd/mm/yy',
+        prevText: '<i class="fa fa-chevron-left"></i>',
+        nextText: '<i class="fa fa-chevron-right"></i>'
+      });
+
+      function updateModelValue() {
+        // save date in the correct ISO format
+        if (controller.$modelValue && !(controller.$modelValue instanceof Date)) controller.$setViewValue(el.datepicker('getDate').toISOString().split('T')[0]);
+        else if (controller.$modelValue && (controller.$modelValue instanceof Date)) controller.$setViewValue(el.datepicker('getDate').toISOString().split('T')[0]);
+      }
+
+      scope.$watch(attrs.ngModel, updateModelValue);
+
+      el = el.mask('00/00/0000 00:00');
+
+      controller.$render = function () {
+        if (controller.$modelValue instanceof Date) {
+          el.datepicker('setDate', controller.$modelValue);
+        } else if (controller.$modelValue) {
+          var dt = new Date(controller.$viewValue.split(/\-|\s/));
+          el.datepicker('setDate', dt);
+        }
+      };
+
+      el.on('change', function (evt) {
+        var s = el.val();
+        if (s.length === 5) {
+          var dt = new Date();
+          el.datepicker('setDate', s + '/' + dt.getFullYear().toString());
+        }
+      });
+
     }
   }
 });

@@ -50,23 +50,12 @@ class FormMixin(object):
 
 class ModelFormMixin(FormMixin):
     def submit(self):
-        super(ModelFormMixin, self).submit()
-        request = self.request
-        if request.method == 'POST':
-            return self._post(request)
-        elif request.method == 'DELETE':
-            self._delete(request)
-
-    def _delete(self, request):
-        m = self.Meta.model
-        m.get(pk=request.GET['id']).delete()
-        return {'success': True, 'message': _('Record succesfully deleted!')}
-
-    def _post(self, request, data=None):
+        print(self._data)
         if self.is_valid():
             self.save()
             return {'success': True, 'message': _('Data successfully saved!')}
         details = str(self.errors)
+        print('form is valid', self.is_valid(), details)
         return {'success': False, 'message': _('Errors found while saving data!'), 'details': details}
 
     def list_queryset(self, request):
@@ -84,7 +73,6 @@ class ModelForm(katrid.forms.ModelForm, ModelFormMixin):
         self.request = kwargs.pop('request')
         data = kwargs.get('data')
         self._data = data
-        print(data)
         if self.request:
             pk = data.get('id', self.request.GET.get('id'))
             if pk:

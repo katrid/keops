@@ -7170,7 +7170,7 @@ div.wijmo-wijmenu .wijmo-wijmenu-child .wijmo-wijmenu-text {
 .ui-icon-carat-1-e:before {
   content: "\f105";
   font-family: FontAwesome;
-  font-size: 14px;
+  font-size: 13px;
   display: inline;
 }
 .ui-menu .ui-menu-item a .ui-menu-icon {
@@ -7217,7 +7217,7 @@ div.wijmo-wijmenu .wijmo-wijmenu-child .wijmo-wijmenu-text {
 }
 .ui-accordion .ui-accordion-header {
   background-color: #fbfbfb;
-  font-size: 15px;
+  font-size: 14px;
   padding: 10px 15px 10px 36px !important;
 }
 .ui-accordion .ui-accordion-header,
@@ -7443,7 +7443,7 @@ div.wijmo-wijmenu .wijmo-wijmenu-child .wijmo-wijmenu-text {
   -moz-osx-font-smoothing: grayscale;
   content: "\f067";
   color: #ffffff;
-  font-size: 14px;
+  font-size: 13px;
   margin-top: 1px;
 }
 .ui-spinner-down:before {
@@ -9791,7 +9791,7 @@ tr.unread.highlight td {
   color: #838383;
 }
 .inbox-side-bar h6 a {
-  font-size: 14px;
+  font-size: 13px;
   margin-top: -2px;
 }
 .inbox-side-bar h6 .tooltip {
@@ -9821,7 +9821,7 @@ tr.unread.highlight td {
 .inbox-menu-lg li a {
   display: block;
   padding: 6px 15px 7px;
-  font-size: 13px;
+  font-size: 12px;
   color: #333333;
 }
 .inbox-menu-lg li {
@@ -9846,7 +9846,7 @@ tr.unread.highlight td {
 .inbox-menu-sm li a {
   display: block;
   padding: 8px 15px 10px;
-  font-size: 13px;
+  font-size: 12px;
   color: #333333;
 }
 .inbox-menu-sm li {
@@ -10073,7 +10073,7 @@ tr.unread.highlight td {
 }
 .profile-link-btn {
   color: #999999;
-  font-size: 14px;
+  font-size: 13px;
 }
 /*
  * Calendar Icon
@@ -10313,7 +10313,7 @@ time.icon span {
   width: 32px;
   height: 32px;
   line-height: 28px;
-  font-size: 14px;
+  font-size: 13px;
   text-align: center;
   left: 80px;
   top: 10px;
@@ -10346,7 +10346,7 @@ time.icon span {
   background: none !important;
 }
 .table-forum thead tr th {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: normal;
   border-bottom-color: #F1F1F1;
 }
@@ -10356,11 +10356,11 @@ time.icon span {
   padding-bottom: 12px !important;
 }
 .table-forum tr td h4 {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 .table-forum tr td h4 small {
-  font-size: 13px;
+  font-size: 12px;
   display: block;
   margin-top: 2px;
 }
@@ -10464,7 +10464,7 @@ h4 {
   margin: 12px 0 14px;
 }
 .page-title span {
-  font-size: 16px;
+  font-size: 15px;
   color: #333333;
   display: inline-block;
   vertical-align: 1px;
@@ -10556,26 +10556,26 @@ body.container.modal-open {
  */
 h1 {
   letter-spacing: -1px;
-  font-size: 24px;
+  font-size: 22px;
   margin: 10px 0;
 }
 h1 small {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 300;
   letter-spacing: -1px;
 }
 .lead {
-  font-size: 19px;
+  font-size: 17px;
 }
 h2 {
   letter-spacing: -1px;
-  font-size: 22px;
+  font-size: 20px;
   margin: 20px 0;
   line-height: normal;
 }
 h3 {
   display: block;
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 400;
   margin: 20px 0;
   line-height: normal;
@@ -10584,13 +10584,13 @@ h4 {
   line-height: normal;
 }
 h5 {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 300;
   margin: 10px 0;
   line-height: normal;
 }
 h6 {
-  font-size: 15px;
+  font-size: 13px;
   margin: 10px 0;
   font-weight: bold;
   line-height: normal;
@@ -11041,7 +11041,7 @@ nav ul li {
 /* All levels */
 nav ul li a {
   line-height: normal;
-  font-size: 14px;
+  font-size: 13px;
   padding: 10px 10px 10px 11px;
   color: #c0bbb7;
   display: block;
@@ -11166,7 +11166,7 @@ nav > ul ul ul li::before {
 }
 /* Second level and onwards > */
 nav > ul ul li a i {
-  font-size: 14px !important;
+  font-size: 13px !important;
   width: 18px !important;
   text-align: center !important;
   vertical-align: 0 !important;
@@ -11200,7 +11200,7 @@ nav ul ul li {
 /* Second Level: A */
 nav ul ul li > a {
   padding-left: 42px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: normal;
   outline: 0;
 }
@@ -11213,7 +11213,7 @@ nav ul ul li > a:hover {
 nav ul ul ul li a {
   color: #bfbfbf;
   padding: 8px 10px 8px 60px;
-  font-size: 14px;
+  font-size: 13px;
 }
 /* Third Level: A:hover */
 nav ul ul ul li a:hover {
@@ -11542,12 +11542,11 @@ legend,
 .bootstrap-duallistbox-container label {
   display: block;
   padding: 8px 0;
-  border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
   background: #ffffff;
   font-size: 16px;
   font-weight: 300;
   color: #222222;
-  margin: 25px 0px 20px;
+  margin: 25px 12px 10px;
 }
 .no-padding .form header {
   margin: 25px 14px 0;
@@ -11556,10 +11555,11 @@ legend,
   margin-top: 10px;
 }
 legend {
-  font-weight: 400;
+  font-weight: 600;
   margin-top: 0;
-  margin-left: 10px;
+  margin-left: 12px;
   background: none;
+  color: #7675a5;
 }
 .input-group-addon {
   padding: 6px 10px;
@@ -12274,7 +12274,7 @@ button {
 }
 .login-info a span {
   text-transform: capitalize;
-  font-size: 14px;
+  font-size: 13px;
   /* 14px~ */
   display: inline-block;
   text-decoration: none;
@@ -12829,7 +12829,7 @@ img.away {
 .btn-link {
   box-shadow: none;
   -webkit-box-shadow: none;
-  font-size: 14px;
+  font-size: 13px;
 }
 /*
  * nav-demo-btn
@@ -13323,7 +13323,7 @@ img.away {
   color: #333333;
 }
 .notification-body .from {
-  font-size: 14px;
+  font-size: 13px;
   line-height: normal;
   color: #333333;
   font-weight: normal;
@@ -13350,7 +13350,7 @@ img.away {
 }
 .notification-body .msg-body,
 .notification-body .subject {
-  font-size: 13px;
+  font-size: 12px;
   color: #A0A0A0;
   max-height: 35px;
   width: 100%;
@@ -13359,7 +13359,7 @@ img.away {
   overflow: hidden;
 }
 .notification-body .subject {
-  font-size: 13px;
+  font-size: 12px;
   color: #333333;
   max-height: 22px;
 }
@@ -13803,7 +13803,7 @@ img.away {
  */
 .tooltip-inner {
   padding: 5px 10px;
-  font-size: 11px;
+  font-size: 10px;
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
   border-radius: 0px;
@@ -15617,7 +15617,7 @@ label:hover input[type="checkbox"][disabled].checkbox:checked + span:before {
   }
   .inbox-data-message > :first-child > :first-child {
     display: block !important;
-    font-size: 14px;
+    font-size: 13px;
   }
   .inbox-table-icon > :first-child {
     margin-top: 12px;

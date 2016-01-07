@@ -84,13 +84,21 @@ class Form(BaseView):
         field = el.attrib
         if el.tag == 'field':
             if 'name' in el.attrib:
+                # Check client/server field change notification
+                qnm = nm = field['name']
+                if 'name_prefix' in kwargs:
+                    qnm = kwargs['name_prefix'] + '.' + nm
+                if qnm in self.form._meta.model._meta.api_notify_fields:
+                    field['ng-server-change'] = qnm
+                if form and nm in form._meta.model._meta.api_notify_fields:
+                    field['ng-subfield-change'] = nm
                 #if isinstance(parent_field, models.OneToManyField):
                 #    if not hasattr(parent_field, '_admin'):
                 #        parent_field._admin = self.form.admin_site.get_admin(parent_field.related.related_model)
                 #    #attrs, f = helpers.get_form_field(parent_field._admin, field['name'])
                 #else:
                 #    attrs, f = helpers.get_form_field(self.admin, field['name'])
-                attrs, f = helpers.get_form_field(form, field['name'])
+                attrs, f = helpers.get_form_field(form, nm)
                 if attrs is not None:
                     if isinstance(parent_field, models.OneToManyField):
                         attrs.pop('ng-model', None)
@@ -131,7 +139,7 @@ class Form(BaseView):
             self._formset_field(el, f, attrs)
         elif el.tag != 'field':
             for child in el:
-                self.read_node(child, f, form=form)
+                self.read_node(child, f, form=form, **kwargs)
 
     def _formset_field(self, el, field, attrs):
         field_name = str(field).lower()
@@ -167,7 +175,7 @@ class Form(BaseView):
                 list_fields = rel.related_model._meta.list_display or list(form.base_fields.keys())
                 if list_fields and rel.field.name in list_fields:
                     list_fields.remove(rel.field.name)
-                s = ''.join(['<field name="%s" label="%s" />\n' % (f, form.base_fields[f].label) for f in list_fields])
+                s = ''.join(['<field name="%s" label="%s" type="%s" />\n' % (f, form.base_fields[f].label, helpers.get_list_field(form, f)[0].get('type', 'text')) for f in list_fields])
             g = et.fromstring('<list content-field="%s">%s</list>' % (field_name, s))
             for k, v in attrs.items():
                 g.attrib.setdefault(k, v)
@@ -187,7 +195,7 @@ class Form(BaseView):
                 form_node.attrib.setdefault(k, v)
             el.append(form_node)
 
-        self.read_node(form_node, form=form)
+        self.read_node(form_node, form=form, name_prefix=field.name)
 
     def read_subfield(self, el):
         pass
@@ -197,6 +205,7 @@ class Form(BaseView):
         if xml.tag == 'form':
             if 'content-object' not in xml.attrib:
                 xml.attrib['content-object'] = str(self.form._meta.model._meta)
+            xml.attrib['ng-notify-fields'] = ','.join(self.form._meta.model._meta.api_notify_fields)
             xml.attrib.setdefault('view-title', capfirst(self.form._meta.model._meta.verbose_name_plural))
             for field in xml:
                 self.read_node(field, form=self.form)
