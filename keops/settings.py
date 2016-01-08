@@ -18,5 +18,4 @@ SERIALIZATION_MODULES = {
     'yaml': 'keops.core.serializers.pyyaml',
     'csv': 'keops.core.serializers.csv_serializer',
     'txt': 'keops.core.serializers.txt_serializer',
-    'mako': 'keops.core.serializers.mako_serializer',
 }
