@@ -369,7 +369,7 @@ ui.directive('contentObject', function ($compile) {
             sparks +
             '</div></div>' +
             '<div class="col-sm-12 view-toolbar">' +
-            '<button type="submit" class="btn btn-danger view-toolbutton" title="' + katrid.gettext('Save') + '">' + katrid.gettext('Save') + '</button>' +
+            '<button type="button" ng-click="submit()" class="btn btn-danger view-toolbutton" title="' + katrid.gettext('Save') + '">' + katrid.gettext('Save') + '</button>' +
             '<button ng-click="showList()" class="btn btn-default view-toolbutton">Cancelar</button>' +
             '<div class="btn-group pull-right view-mode-buttons"><button type="button" class="btn btn-default" title="Ir para pesquisa" ng-click="showList()"><i class="fa fa-table"></i></button><button type="button" class="btn btn-default active" title="Exibir formulário"><i class="fa fa-edit"></i></button></div>' +
 

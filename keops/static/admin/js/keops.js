@@ -646,6 +646,8 @@ keopsApp.controller('FormController', function ($scope, $http, Form, $location, 
   };
 
   $scope.submit = function () {
+    $scope.dataForm.$setSubmitted();
+    if (!$scope.dataForm.$valid) return false;
     var data = this.collectData(true, true);
     var postUrl = '/api/content/' + this.form.model.replace('.', '/') + '/';
     var params = {};
