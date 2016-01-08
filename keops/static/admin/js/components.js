@@ -313,7 +313,7 @@ ui.directive('contentObject', function ($compile) {
             '<div>' +
             '<div>' +
             '<h1 class="page-title txt-color-blueDark col-sm-6"><i class="fa fa-table fa-fw "></i>' + attrs.viewTitle + '</h1>' +
-            '<form class="header-search pull-right">' +
+            '<form class="header-search pull-right" ng-submit="submit()">' +
             '<input id="search-fld" type="text" placeholder="' + katrid.gettext('Quick Search') + '" ng-model="queryField" ng-enter="list.query(queryField)">' +
             '<button type="button" ng-click="list.query(queryField)"><i class="fa fa-search"></i></button><a href="javascript:void(0);" id="cancel-search-js" title="Cancel Search"><i class="fa fa-times"></i></a></form>' +
             '</div>' +
@@ -369,7 +369,7 @@ ui.directive('contentObject', function ($compile) {
             sparks +
             '</div></div>' +
             '<div class="col-sm-12 view-toolbar">' +
-            '<button type="button" class="btn btn-danger view-toolbutton" title="Salvar" ng-click="submit()">Salvar</button>' +
+            '<button type="submit" class="btn btn-danger view-toolbutton" title="' + katrid.gettext('Save') + '">' + katrid.gettext('Save') + '</button>' +
             '<button ng-click="showList()" class="btn btn-default view-toolbutton">Cancelar</button>' +
             '<div class="btn-group pull-right view-mode-buttons"><button type="button" class="btn btn-default" title="Ir para pesquisa" ng-click="showList()"><i class="fa fa-table"></i></button><button type="button" class="btn btn-default active" title="Exibir formulário"><i class="fa fa-edit"></i></button></div>' +
 

@@ -118,7 +118,7 @@ label.nav-recno-info {
 }
 
 .data-grid {
-  min-height: 100px;
+  min-height: 40px;
   overflow-y: auto;
 }
 
@@ -259,6 +259,11 @@ td.data-grid-col-remove a {
 
 .animation.ng-leave.ng-leave-active {
   opacity: 0;
+}
+
+fieldset {
+  margin-right: -1px;
+  padding: 1px 1px 15px 0;
 }
 
 
