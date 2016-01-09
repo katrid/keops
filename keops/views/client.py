@@ -1,17 +1,16 @@
 from katrid.shortcuts import render
+from katrid.contrib.auth.decorators import login_required
+from base.models import Menu
 
-from base.views.decorators import staff_member_required
-from base.models import Menu, Action
 
-
-#@staff_member_required
+@login_required
 def home(request):
     return render(request, 'keops/index.html', {
         'root_menu': Menu.objects.root_menu()
     })
 
 
-#@staff_member_required
+@login_required
 def menu(request, menu_id):
     return render(request, 'keops/index.html', {
         'root_menu': Menu.objects.root_menu(),
