@@ -9,6 +9,7 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'base.user'
 
+INSTALLED_APPS.append('katrid.contrib.webclient')
 INSTALLED_APPS.append('keops')
 
 SERIALIZATION_MODULES = {
