@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^client/action/(?P<action_id>.+)/$', keops.views.actions.action),
     url(r'^client/form/show/(?P<form_id>.+)/$', keops.views.forms.show_form),
     url(r'^login/$', keops.views.auth.login),
+    url(r'^logout/$', keops.views.auth.logout),
 ]
 
 if settings.USE_I18N:

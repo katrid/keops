@@ -35,8 +35,8 @@ def show_model(request, app_label, model_name):
     # Find model form template
     template_name = model._meta.form_template if mode == 'form' else model._meta.list_template
     template = select_template([
-        template_name or ('keops/%s/%s/%s.xml' % (app_label, model_name, mode)),
-        'keops/%s.xml' % mode,
+        template_name or ('apps/%s/%s/%s.xml' % (app_label, model_name, mode)),
+        'apps/%s.xml' % mode,
     ])
     ctx = {
         'model': model,
@@ -205,7 +205,6 @@ class Form(BaseView):
         if xml.tag == 'form':
             if 'content-object' not in xml.attrib:
                 xml.attrib['content-object'] = str(self.form._meta.model._meta)
-            xml.attrib['ng-notify-fields'] = ','.join(self.form._meta.model._meta.api_notify_fields)
             xml.attrib.setdefault('view-title', capfirst(self.form._meta.model._meta.verbose_name_plural))
             for field in xml:
                 self.read_node(field, form=self.form)
