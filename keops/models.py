@@ -8,6 +8,8 @@ class DecimalField(models.DecimalField):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('max_digits', 18)
         kwargs.setdefault('decimal_places', 2)
+        kwargs.setdefault('null', True)
+        kwargs.setdefault('blank', True)
         super(DecimalField, self).__init__(*args, **kwargs)
 
 
@@ -30,6 +32,13 @@ class CharField(models.CharField):
             return None
         else:
             return value
+
+
+class ForeignKey(models.ForeignKey):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('null', True)
+        kwargs.setdefault('blank', True)
+        super(ForeignKey, self).__init__(*args, **kwargs)
 
 
 class BaseModel(models.Model):
