@@ -34,6 +34,13 @@ class CharField(models.CharField):
             return value
 
 
+class ImageField(models.ImageField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('null', True)
+        kwargs.setdefault('blank', True)
+        super(ImageField, self).__init__(*args, **kwargs)
+
+
 class ForeignKey(models.ForeignKey):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('null', True)
