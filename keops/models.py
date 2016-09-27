@@ -53,8 +53,37 @@ class BaseModel(models.Model):
         return {f.name: self.serializable_value(f.name) for f in self.__class__._meta.fields if not isinstance(f, ImageField)}
 
     @api.method
-    def get(cls, where=None, **kwargs):
-        return cls._default_manager.get(**where).to_dict()
+    def get(cls, id, **kwargs):
+        return cls._default_manager.get(pk=id).to_dict()
+
+    def deserialize_value(self, field_name, value):
+        field = self._meta.get_field(field_name)
+        if isinstance(field, models.ForeignKey):
+            field_name = field.attname
+        setattr(self, field_name, value)
+
+    def set(self, *args, **kwargs):
+        if args and isinstance(args[0], dict):
+            data = args[0]
+            data.update(kwargs)
+        else:
+            data = kwargs
+        data.pop('id', None)
+        for k, v in data.items():
+            self.deserialize_value(k, v)
+        if self.pk:
+            self.save(update_fields=data.keys())
+        else:
+            self.save()
+
+    @api.method
+    def write(cls, data=None, **kwargs):
+        for row in data:
+            pk = row['id']
+            values = row['values']
+            obj = cls._default_manager.get(pk=pk)
+            obj.set(values)
+        return {'success': True}
 
     @api.method
     def search(cls, where=None, **kwargs):
@@ -62,7 +91,7 @@ class BaseModel(models.Model):
             qs = cls._default_manager.all()
         else:
             qs = cls._default_manager.filter(**where)
-        return [obj.to_dict() for obj in qs]
+        return {'data': [obj.to_dict() for obj in qs]}
 
     @api.method
     def get_view_info(cls, view_type='form'):
