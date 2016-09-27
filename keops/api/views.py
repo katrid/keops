@@ -9,6 +9,7 @@ def rpc(request, service, method_name):
     meth = getattr(obj, method_name)
     if meth.exposed:
         kwargs = dict(request.POST)
+        kwargs['request'] = request
         return JsonResponse({
             'result': {
                 'data': meth(**kwargs),

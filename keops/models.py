@@ -50,11 +50,19 @@ class ForeignKey(models.ForeignKey):
 
 class BaseModel(models.Model):
     def to_dict(self):
-        return {f.name: self.serializable_value(f.name) for f in self.__class__._meta.fields}
+        return {f.name: self.serializable_value(f.name) for f in self.__class__._meta.fields if not isinstance(f, ImageField)}
 
     @api.method
-    def search(cls, where=None):
-        return [obj.to_dict() for obj in cls._default_manager.all()]
+    def get(cls, where=None, **kwargs):
+        return cls._default_manager.get(**where).to_dict()
+
+    @api.method
+    def search(cls, where=None, **kwargs):
+        if where is None:
+            qs = cls._default_manager.all()
+        else:
+            qs = cls._default_manager.filter(**where)
+        return [obj.to_dict() for obj in qs]
 
     @api.method
     def get_view_info(cls, view_type='form'):
