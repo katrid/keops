@@ -54,7 +54,7 @@ class BaseModel(models.Model):
 
     @api.method
     def get(cls, id, **kwargs):
-        return cls._default_manager.get(pk=id).to_dict()
+        return {'data': cls._default_manager.get(pk=id).to_dict()}
 
     def deserialize_value(self, field_name, value):
         field = self._meta.get_field(field_name)
