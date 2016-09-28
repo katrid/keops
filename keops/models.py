@@ -48,13 +48,33 @@ class ForeignKey(models.ForeignKey):
         super(ForeignKey, self).__init__(*args, **kwargs)
 
 
+class TextField(models.TextField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('null', True)
+        kwargs.setdefault('blank', True)
+        super(TextField, self).__init__(*args, **kwargs)
+
+
 class BaseModel(models.Model):
     def to_dict(self):
-        return {f.name: self.serializable_value(f.name) for f in self.__class__._meta.fields if not isinstance(f, ImageField)}
+        return {f.name: self.serializable_value(f.name) for f in self.__class__._meta.fields}
 
     @api.method
     def get(cls, id, **kwargs):
         return {'data': cls._default_manager.get(pk=id).to_dict()}
+
+    def serializable_value(self, field_name):
+        try:
+            field = self._meta.get_field(field_name)
+            if isinstance(field, ImageField):
+                v = getattr(self, field_name)
+                if v:
+                    return v.name
+                else:
+                    return
+        except FieldDoesNotExist:
+            return getattr(self, field_name)
+        return getattr(self, field.attname)
 
     def deserialize_value(self, field_name, value):
         field = self._meta.get_field(field_name)
