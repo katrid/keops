@@ -15,6 +15,7 @@ class DecimalField(models.DecimalField):
 
 class CharField(models.CharField):
     def __init__(self, *args, **kwargs):
+        kwargs.setdefault('max_length', 128)
         kwargs.setdefault('null', True)
         kwargs.setdefault('blank', True)
         super(CharField, self).__init__(*args, **kwargs)
