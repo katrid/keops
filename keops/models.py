@@ -9,15 +9,22 @@ class DecimalField(models.DecimalField):
         kwargs.setdefault('max_digits', 18)
         kwargs.setdefault('decimal_places', 2)
         kwargs.setdefault('null', True)
-        kwargs.setdefault('blank', True)
+        kwargs.setdefault('blank', kwargs['null'])
         super(DecimalField, self).__init__(*args, **kwargs)
+
+
+class FloatField(models.FloatField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('null', True)
+        kwargs.setdefault('blank', kwargs['null'])
+        super(FloatField, self).__init__(*args, **kwargs)
 
 
 class CharField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('max_length', 128)
         kwargs.setdefault('null', True)
-        kwargs.setdefault('blank', True)
+        kwargs.setdefault('blank', kwargs['null'])
         super(CharField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
@@ -35,24 +42,52 @@ class CharField(models.CharField):
             return value
 
 
+class DateField(models.DateField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('null', True)
+        kwargs.setdefault('blank', kwargs['null'])
+        super(DateField, self).__init__(*args, **kwargs)
+
+
+class DateTimeField(models.DateTimeField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('null', True)
+        kwargs.setdefault('blank', kwargs['null'])
+        super(DateTimeField, self).__init__(*args, **kwargs)
+
+
+class SmallIntegerField(models.SmallIntegerField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('null', True)
+        kwargs.setdefault('blank', kwargs['null'])
+        super(SmallIntegerField, self).__init__(*args, **kwargs)
+
+
+class IntegerField(models.IntegerField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('null', True)
+        kwargs.setdefault('blank', kwargs['null'])
+        super(IntegerField, self).__init__(*args, **kwargs)
+
+
 class ImageField(models.ImageField):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('null', True)
-        kwargs.setdefault('blank', True)
+        kwargs.setdefault('blank', kwargs['null'])
         super(ImageField, self).__init__(*args, **kwargs)
 
 
 class ForeignKey(models.ForeignKey):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('null', True)
-        kwargs.setdefault('blank', True)
+        kwargs.setdefault('blank', kwargs['null'])
         super(ForeignKey, self).__init__(*args, **kwargs)
 
 
 class TextField(models.TextField):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('null', True)
-        kwargs.setdefault('blank', True)
+        kwargs.setdefault('blank', kwargs['null'])
         super(TextField, self).__init__(*args, **kwargs)
 
 
