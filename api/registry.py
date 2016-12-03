@@ -11,7 +11,7 @@ class Site:
 
     def register_service(self, service, name=None):
         if name is None and hasattr(service, '_meta'):
-            name = str(service._meta)
+            name = str(service._meta).lower()
         self.services[name] = service
 
     def get_urls(self):
