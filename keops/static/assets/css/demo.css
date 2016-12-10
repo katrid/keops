@@ -1,0 +1,108 @@
+#demo-settings {
+  position: absolute;
+  top: 100px;
+  right: 0;
+  opacity: .9;
+  text-align: center;
+  color: #ffffff;
+  z-index: 9900;
+  width: 200px;
+  border-bottom-left-radius: 4px;
+}
+
+#demo-settings>#demo-choices {
+  display: none;
+  padding: 10px;
+}
+
+#demo-settings>#demo-choices label {
+  color: #ffffff;
+}
+
+#demo-settings.active>span.demo {
+  left: -30px;
+}
+
+#demo-settings.active>#demo-choices {
+  display: block;
+}
+
+#demo-settings.active {
+  position: absolute;
+  background: #3a3a3a;
+}
+
+#demo-settings>span.demo {
+  cursor: pointer;
+  padding-top: 5px;
+  background: #3a3a3a;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  border-bottom-left-radius: 4px;
+  border-top-left-radius: 4px;
+}
+
+.dashboard-panel {
+  min-height: 94px;
+}
+
+#icons a {
+  color: #3a3a3a;
+  font-size: 16px;
+}
+
+#icons a>.fa {
+  width: 23px;
+}
+
+.show-grid [class^=col-] {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: #eee;
+  background-color: rgba(86,61,124,.15);
+  border: 1px solid #ddd;
+}
+
+
+@media (min-width: 768px) {
+.bs-glyphicons {
+    margin-right: 0;
+    margin-left: 0;
+}
+}
+
+.bs-glyphicons .glyphicon {
+    margin-top: 5px;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.bs-glyphicons {
+    margin: 0 -10px 20px;
+    overflow: hidden;
+}
+
+.bs-glyphicons-list {
+  list-style: none;
+}
+
+.bs-glyphicons .glyphicon-class {
+    display: block;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+.bs-glyphicons li {
+    float: left;
+  width: 100px;
+    height: 115px;
+    padding: 10px;
+    font-size: 10px;
+    line-height: 1.4;
+    text-align: center;
+    background-color: #f9f9f9;
+    border: 1px solid #fff;
+}

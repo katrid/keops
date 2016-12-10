@@ -1,0 +1,12 @@
+.select2-container {
+    width: 100%;
+}
+
+.select2-container .select2-choice {
+    border-radius: 2px;
+    height: 30px;
+}
+
+.select2-container .select2-choice .select2-arrow {
+    border-radius: 0 2px 2px 0;
+}
