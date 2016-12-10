@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html ng-app="katridApp">
+<head>
+  <title>Keops Business Framework</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,400italic,600,700" rel="stylesheet"
+        type="text/css">
+  <!-- extra head -->
+
+  <link href="/static/assets/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+  <!-- end extra head -->
+
+  <!-- Bootstrap core CSS -->
+  <link href="/static/assets/css/bootstrap.css" rel="stylesheet">
+  <!--link href="css/bootstrap-theme.css" rel="stylesheet"-->
+
+  <!-- Font-awesome -->
+  <link href="/static/assets/css/font-awesome.css" rel="stylesheet">
+
+  <!-- Pe-icon-7-stroke -->
+  <link href="/static/assets/plugins/pe-icon-7-stroke/css/pe-icon-7-stroke.css" rel="stylesheet">
+  <link href="/static/assets/plugins/pe-icon-7-stroke/css/helper.css" rel="stylesheet">
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+        <script src="/static/https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="/static/https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+      <![endif]-->
+
+  <!-- animate.css -->
+  <link href="/static/assets/css/animate.css" type="text/css" rel="stylesheet">
+
+  <link href="/static/assets/plugins/select2/3.5.3/select2.css" type="text/css" rel="stylesheet">
+
+  <!-- Katrid style -->
+  <link href="/static/assets/css/style.css" rel="stylesheet" type="text/css">
+  <link href="/static/assets/css/skins.css" rel="stylesheet" type="text/css">
+
+  <!-- demo.css -->
+  <link href="/static/assets/css/demo.css" rel="stylesheet" type="text/css">
+
+
+  <link href="/static/assets/css/web.app.css" rel="stylesheet">
+</head>
+<!-- 3. Display the application -->
+<body class="default-skin bg-skin">
+{% block content %}{% endblock %}
+
+<script src="/static/assets/js/jquery.min.js"></script>
+
+<script src="/static/assets/js/metisMenu.js"></script>
+<script src="/static/assets/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+
+
+<script src="/static/assets/plugins/select2/3.5.3/select2.js"></script>
+<script src="/static/assets/plugins/jquery.maskedinput/jquery.maskedinput.min.js"></script>
+<script src="/static/assets/plugins/ion-rangeSlider/ion.rangeSlider.min.js"></script>
+<script src="/static/assets/plugins/jquery-ui/jquery-ui.js"></script>
+<script src="/static/assets/plugins/jquery.scrollbox/jquery.scrollbox.min.js"></script>
+
+<script src="/static/assets/js/bootstrap.min.js"></script>
+
+<script src="/static/libs/jqueryui/jquery-ui.min.js"></script>
+<script src="/static/libs/plugins/mask/jquery.mask.min.js"></script>
+
+<script src="/static/assets/js/angular/angular.js"></script>
+<script src="/static/assets/js/angular/angular-route.min.js"></script>
+<script src="/static/assets/js/angular/angular-sanitize.min.js"></script>
+<script src="/static/assets/js/angular/angular-cookies.min.js"></script>
+
+<!-- app scripts -->
+<script src="/static/api/1.5/katrid.js"></script>
+
+<!-- try to load i18n module -->
+<script src="/web/client/i18n/catalog.js"></script>
+
+<script src="/static/api/1.5/services.js"></script>
+<script src="/static/api/1.5/ui.js"></script>
+<script src="/static/api/1.5/actions.js"></script>
+<script src="/static/api/1.5/data.js"></script>
+<script src="/static/api/1.5/app.js"></script>
+<script src="/static/api/1.5/widgets.js"></script>
+<script src="/static/api/1.5/components.js"></script>
+<script src="/static/api/1.5/ui.templ.js"></script>
+<script src="/static/api/1.5/utils.js"></script>
+<script src="/static/api/1.5/dialogs.js"></script>
+<script src="/static/api/1.5/reports.js"></script>
+
+
+<!-- additional scripts -->
+
+<script src="/static/assets/plugins/toastr/toastr.min.js"></script>
+
+<!-- end additional scripts -->
+
+
+<!-- app startup script -->
+<script src="/static/assets/js/app.js"></script>
+
+<!-- menu-startup -->
+<script>
+  $('.menu-item').each(function () {
+    var li = $(this);
+    if (li.children('ul.nav').length) li.children('a').append('<em class="fa fa-angle-left"></em>')
+  });
+  $('.menu-item>a').click(function (event) {
+    var el = $(this);
+    var li = el.parent();
+    if (li.children('ul').length) {
+      li.toggleClass('open');
+      var span = li.children('a').children('em.fa');
+      span.toggleClass('fa-angle-left');
+      span.toggleClass('fa-angle-down');
+    }
+  });
+</script>
+<script>
+  $(document).ready(function () {
+    // start metisMenu
+    $('#left-side-menu').metisMenu({toggle: false});
+
+    // navbar search
+    var items = [];
+    $('.menu-item>a').each(function (idx, el) {
+      items.push($(el).text());
+    });
+    $('#navbar-search').autocomplete({source: items});
+  });
+</script>
+<script>
+  $(document).ready(function () {
+    var url = window.location.href.split('/');
+    url = url[url.length - 1];
+
+    $('ul.nav a[href="' + url + '"]').addClass('active').parent().parent().addClass('in').parent().addClass('active');
+
+    // Will also work for relative and absolute hrefs
+    $('ul.nav a').filter(function () {
+      return this.href == url;
+    }).addClass('active').parent().parent().addClass('in').parent().addClass('active');
+
+  });
+</script>
+<!-- end menu -->
+
+{% block page_loaded %}{% endblock %}
+
+</body>
+</html>

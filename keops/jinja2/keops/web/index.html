@@ -1,0 +1,130 @@
+{% extends "/keops/web/base.html" %}
+{% import "/keops/web/include/menu-utils.html" as menu_utils %}
+{% block content %}
+  <div id="page-content">
+
+  <!-- Fixed navbar -->
+  <nav id="header" class="navbar navbar-default">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#" role="button">
+        {{ settings.COMPANY_NAME }}
+      </a>
+    </div>
+    <div class="header-link hide-left-menu">
+      <i class="fa fa-bars"></i>
+    </div>
+    <div class="small-logo">
+      <span id="current-menu-name">{{ current_menu.name }}</span>
+    </div>
+    <div id="navbar" class="navbar-collapse">
+      <ul class="nav navbar-nav hidden-xs">
+        <li class="navbar-search">
+          <label class="append-icon">
+            <input id="navbar-search" type="text" class="navbar-search-control" placeholder="{{ _('Find resources here...') }}">
+            <i class="icon fa fa-search"></i>
+          </label>
+        </li>
+        <li class="dropdown">
+          <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+             aria-expanded="false">Shortcuts <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" aria-haspopup="true" aria-expanded="true">
+          </ul>
+        </li>
+        <li><a href="javascript:void(0);" data-action="voiceCommand" title="Execute command voice"><i
+            class="fa fa-microphone"></i></a></li>
+      </ul>
+      <ul id="static-nav" class="nav navbar-nav navbar-right">
+        <li>
+          <a href="javascript:void(0);" data-action="messages" title="View notifications" class="dropdown-toggle"
+             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-bell"></i>
+            <!--
+            <span class="label label-warning label-menu-corner">32</span>
+            -->
+          </a>
+          <ul class="dropdown-menu dropdown-notifications-menu animated flipInY">
+          </ul>
+
+        </li>
+        <li class="hidden-xs">
+          <a href="javascript:void(0);" data-action="fullScreen" title="Full Screen">
+            <i class="fa fa-arrows-alt"></i>
+          </a>
+        </li>
+        <li><a href="/web/logout/" title="Logout"><i class="fa fa-lg fa-sign-out"></i></a></li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </nav>
+
+
+
+  <!-- Left Menu -->
+  <aside id="left-menu" class="sidebar skin">
+    <div class="logo-area">
+      <a href="index.html" class="avatar">
+        <img id="avatar" src="/static/assets/img/logo.png" alt="avatar" class="img-circle">
+      </a>
+      <div class="user-info">
+        <small>{CONFIG DASHBOARD}</small><br>
+        <span class="user-value">0</span><span> Mensagens</span><br>
+        <span class="user-value">0</span><span> Pendências</span>
+      </div>
+      <a class="user-profile-menu dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span>ANONYMOUS</span>
+        <span class="user-dropdown"><i class="fa fa-fw fa-angle-down"></i></span>
+      </a>
+      <ul class="dropdown-menu">
+        <li><a href="/web/logout/"><i class="fa fa-fw fa-sign-out"></i> Sign out</a></li>
+      </ul>
+    </div>
+    <div class="module-menu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ current_menu.name }} <i class="pe pe-7s-right-arrow pull-right"></i></a>
+      <ul class="dropdown-menu">
+        {% for menu in root_menu %}
+        <li>
+          <a href="/web/menu/{{ menu.pk }}/">{% if menu.icon %}{{ menu.icon }}{% endif %} {{ menu.name }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- menu -->
+    <nav class="sidebar-nav">
+      <ul id="left-side-menu" class="nav" aria-expanded="false">
+        {% if current_menu %}
+        {% for menu in current_menu.menu_set.all() %}
+          {{ menu_utils.menu_item(menu) }}
+        {% endfor %}
+        {% endif %}
+      </ul>
+    </nav>
+    <!-- /menu -->
+
+
+  </aside>
+
+  <!-- End Left Menu -->
+
+  <div id="main-content" role="main" style="min-height: 1000px;">
+
+    {% block app_content %}
+    <div ng-view></div>
+    {% endblock %}
+
+  </div> <!-- /container -->
+  <footer id="footer" class="page-footer">
+    <div class="pull-right">
+      Log Histórico
+    </div>
+    &copy; Katrid 2015-2016
+  </footer>
+
+<!--  <div id="demo-settings" title="Theme settings">
+    <span class="demo"><i class="fa fa-lg fa-gear"></i></span>
+  </div>
+-->
+
+  </div>
+
+{% endblock %}

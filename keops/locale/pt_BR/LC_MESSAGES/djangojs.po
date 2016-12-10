@@ -1,0 +1,67 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: keops\n"
+"Report-Msgid-Bugs-To: \n"
+"language/pt_BR/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Sorting"
+msgstr "Ordenar"
+
+msgid "Grouping"
+msgstr "Agrupamento"
+
+msgid "Preview"
+msgstr "Visualizar"
+
+msgid "Save"
+msgstr "Salvar"
+
+msgid "Load"
+msgstr "Carregar"
+
+msgid "Between"
+msgstr "Entre"
+
+msgid "Selection"
+msgstr "Seleção"
+
+msgid "Equals"
+msgstr "É igual"
+
+msgid "Contains"
+msgstr "Contendo"
+
+msgid "Starts with"
+msgstr "Começando com"
+
+msgid "Ends with"
+msgstr "Terminando com"
+
+msgid "Greater than"
+msgstr "Maior que"
+
+msgid "Less than"
+msgstr "Menor que"
+
+msgid "Export"
+msgstr "Exportar"
+
+msgid "Advanced options"
+msgstr "Opções avançadas"
+
+msgid "Printable Fields"
+msgstr "Campos Imprimíveis"
+
+msgid "Totalizing Fields"
+msgstr "Campos Totalizadores"
+
+msgid "Save"
+msgstr "Salvar"
+
+msgid "Load"
+msgstr "Carregar"

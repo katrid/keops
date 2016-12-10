@@ -1,0 +1,15 @@
+{% macro menu_item(menu) %}
+  <li class="menu-item">
+    <a href="{{ menu.get_absolute_url() }}">
+      {{ menu.name }}
+    </a>
+  {% set children_menu = menu.menu_set.all() %}
+  {% if children_menu %}
+  <ul class="nav">
+    {% for sub_menu in children_menu %}
+      {{ menu_item(sub_menu) }}
+    {% endfor %}
+  </ul>
+  {% endif %}
+  </li>
+{% endmacro %}

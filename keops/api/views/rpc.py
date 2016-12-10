@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render
 from django.http import JsonResponse
 
-from .registry import site
+from keops.api.registry import site
 
 
 def rpc(request, service, method_name):
