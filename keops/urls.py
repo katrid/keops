@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from keops.api import site
 import keops.views.reports
 import keops.views.web
 

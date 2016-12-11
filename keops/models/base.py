@@ -4,15 +4,15 @@ from django.db.models import FieldDoesNotExist, ImageField
 from keops import api
 
 
-class BaseModel(models.Model):
+class ServiceMixin(object):
     def serialize(self):
-        return {f.name: self.serializable_value(f.name) for f in self.__class__._meta.fields}
+        return {f.name: self.serialize_value(f.name) for f in self.__class__._meta.fields}
 
     @api.method
     def get(cls, id, **kwargs):
         return {'data': cls._default_manager.get(pk=id).serialize()}
 
-    def serializable_value(self, field_name):
+    def serialize_value(self, field_name):
         try:
             field = self._meta.get_field(field_name)
             if isinstance(field, ImageField):
