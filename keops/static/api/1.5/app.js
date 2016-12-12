@@ -39,6 +39,7 @@
 
   ngApp.controller('ActionController', function($scope, $compile, action, $location) {
     var init;
+    $scope.Katrid = Katrid;
     $scope.data = null;
     $scope.record = null;
     $scope.recordIndex = null;

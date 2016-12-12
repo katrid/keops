@@ -3,7 +3,7 @@
 
   <div ng-controller="BasicController">
 
-    <form action="/web/reports/report/" method="get">
+    <form id="report-form" action="/web/reports/report/" method="get">
       <div class="col-sm-12">
         <table class="col-sm-12" style="margin-top: 20px;">
           <tr>
@@ -40,6 +40,7 @@
           <tr>
             <td class="col-sm-4">
               <select class="form-control">
+                <option>--- FILTROS ---</option>
                 {% for field in fields %}
                   <option value="{{ field.name }}">{{ field.label }}</option>
                 {% endfor %}
@@ -56,9 +57,6 @@
         </table>
     </form>
 
-    <form action="/web/reports/report/?filename={{ filename }}&view">
-
-    </form>
 
   </div>
 
@@ -68,10 +66,11 @@
     $(document).ready(function () {
       var cont = $('#report-params');
       var scope = angular.element(cont).scope();
-      console.log(scope);
+      {% if report %}
       var report = {{ report|safe }};
       report = new Katrid.Reports.Report(report, scope);
       var el = report.render(cont, scope);
+      {% endif %}
     });
   </script>
 {% endblock %}

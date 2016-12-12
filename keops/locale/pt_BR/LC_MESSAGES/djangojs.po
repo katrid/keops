@@ -18,9 +18,6 @@ msgstr "Agrupamento"
 msgid "Preview"
 msgstr "Visualizar"
 
-msgid "Save"
-msgstr "Salvar"
-
 msgid "Load"
 msgstr "Carregar"
 
@@ -62,6 +59,3 @@ msgstr "Campos Totalizadores"
 
 msgid "Save"
 msgstr "Salvar"
-
-msgid "Load"
-msgstr "Carregar"

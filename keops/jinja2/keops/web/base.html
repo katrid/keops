@@ -63,7 +63,6 @@
 
 <script src="/static/assets/js/bootstrap.min.js"></script>
 
-<script src="/static/libs/jqueryui/jquery-ui.min.js"></script>
 <script src="/static/libs/plugins/mask/jquery.mask.min.js"></script>
 
 <script src="/static/assets/js/angular/angular.js"></script>
@@ -73,9 +72,19 @@
 
 <!-- app scripts -->
 <script src="/static/api/1.5/katrid.js"></script>
+<script>
+  // Load javascript translations
+  $(document).ready(function () {
+    $.ajax({
+      url: '/jsi18n/catalog.js',
+      type: 'GET',
+      async: false
+    }).then(function (res) {
+      Katrid.i18n.initialize(res.plural, res.catalog, res.formats);
+    });
+  })
+</script>
 
-<!-- try to load i18n module -->
-<script src="/web/client/i18n/catalog.js"></script>
 
 <script src="/static/api/1.5/services.js"></script>
 <script src="/static/api/1.5/ui.js"></script>

@@ -1,7 +1,9 @@
 <div id="report-params">
 
+  <input type="hidden" id="id-report-file" value="{{ request.GET.file }}">
+
   <div id="params-fields" class="col-sm-12 form-group">
-    <div class="checkbox"><label><input type="checkbox" ng-model="paramsAdvancedOptions"> Advanced options</label></div>
+    <div class="checkbox"><label><input type="checkbox" ng-model="paramsAdvancedOptions"> ${Katrid.i18n.gettext('Advanced options')}</label></div>
     <div ng-show="paramsAdvancedOptions">
       <div class="form-group">
         <label>${Katrid.i18n.gettext('Printable Fields')}</label>
@@ -16,27 +18,27 @@
 
   <div id="params-sorting" class="col-sm-12 form-group">
     <label class="control-label">${Katrid.i18n.gettext('Sorting')}</label>
-    <select multiple></select>
+    <select multiple id="report-id-sorting"></select>
   </div>
 
   <div id="params-grouping" class="col-sm-12 form-group">
     <label class="control-label">${Katrid.i18n.gettext('Grouping')}</label>
-    <select multiple></select>
+    <select multiple id="report-id-grouping"></select>
   </div>
 
   <div class="clearfix"></div>
   <hr>
   <div id="params-toolbar" class="form-group">
     <div class="col-sm-12">
-      <button class="btn btn-primary"><span class="fa fa-print fa-fw"></span> ${Katrid.i18n.gettext('Preview')}</button>
+      <button class="btn btn-primary" type="button" ng-click="Katrid.Reports.Reports.preview()"><span class="fa fa-print fa-fw"></span> ${Katrid.i18n.gettext('Preview')}</button>
       <div class="btn-group">
         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
                 aria-expanded="false">${Katrid.i18n.gettext('Export')} <span class="caret"></span></button>
         <ul class="dropdown-menu">
-          <li><a href="#">PDF</a></li>
-          <li><a href="#">Microsoft Word</a></li>
-          <li><a href="#">Microsoft Excel</a></li>
-          <li><a href="#">PowerPoint</a></li>
+          <li><a ng-click="Katrid.Reports.Reports.preview()">PDF</a></li>
+          <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('docx')">Microsoft Word</a></li>
+          <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('xlsx')">Microsoft Excel</a></li>
+          <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('pptx')">PowerPoint</a></li>
         </ul>
       </div>
       <div class="pull-right btn-group">

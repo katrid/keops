@@ -7,7 +7,49 @@
   Reports = (function() {
     function Reports() {}
 
-    Reports.prototype.get = function(repName) {};
+    Reports.preview = function(format) {
+      var fields, grouping, params, sorting, totals;
+      params = {
+        data: [],
+        file: $('#id-report-file').val()
+      };
+      $('[data-param]').each(function() {
+        var param, pt, scope;
+        scope = angular.element(this).scope();
+        param = scope.param;
+        pt = $(this).data('param');
+        param.name = pt.name;
+        param.type = pt.type;
+        return params.data.push(param);
+      });
+      fields = $('#report-id-fields').val();
+      params['fields'] = fields;
+      totals = $('#report-id-totals').val();
+      params['totals'] = totals;
+      sorting = $('#report-id-sorting').val();
+      params['sorting'] = sorting;
+      grouping = $('#report-id-grouping').val();
+      params['grouping'] = grouping;
+      params['format'] = format;
+      $.ajax({
+        type: 'POST',
+        url: $('#report-form').attr('action'),
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        data: JSON.stringify(params)
+      }).then(function(res) {
+        if (res.open) {
+          return window.open(res.open);
+        }
+      });
+      return false;
+    };
+
+    Reports["export"] = function(format) {
+      return this.preview(format);
+    };
+
+    Reports.get = function(repName) {};
 
     return Reports;
 
@@ -58,7 +100,7 @@
       if (format == null) {
         format = 'pdf';
       }
-      return console.log('export to format', format);
+      return this.preview(format);
     };
 
     Report.prototype.preview = function() {
@@ -210,14 +252,14 @@
     };
 
     Params.Labels = {
-      equals: Katrid.i18n.gettext('Equals'),
-      "in": Katrid.i18n.gettext('Selection'),
-      contains: Katrid.i18n.gettext('Contains'),
-      startsWith: Katrid.i18n.gettext('Starts with'),
-      endsWith: Katrid.i18n.gettext('Ends with'),
-      greaterThan: Katrid.i18n.gettext('Greater then'),
-      lessThan: Katrid.i18n.gettext('Less than'),
-      between: Katrid.i18n.gettext('Between')
+      equals: Katrid.i18n.gettext('É igual'),
+      "in": Katrid.i18n.gettext('Seleção'),
+      contains: Katrid.i18n.gettext('Contendo'),
+      startsWith: Katrid.i18n.gettext('Começando com'),
+      endsWith: Katrid.i18n.gettext('Terminando com'),
+      greaterThan: Katrid.i18n.gettext('Maior que'),
+      lessThan: Katrid.i18n.gettext('Menor que'),
+      between: Katrid.i18n.gettext('Entre')
     };
 
     Params.DefaultOperations = {
@@ -249,6 +291,13 @@
           return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" type=\"number\" ng-model=\"param.value1\" class=\"form-control\"></div>";
         }
       },
+      decimal: function(param) {
+        if (param.operation === 'between') {
+          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" ng-model=\"param.value1\" type=\"text\" class=\"form-control\"></div>\n<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "-2\" ng-model=\"param.value2\" type=\"text\" class=\"form-control\"></div>";
+        } else {
+          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" type=\"number\" ng-model=\"param.value1\" class=\"form-control\"></div>";
+        }
+      },
       datetime: function(param) {
         if (param.operation === 'between') {
           return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" datepicker ng-model=\"param.value1\" class=\"form-control\"></div>\n<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "-2\" datepicker ng-model=\"param.value2\" class=\"form-control\"></div>";
@@ -266,9 +315,9 @@
   })();
 
   Param = (function() {
-    function Param(info, params) {
+    function Param(info, params1) {
       this.info = info;
-      this.params = params;
+      this.params = params1;
       this.name = this.info.name;
       this.label = this.info.label;
       this["static"] = this.info.param === 'static';
@@ -311,11 +360,7 @@
       for (i = 0, len = operations.length; i < len; i++) {
         op = operations[i];
         label = Params.Labels[op];
-        if (op === this.defaultOperation) {
-          opts += "<option value=\"" + op + "\" selected>" + label + "</option>";
-        } else {
-          opts += "<option value=\"" + op + "\">" + label + "</option>";
-        }
+        opts += "<option value=\"" + op + "\">" + label + "</option>";
       }
       return opts;
     };
@@ -323,7 +368,7 @@
     Param.prototype.operationTemplate = function() {
       var opts;
       opts = this.getOperations();
-      return "<div class=\"col-sm-4\"><label class=\"control-label\">" + this.label + "</label><select id=\"param-op-" + this.id + "\" class=\"form-control\" onchange=\"$('#param-" + this.id + "').data('param').change();$('#rep-param-id-" + this.id + "')[0].focus()\">\n" + opts + "\n</select></div>";
+      return "<div class=\"col-sm-4\"><label class=\"control-label\">" + this.label + "</label><select id=\"param-op-" + this.id + "\" ng-model=\"param.operation\" ng-init=\"param.operation='" + this.defaultOperation + "'\" class=\"form-control\" onchange=\"$('#param-" + this.id + "').data('param').change();$('#rep-param-id-" + this.id + "')[0].focus()\">\n" + opts + "\n</select></div>";
     };
 
     Param.prototype.template = function() {
@@ -349,7 +394,7 @@
   });
 
   this.Katrid.Reports = {
-    reports: new Reports(),
+    Reports: Reports,
     Report: Report,
     Param: Param
   };
