@@ -1,3 +1,4 @@
+import re
 import os
 import json
 from xml.etree import ElementTree as et
@@ -9,23 +10,27 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 import fastreport
 
+from keops.models import reports as report_models
+
 
 def dashboard(request):
     if request.method == 'POST':
         return report(request)
-    reps = os.listdir('./reports')
+    reps = os.listdir(os.path.join(settings.BASE_DIR, 'reports'))
     reports = []
     fields = []
     rep = None
     for f in reps:
         if f.endswith('.xml'):
-            xml = et.fromstring(open(os.path.join('reports', f)).read())
+            xml = et.fromstring(open(os.path.join(settings.BASE_DIR, 'reports', f)).read())
             reports.append({'filename': f, 'name': xml.attrib.get('name', f)})
 
+    user_params = None
+    user_report = None
     if 'file' in request.GET:
         rep = {}
         filename = request.GET['file']
-        xml = et.fromstring(open(os.path.join('reports', filename), encoding='utf-8').read())
+        xml = get_report_file(filename)
         rep.update(xml.attrib)
         for el in xml:
             if el.tag == 'fields':
@@ -40,20 +45,27 @@ def dashboard(request):
                     fields.append(attrs)
         rep['file'] = request.GET['file']
         rep = json.dumps(rep)
+        user_report = request.GET.get('load')
+        if user_report:
+            user_report = report_models.UserReport.objects.get(pk=request.GET['load'])
+            user_params = json.loads(user_report.user_params)
 
     return render(request, 'keops/reports/dashboard.html', {
         '_': _,
+        'user_reports': report_models.UserReport.objects.filter(report__name=request.GET['file']),
         'current_menu': None,
         'settings': settings,
         'reports': reports,
         'fields': fields,
         'report': rep,
+        'user_report': user_report,
+        'user_params': user_params,
     })
 
 
 def report(request):
 
-    def clone(file, params, dest_file):
+    def clone(file, params, dest_file, templ):
         group_template = '''
     <GroupHeaderBand Name="GroupHeader_{0}" Top="102.5" Width="1047.06" Height="37.8" Condition="[Master.{0}]">
     {1}
@@ -133,20 +145,29 @@ def report(request):
                         val2 = "TO_DATE('%s', 'dd/mm/yyyy')" % val2
                 if param['operation'] == 'contains':
                     sqls.append("upper({0}) like upper('%{1}%')".format(param['name'], param['value1']))
+                elif param['operation'] == 'startsWith':
+                    sqls.append("upper({0}) like upper('{1}%')".format(param['name'], param['value1']))
                 elif param['operation'] == 'equals':
                     sqls.append("{0} = '{1}'".format(param['name'], param['value1']))
                 elif param['operation'] == 'between':
                     sqls.append("{0} BETWEEN {1} and {2}".format(param['name'], val1, val2))
         sql = ' AND '.join(sqls)
 
+        sel_cmd = templ.findall('.//dataset')[0].text
+
         datasource = xml.findall('.//TableDataSource')[0]
-        sel_cmd = datasource.attrib['SelectCommand']
+        sel_cmd = sel_cmd % params['file'].rsplit('.', 1)[0]
         sorting = params.get('sorting')
         if sorting:
             sql += ' ORDER BY ' + ','.join(sorting)
         if sql:
-            sel_cmd = sel_cmd.replace('/*where*/', sql)
-            sel_cmd = sel_cmd.replace('/*where-clause*/', ' WHERE ' + sql)
+            pattern = re.compile(r"/\*where\*/", re.IGNORECASE)
+            sel_cmd = pattern.sub(sql, sel_cmd)
+            pattern = re.compile(r"/\*where-clause\*/", re.IGNORECASE)
+            sel_cmd = pattern.sub(' WHERE ' + sql, sel_cmd)
+            pattern = re.compile(r"/\*whereclause\*/", re.IGNORECASE)
+            sel_cmd = pattern.sub(' WHERE ' + sql, sel_cmd)
+        print(sel_cmd)
         datasource.attrib['SelectCommand'] = sel_cmd
 
         et.ElementTree(xml).write(dest_file, encoding='utf-8', xml_declaration=True)
@@ -154,26 +175,39 @@ def report(request):
     if request.method == 'POST':
         if request.is_ajax():
             params = json.loads(request.body.decode('utf-8'))
-            data = params['data']
-            format = params.get('format', 'pdf')
-            filename = params['file']
-            report_template = get_report_file(filename)
-            report_file = report_template.attrib['report-file']
-            report_file = os.path.join('reports', report_file)
-            outname = next(tempfile._get_candidate_names())
-            destfile = outname + '.' + format
-            destfrx = os.path.join(settings.REPORT_ROOT, outname + '.frx')
-            clone(report_file, params, destfrx)
-            outname = os.path.join(settings.REPORT_ROOT, destfile)
-            download = '/reports/temp/%s' % destfile
-            ret = {'open': download}
-            fastreport.show_report(destfrx, outname, format, 'Dsn=gsf;uid=sped2;pwd=sped2', '', '', {})
-            #os.unlink(destfrx)
-            return JsonResponse(ret)
+            if 'save' in request.GET:
+                rep = report_models.Report.objects.create(name=params['file'])
+                user_report_name = request.GET['save']
+                if report_models.UserReport.objects.filter(name=user_report_name).count():
+                    user_report = report_models.UserReport.objects.get(name=user_report_name)
+                else:
+                    user_report = report_models.UserReport()
+                user_report.report_id = rep.pk
+                user_report.name = user_report_name
+                user_report.user_params = request.body.decode('utf-8')
+                user_report.save()
+                return JsonResponse({'message': 'Success', 'ok': True, 'status': 'ok'})
+            else:
+                data = params['data']
+                format = params.get('format', 'pdf')
+                filename = params['file']
+                report_template = get_report_file(filename)
+                report_file = report_template.attrib['report-file']
+                report_file = os.path.join(settings.BASE_DIR, 'reports', report_file)
+                outname = next(tempfile._get_candidate_names())
+                destfile = outname + '.' + format
+                destfrx = os.path.join(settings.REPORT_ROOT, outname + '.frx')
+                clone(report_file, params, destfrx, report_template)
+                outname = os.path.join(settings.REPORT_ROOT, destfile)
+                download = '/reports/temp/%s' % destfile
+                ret = {'open': download}
+                fastreport.show_report(destfrx, outname, format, 'Dsn=gsf;uid=sped2;pwd=sped2', '', '', {})
+                #os.unlink(destfrx)
+                return JsonResponse(ret)
 
 
 def get_report_file(filename):
-    return et.fromstring(open(os.path.join('reports', filename), encoding='utf-8').read())
+    return et.fromstring(open(os.path.join(settings.BASE_DIR, 'reports', filename), encoding='utf-8').read())
 
 
 def choices(request):

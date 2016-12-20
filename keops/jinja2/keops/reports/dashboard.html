@@ -7,26 +7,13 @@
       <div class="col-sm-12">
         <table class="col-sm-12" style="margin-top: 20px;">
           <tr>
-            <td>
-              <label>Template</label>
-              <select name="file" class="form-control">
-                {% for rep in reports %}
-                  <option value="{{ rep.filename }}">{{ rep.name }}</option>
-                {% endfor %}
-              </select>
-            </td>
-            <td style="width: 1px;vertical-align: bottom">
-              <button class="btn btn-default" type="submit"><i class="fa fa-folder-open fa-fw"></i>
-                ${Katrid.i18n.gettext('Load')}
-              </button>
-            </td>
-          </tr>
-          <tr ng-show="false">
             <td colspan="2" style="padding-top: 8px;">
-              <label>${Katrid.i18n.gettext('User Reports')}</label>
-              <select name="file" class="form-control">
-                {% for rep in reports %}
-                  <option value="{{ rep.filename }}">{{ rep.name }}</option>
+              <label>${Katrid.i18n.gettext('My reports')}</label>
+              <input type="hidden" name="file" value="{{ request.GET.file }}">
+              <select name="load" class="form-control" onchange="this.form.submit()">
+                  <option></option>
+                {% for rep in user_reports %}
+                  <option value="{{ rep.id }}"{% if user_report.pk == rep.id %} selected{% endif %}>{{ rep.name }}</option>
                 {% endfor %}
               </select>
             </td>
@@ -39,7 +26,7 @@
         <table class="col-sm-12">
           <tr>
             <td class="col-sm-4">
-              <select class="form-control">
+              <select class="form-control" ng-model="newParam">
                 <option>--- FILTROS ---</option>
                 {% for field in fields %}
                   <option value="{{ field.name }}">{{ field.label }}</option>
@@ -50,7 +37,7 @@
               </select>
             </td>
             <td class="col-sm-8">
-              <button class="btn btn-default"><i class="fa fa-plus fa-fw"></i> ${Katrid.i18n.gettext('Add Parameter')}
+              <button class="btn btn-default" type="button" ng-click="Katrid.Reports.Reports.currentReport.addParam(newParam)"><i class="fa fa-plus fa-fw"></i> ${Katrid.i18n.gettext('Add Parameter')}
               </button>
             </td>
           </tr>
@@ -67,6 +54,9 @@
       var cont = $('#report-params');
       var scope = angular.element(cont).scope();
       {% if report %}
+      {% if user_params %}
+        Katrid.Reports.Reports.currentUserReport.params = {{ user_report.user_params|safe }};
+      {% endif %}
       var report = {{ report|safe }};
       report = new Katrid.Reports.Report(report, scope);
       var el = report.render(cont, scope);

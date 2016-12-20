@@ -1,3 +1,4 @@
+from keops.api.services import ViewService
 
 
 class Site:
@@ -10,8 +11,10 @@ class Site:
         self.actions[action.name] = action
 
     def register_service(self, service, name=None):
-        if name is None and hasattr(service, '_meta'):
-            name = str(service._meta).lower()
+        if issubclass(service, ViewService):
+            service.init_service()
+        if name is None and hasattr(service.model, '_meta'):
+            name = str(service.model._meta).lower()
         self.services[name] = service
 
     def get_urls(self):

@@ -59,3 +59,15 @@ msgstr "Campos Totalizadores"
 
 msgid "Save"
 msgstr "Salvar"
+
+msgid "Add Parameter"
+msgstr "Adicionar Parâmetro"
+
+msgid "Report name"
+msgstr "Nome do relatório"
+
+msgid "User reports"
+msgstr "Relatórios do usuário"
+
+msgid "My reports"
+msgstr "Meus relatórios"

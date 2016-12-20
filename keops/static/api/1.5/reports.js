@@ -7,7 +7,11 @@
   Reports = (function() {
     function Reports() {}
 
-    Reports.preview = function(format) {
+    Reports.currentReport = {};
+
+    Reports.currentUserReport = {};
+
+    Reports.getUserParams = function() {
       var fields, grouping, params, sorting, totals;
       params = {
         data: [],
@@ -30,6 +34,12 @@
       params['sorting'] = sorting;
       grouping = $('#report-id-grouping').val();
       params['grouping'] = grouping;
+      return params;
+    };
+
+    Reports.preview = function(format) {
+      var params;
+      params = this.getUserParams();
       params['format'] = format;
       $.ajax({
         type: 'POST',
@@ -49,6 +59,23 @@
       return this.preview(format);
     };
 
+    Reports.saveDialog = function() {
+      var name, params;
+      params = this.getUserParams();
+      name = window.prompt(Katrid.i18n.gettext('Report name'), Katrid.Reports.Reports.currentUserReport.name);
+      if (name) {
+        Katrid.Reports.Reports.currentUserReport.name = name;
+        $.ajax({
+          type: 'POST',
+          url: $('#report-form').attr('action') + '?save=' + name,
+          contentType: "application/json; charset=utf-8",
+          dataType: 'json',
+          data: JSON.stringify(params)
+        });
+      }
+      return false;
+    };
+
     Reports.get = function(repName) {};
 
     return Reports;
@@ -59,6 +86,7 @@
     function Report(info, scope1) {
       this.info = info;
       this.scope = scope1;
+      Katrid.Reports.Reports.currentReport = this;
       this.name = this.info.name;
       this.id = ++_counter;
       this.values = {};
@@ -87,6 +115,24 @@
         if (p.param != null) {
           p = new Param(p, this);
           results.push(this.params.push(p));
+        } else {
+          results.push(void 0);
+        }
+      }
+      return results;
+    };
+
+    Report.prototype.addParam = function(paramName) {
+      var i, len, p, ref, results;
+      ref = this.info.fields;
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        p = ref[i];
+        if (p.name === paramName) {
+          p = new Param(p, this);
+          this.params.push(p);
+          $(p.render(this.elParams));
+          break;
         } else {
           results.push(void 0);
         }
@@ -143,6 +189,10 @@
           return sel.select2("onSortEnd");
         }
       });
+      if (Katrid.Reports.Reports.currentUserReport.params && Katrid.Reports.Reports.currentUserReport.params.fields) {
+        console.log(Katrid.Reports.Reports.currentUserReport.params.fields);
+        sel.select2('val', Katrid.Reports.Reports.currentUserReport.params.fields);
+      }
       sel = el.find('#report-id-totals');
       sel.append(aggs).select2().select2("container").find("ul.select2-choices").sortable({
         containment: 'parent',
@@ -157,12 +207,23 @@
     };
 
     Report.prototype.renderParams = function(container) {
-      var el, i, len, p, ref;
+      var el, i, j, len, len1, loaded, p, ref, ref1, userParams;
       el = $('<div></div>');
-      ref = this.params;
-      for (i = 0, len = ref.length; i < len; i++) {
-        p = ref[i];
-        if (p["static"]) {
+      this.elParams = el;
+      loaded = {};
+      userParams = Katrid.Reports.Reports.currentUserReport.params;
+      if (userParams && userParams.data) {
+        ref = userParams.data;
+        for (i = 0, len = ref.length; i < len; i++) {
+          p = ref[i];
+          loaded[p.name] = true;
+          this.addParam(p.name, p.value);
+        }
+      }
+      ref1 = this.params;
+      for (j = 0, len1 = ref1.length; j < len1; j++) {
+        p = ref1[j];
+        if (p["static"] && !loaded[p.name]) {
           $(p.render(el));
         }
       }
@@ -226,9 +287,13 @@
       el = this.renderFields();
       if (this.sortables.length) {
         el = this.renderSorting(container);
+      } else {
+        container.find("#params-sorting").hide();
       }
       if (this.groupables.length) {
         el = this.renderGrouping(container);
+      } else {
+        container.find("#params-grouping").hide();
       }
       return el = this.renderParams(container);
     };
