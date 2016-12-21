@@ -213,7 +213,7 @@
         config = {
           allowClear: true,
           ajax: {
-            url: '/api/field/choices/' + scope.model.name + '/' + attrs.name + '/',
+            url: '/api/rpc/' + scope.model.name + '/get_field_choices/?args=' + attrs.name,
             data: function(term, page) {
               return {
                 q: term

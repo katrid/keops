@@ -15,6 +15,7 @@ class Site:
             service.init_service()
         if name is None and hasattr(service.model, '_meta'):
             name = str(service.model._meta).lower()
+        service.site = self
         self.services[name] = service
 
     def get_urls(self):
@@ -22,7 +23,7 @@ class Site:
         from keops.api import views
 
         url_patterns = [
-            url(r'^api/rpc/(?P<service>.*)/(?P<method_name>.*)/$', views.rpc)
+            url(r'^api/rpc/(?P<service>.*)/(?P<method_name>.*)/$', views.rpc.rpc),
         ]
 
         return url_patterns

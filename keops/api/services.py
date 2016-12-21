@@ -4,6 +4,7 @@ from django.db.models import ForeignKey, ImageField
 from django.template import loader
 from django.http import HttpResponse, JsonResponse
 from django.utils.text import capfirst
+from django.apps import apps
 
 from .decorators import service_method
 
@@ -13,6 +14,7 @@ PAGE_SIZE = 100
 
 class ViewService(object):
     name = None
+    site = None
 
     def __init__(self, request):
         self.request = request
@@ -31,6 +33,7 @@ class ModelService(ViewService):
     group_fields = None
     writable_fields = None
     readable_fields = None
+    disp_field = 'name'
 
     @classmethod
     def init_service(cls):
@@ -55,12 +58,14 @@ class ModelService(ViewService):
 
     def serialize_value(self, instance, field):
         try:
+            v = getattr(instance, field.name)
             if isinstance(field, ImageField):
-                v = getattr(instance, field.name)
                 if v:
                     return v.name
                 else:
                     return
+            elif isinstance(field, ForeignKey) and v:
+                return [v.pk, str(v)]
         except FieldDoesNotExist:
             return getattr(instance, field.name)
         return getattr(instance, field.attname)
@@ -115,7 +120,7 @@ class ModelService(ViewService):
         return [self.get_name(obj) for obj in queryset]
 
     def get_name(self, instance):
-        return {'id': instance.pk, 'text': str(instance)}
+        return [instance.pk, str(instance)]
 
     def _search(self, *args, **kwargs):
         return self.model.objects.filter(**kwargs)[:100]
@@ -172,6 +177,16 @@ class ModelService(ViewService):
             'fields': self.model._meta.fields,
             'request': self.request,
         })
+
+    @service_method
+    def get_field_choices(self, field):
+        field = self.model._meta.get_field(field)
+        service = str(field.related_model._meta).lower()
+        if service in self.site.services:
+            service = self.site.services[service](self.request)
+            q = self.request.GET.get('q', None)
+            d = service.search_names(**{service.disp_field + '__icontains': q})
+            return d
 
     @service_method
     def do_view_action(self, action_name, target):

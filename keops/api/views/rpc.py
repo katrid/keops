@@ -22,6 +22,8 @@ def rpc(request, service, method_name):
         try:
             if 'args' in data:
                 args = data['args']
+            elif 'args' in request.GET:
+                args = request.GET.getlist('args')
             else:
                 args = ()
             if 'kwargs' in data:
