@@ -8,7 +8,6 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
 from django.utils.translation import gettext as _
-import fastreport
 
 from keops.models import reports as report_models
 
@@ -201,6 +200,7 @@ def report(request):
                 outname = os.path.join(settings.REPORT_ROOT, destfile)
                 download = '/reports/temp/%s' % destfile
                 ret = {'open': download}
+                import fastreport
                 fastreport.show_report(destfrx, outname, format, 'Dsn=gsf;uid=sped2;pwd=sped2', '', '', {})
                 #os.unlink(destfrx)
                 return JsonResponse(ret)
