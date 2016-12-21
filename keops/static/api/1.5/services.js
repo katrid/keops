@@ -87,12 +87,22 @@
 
     Model.prototype.get = function(id) {
       return this.post('get', null, {
-        id: id
+        kwargs: {
+          id: id
+        }
       });
     };
 
     Model.prototype.getViewInfo = function(data) {
-      return this.post('get_view_info', null, data);
+      return this.post('get_view_info', null, {
+        kwargs: data
+      });
+    };
+
+    Model.prototype.doViewAction = function(data) {
+      return this.post('do_view_action', null, {
+        kwargs: data
+      });
     };
 
     Model.prototype.write = function(data, params) {

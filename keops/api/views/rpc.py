@@ -14,7 +14,7 @@ def rpc(request, service, method_name):
         svc = svc(request)
     meth = getattr(svc, method_name)
     status = 200
-    if meth.exposed:
+    if getattr(meth, 'exposed', None):
         if request.body:
             data = json.loads(request.body.decode('utf-8'))
         else:
@@ -48,7 +48,7 @@ def rpc(request, service, method_name):
                     'status': 'ok',
                     'ok': True,
                     'result': {
-                        'data': svc.serialize(res),
+                        'data': [svc.serialize(res)],
                     }
                 }
             elif isinstance(res, models.QuerySet) and isinstance(svc, ModelService):

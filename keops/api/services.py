@@ -1,8 +1,14 @@
 from itertools import chain
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
 from django.db.models import ForeignKey, ImageField
+from django.template import loader
+from django.http import HttpResponse, JsonResponse
+from django.utils.text import capfirst
 
 from .decorators import service_method
+
+
+PAGE_SIZE = 100
 
 
 class ViewService(object):
@@ -14,6 +20,9 @@ class ViewService(object):
     @classmethod
     def init_service(cls):
         pass
+
+    def dispatch_action(self, action_id):
+        raise NotImplementedError()
 
 
 class ModelService(ViewService):
@@ -67,18 +76,36 @@ class ModelService(ViewService):
             if exclude and f.name in exclude:
                 continue
             data[f.name] = self.serialize_value(instance, f)
+        data['display_name'] = str(instance)
         return data
 
-    @service_method
-    def get_fields_info(self):
-        pass
+    def get_fields_info(self, view_type):
+        opts = self.model._meta
+        r = {}
+        for field in opts.fields:
+            r[field.name] = self.get_field_info(field)
+        return r
 
-    @service_method
     def get_field_info(self, field):
-        pass
+        info = {
+            'help_text': field.help_text,
+            'required': not field.blank,
+            'readonly': not field.editable,
+            'editable': field.editable,
+            'type': field.get_internal_type(),
+            'caption': capfirst(field.verbose_name),
+            'max_length': field.max_length,
+        }
+        if field.choices:
+            info['choices'] = field.choices
+
+        if isinstance(field, ForeignKey):
+            info['model'] = str(field.related_model._meta)
+
+        return info
 
     def _get(self, id):
-        return self._search().get(pk=id)
+        return self.model._default_manager.get(pk=id)
 
     @service_method
     def get(self, id):
@@ -91,7 +118,7 @@ class ModelService(ViewService):
         return {'id': instance.pk, 'text': str(instance)}
 
     def _search(self, *args, **kwargs):
-        return self.model.objects.filter(**kwargs)
+        return self.model.objects.filter(**kwargs)[:100]
 
     @service_method
     def search(self, *args, **kwargs):
@@ -122,3 +149,46 @@ class ModelService(ViewService):
         return {
             'id': ids,
         }
+
+    @service_method
+    def get_view_info(self, view_type):
+        return {
+            'content': self.window_view(view_type),
+            'fields': self.get_fields_info(view_type),
+            'view_actions': self.get_view_actions(view_type),
+        }
+
+    def get_view_actions(self, view_type):
+        return []
+
+    def window_view(self, view_type):
+        templ_name = '%s.html' % view_type
+        templ = loader.select_template([
+            'keops/web/admin/actions/%s/%s' % (self.name, templ_name),
+            'keops/web/admin/actions/%s' % templ_name,
+        ], 'jinja2')
+        return templ.render({
+            'opts': self.model._meta,
+            'fields': self.model._meta.fields,
+            'request': self.request,
+        })
+
+    @service_method
+    def do_view_action(self, action_name, target):
+        return self.dispatch_view_action(action_name, target)
+
+    def dispatch_view_action(self, action_name, target):
+        raise NotImplemented()
+
+    def view_action(self, view_type):
+        return JsonResponse({
+            'model': [None, self.name],
+            'action_type': 'WindowAction',
+            'view_mode': 'list,form',
+            'display_name': capfirst(self.model._meta.verbose_name_plural),
+        })
+
+    def dispatch_action(self, action_id):
+        if action_id == 'view':
+            view_type = self.request.GET.get('view_type', 'list')
+            return self.view_action(view_type)

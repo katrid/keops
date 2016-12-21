@@ -8,7 +8,7 @@ def _adjust_field(field, kwargs):
 
 class DecimalField(models.DecimalField):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('max_digits', 18)
+        kwargs.setdefault('max_digits', 19)
         kwargs.setdefault('decimal_places', 2)
         _adjust_field(self, kwargs)
         super(DecimalField, self).__init__(*args, **kwargs)

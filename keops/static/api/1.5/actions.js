@@ -126,6 +126,17 @@
       return scope.setContent(Katrid.UI.Utils.Templates['render_' + viewType](scope, html));
     };
 
+    WindowAction.prototype.doViewAction = function(viewAction, target) {
+      return this.scope.model.doViewAction({
+        action_name: viewAction,
+        target: target
+      }).done(function(res) {
+        if (res.status === 'open') {
+          return window.open(res.open);
+        }
+      });
+    };
+
     return WindowAction;
 
   })(Action);

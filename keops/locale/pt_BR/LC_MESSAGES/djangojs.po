@@ -71,3 +71,9 @@ msgstr "Relatórios do usuário"
 
 msgid "My reports"
 msgstr "Meus relatórios"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Action"
+msgstr "Ação"

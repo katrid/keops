@@ -11,8 +11,12 @@
 
   ngApp.factory('actions', function() {
     return {
-      get: function(id) {
-        return $.get('/web/action/' + id + '/');
+      get: function(service, id) {
+        if (id) {
+          return $.get("/web/action/" + service + "/" + id + "/");
+        } else {
+          return $.get("/web/action/" + id + "/");
+        }
       }
     };
   });
@@ -25,6 +29,17 @@
         action: [
           'actions', '$route', function(actions, $route) {
             return actions.get($route.current.params.actionId);
+          }
+        ]
+      },
+      template: "<div id=\"katrid-action-view\">" + (Katrid.i18n.gettext('Loading...')) + "</div>"
+    }).when('/action/:service/:actionId', {
+      controller: 'ActionController',
+      reloadOnSearch: false,
+      resolve: {
+        action: [
+          'actions', '$route', function(actions, $route) {
+            return actions.get($route.current.params.service, $route.current.params.actionId);
           }
         ]
       },
@@ -48,6 +63,7 @@
     $scope.recordCount = 0;
     $scope.dataSource = new Katrid.Data.DataSource($scope);
     $scope.compile = $compile;
+    console.log(action);
     $scope.$on('$routeUpdate', function() {
       return $scope.action.routeUpdate($location.$$search);
     });
