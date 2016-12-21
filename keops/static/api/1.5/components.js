@@ -37,6 +37,8 @@
               widget = 'TextareaField';
             } else if (tp === 'BooleanField') {
               widget = 'CheckBox';
+            } else if (tp === 'DecimalField') {
+              widget = 'DecimalField';
             } else {
               widget = 'TextField';
             }
@@ -221,6 +223,40 @@
         return controller.$render = function() {
           if (controller.$viewValue) {
             return element.select2('val', controller.$viewValue);
+          }
+        };
+      }
+    };
+  });
+
+  uiKatrid.directive('decimal', function($filter) {
+    return {
+      restrict: 'A',
+      require: 'ngModel',
+      link: function(scope, element, attrs, controller) {
+        var decimal, el, negative, precision, symbol, thousands;
+        precision = attrs.precision || 2;
+        thousands = attrs.uiMoneyThousands || ".";
+        decimal = attrs.uiMoneyDecimal || ",";
+        symbol = attrs.uiMoneySymbol;
+        negative = attrs.uiMoneyNegative || true;
+        el = element.maskMoney({
+          symbol: symbol,
+          thousands: thousands,
+          decimal: decimal,
+          precision: precision,
+          allowNegative: negative,
+          allowZero: true
+        }).bind('keyup blur', function(event) {
+          controller.$setViewValue(element.val().replace(RegExp('\\' + thousands, 'g'), '').replace(RegExp('\\' + decimal, 'g'), '.'));
+          controller.$modelValue = parseFloat(element.val().replace(RegExp('\\' + thousands, 'g'), '').replace(RegExp('\\' + decimal, 'g'), '.'));
+          return scope.$apply();
+        });
+        return controller.$render = function() {
+          if (controller.$viewValue(element.val($filter('number')(controller.$viewValue, precision)))) {
+
+          } else {
+            return element.val('');
           }
         };
       }
