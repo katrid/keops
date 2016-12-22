@@ -131,6 +131,7 @@
         action_name: viewAction,
         target: target
       }).done(function(res) {
+        console.log(res);
         if (res.status === 'open') {
           return window.open(res.open);
         }

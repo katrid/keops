@@ -51,7 +51,7 @@ def dashboard(request):
 
     return render(request, 'keops/reports/dashboard.html', {
         '_': _,
-        'user_reports': report_models.UserReport.objects.filter(report__name=request.GET['file']),
+        'user_reports': report_models.UserReport.objects.filter(report__name=request.GET.get('file')),
         'current_menu': None,
         'settings': settings,
         'reports': reports,

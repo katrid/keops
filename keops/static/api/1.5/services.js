@@ -76,6 +76,9 @@
     };
 
     Model.prototype.search = function(data, params) {
+      data = {
+        kwargs: data
+      };
       return this.post('search', params, data);
     };
 

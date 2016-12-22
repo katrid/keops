@@ -72,7 +72,8 @@
       me = this;
       return this.scope.model.get(id).done(function(res) {
         return me.scope.$apply(function() {
-          return me.scope.record = res.result.data[0];
+          me.scope.record = res.result.data[0];
+          return me.scope.recordId = me.scope.record.id;
         });
       });
     };

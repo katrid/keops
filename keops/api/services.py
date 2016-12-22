@@ -5,6 +5,9 @@ from django.template import loader
 from django.http import HttpResponse, JsonResponse
 from django.utils.text import capfirst
 from django.apps import apps
+from django.db.models.query_utils import DeferredAttribute
+
+from keops.models.fields import OneToManyField
 
 from .decorators import service_method
 
@@ -34,11 +37,16 @@ class ModelService(ViewService):
     writable_fields = None
     readable_fields = None
     disp_field = 'name'
+    list_fields = None
+    fields = None
 
     @classmethod
     def init_service(cls):
         if not cls.name:
             cls.name = str(cls.model._meta)
+        if cls.fields:
+            for f in cls.fields:
+                f.model = cls.model
 
     def deserialize_value(self, instance, field_name, value):
         field = self.model._meta.get_field(field_name)
@@ -73,7 +81,10 @@ class ModelService(ViewService):
     def serialize(self, instance, fields=None, exclude=None):
         opts = instance._meta
         data = {}
+        deferred_fields = instance.get_deferred_fields()
         for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            if f.attname in deferred_fields or isinstance(f, OneToManyField):
+                continue
             if not getattr(f, 'editable', False):
                 continue
             if fields and f.name not in fields:
@@ -87,7 +98,7 @@ class ModelService(ViewService):
     def get_fields_info(self, view_type):
         opts = self.model._meta
         r = {}
-        for field in opts.fields:
+        for field in chain(opts.fields, opts.many_to_many, self.fields or []):
             r[field.name] = self.get_field_info(field)
         return r
 
@@ -101,12 +112,14 @@ class ModelService(ViewService):
             'caption': capfirst(field.verbose_name),
             'max_length': field.max_length,
         }
-        if field.choices:
-            info['choices'] = field.choices
-
         if isinstance(field, ForeignKey):
             info['model'] = str(field.related_model._meta)
-
+        elif isinstance(field, OneToManyField):
+            field = getattr(self.model, field.related_name)
+            info['field'] = str(field.rel.field.name)
+            info['model'] = str(field.rel.related_model._meta)
+        elif field.choices:
+            info['choices'] = field.choices
         return info
 
     def _get(self, id):
@@ -127,7 +140,10 @@ class ModelService(ViewService):
 
     @service_method
     def search(self, *args, **kwargs):
-        return self._search(*args, **kwargs)
+        qs = self._search(*args, **kwargs)
+        if self.list_fields:
+            qs = qs.only(*self.list_fields)
+        return qs
 
     @service_method
     def search_names(self, *args, **kwargs):
@@ -172,9 +188,14 @@ class ModelService(ViewService):
             'keops/web/admin/actions/%s/%s' % (self.name, templ_name),
             'keops/web/admin/actions/%s' % templ_name,
         ], 'jinja2')
+        fields = self.model._meta.fields
+        if view_type == 'list':
+            if self.list_fields:
+                fields = {f.name: f for f in fields if f.name in self.list_fields}
+                fields = [fields[f] for f in self.list_fields]
         return templ.render({
             'opts': self.model._meta,
-            'fields': self.model._meta.fields,
+            'fields': fields,
             'request': self.request,
         })
 

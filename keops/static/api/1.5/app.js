@@ -58,6 +58,7 @@
     $scope.data = null;
     $scope.record = null;
     $scope.recordIndex = null;
+    $scope.recordId = null;
     $scope.records = null;
     $scope.viewType = null;
     $scope.recordCount = 0;

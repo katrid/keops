@@ -89,3 +89,22 @@ class TextField(models.TextField):
         _adjust_field(self, kwargs)
         super(TextField, self).__init__(*args, **kwargs)
 
+
+class VirtualField(object):
+    def __getattr__(self, item):
+        return None
+
+    def get_internal_type(self):
+        return self.__class__.__name__
+
+
+class OneToManyField(VirtualField):
+    def __init__(self, related_name, **kwargs):
+        self.related_name = related_name
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    def __get__(self, instance, owner):
+        if instance:
+            return getattr(instance, self.related_name)
+        return getattr(self.model, self.related_name)
