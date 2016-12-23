@@ -43,7 +43,7 @@
       var me;
       me = this;
       return this.scope.model.search(params, {
-        count: 1
+        count: true
       }).done(function(res) {
         return me.scope.$apply(function() {
           if (res.result.count != null) {

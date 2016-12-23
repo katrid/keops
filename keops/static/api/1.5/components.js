@@ -107,40 +107,60 @@
       replace: true,
       scope: {},
       link: function(scope, element, attrs) {
-        var field, masterChanged;
+        var field, masterChanged, renderDialog;
         field = scope.$parent.view.fields[attrs.name];
         scope.field = field;
+        scope.recordIndex = null;
         scope._viewCache = {};
+        scope.dataSet = [];
         scope.model = new Katrid.Services.Model(field.model);
+        scope.data = new Katrid.Data.DataSource(scope);
         scope.model.getViewInfo({
           view_type: 'list'
         }).done(function(res) {
           return scope.$apply(function() {
             var html;
             scope.view = res.result;
-            html = Katrid.UI.Utils.Templates.renderList(scope, $(scope.view.content), attrs, 'showDialog($index);');
+            html = Katrid.UI.Utils.Templates.renderList(scope, $(scope.view.content), attrs, 'showDialog($index)');
             return element.replaceWith($compile(html)(scope));
           });
         });
+        renderDialog = function() {
+          var el;
+          el = $compile(_gridDialogTemplate().replace('<!-- view content -->', scope._viewCache.form.content))(scope);
+          el.modal('show');
+          el.on('hidden.bs.modal', function() {
+            return el.remove();
+          });
+          return false;
+        };
         scope.showDialog = function(index) {
-          var renderDialog;
-          renderDialog = function() {
-            var el;
-            el = $compile(_gridDialogTemplate().replace('<!-- view content -->', scope._viewCache['form'].content))(scope);
-            return el.modal('show');
-          };
-          if (scope._viewCache['form']) {
-            renderDialog();
+          if (!scope.dataSet[index]) {
+            scope.data.get(scope.records[index].id).done(function(res) {
+              if (res.ok) {
+                return scope.$apply(function() {
+                  scope.record = res.result.data[0];
+                  return scope.dataSet[index] = scope.record;
+                });
+              }
+            });
+          }
+          scope.record = scope.dataSet[index];
+          if (scope._viewCache.form) {
+            setTimeout(function() {
+              return renderDialog();
+            });
           } else {
             scope.model.getViewInfo({
               view_type: 'form'
             }).done(function(res) {
               if (res.ok) {
-                scope._viewCache['form'] = res.result;
+                scope._viewCache.form = res.result;
                 return renderDialog();
               }
             });
           }
+          return false;
         };
         masterChanged = function(key) {
           var data;
