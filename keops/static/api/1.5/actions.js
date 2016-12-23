@@ -32,6 +32,7 @@
       this.viewModes = this.viewMode.split(',');
       this.viewType = null;
       this.cachedViews = {};
+      this._pendingTimeout = null;
     }
 
     WindowAction.prototype.cancelChanges = function() {
@@ -71,21 +72,29 @@
     };
 
     WindowAction.prototype.routeUpdate = function(search) {
-      if (search.view_type != null) {
-        if (this.viewType !== search.view_type) {
-          this.viewType = search.view_type;
-          this.execute();
-          if (this.scope.records == null) {
-            console.log(this.scope);
-            this.scope.dataSource.search({});
-          }
-        }
-        if (search.id && (((this.scope.record != null) && this.scope.record.id !== search.id) || (this.scope.record == null))) {
-          return this.scope.dataSource.get(search.id);
-        }
-      } else {
-        return this.setViewType(this.viewModes[0]);
+      if (this._pendingTimeout) {
+        clearTimeout(this._pendingTimeout);
       }
+      return this._pendingTimeout = setTimeout((function(_this) {
+        return function() {
+          _this._pendingTimeout = null;
+          if (search.view_type != null) {
+            if (_this.viewType !== search.view_type) {
+              _this.viewType = search.view_type;
+              _this.execute();
+              if (_this.scope.records == null) {
+                console.log(_this.scope);
+                _this.scope.dataSource.search({});
+              }
+            }
+            if (search.id && (((_this.scope.record != null) && _this.scope.record.id !== search.id) || (_this.scope.record == null))) {
+              return _this.scope.dataSource.get(search.id);
+            }
+          } else {
+            return _this.setViewType(_this.viewModes[0]);
+          }
+        };
+      })(this), 300);
     };
 
     WindowAction.prototype.setViewType = function(viewType) {
