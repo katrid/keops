@@ -7,10 +7,10 @@
   Action = (function() {
     Action.prototype.actionType = null;
 
-    function Action(info1, scope1, location1) {
+    function Action(info1, scope1) {
       this.info = info1;
       this.scope = scope1;
-      this.location = location1;
+      this.location = this.scope.location;
     }
 
     Action.prototype.apply = function() {};
@@ -26,8 +26,8 @@
 
     WindowAction.actionType = 'sys.action.window';
 
-    function WindowAction(info, scope, location) {
-      WindowAction.__super__.constructor.call(this, info, scope, location);
+    function WindowAction(info, scope) {
+      WindowAction.__super__.constructor.call(this, info, scope);
       this.viewMode = info.view_mode;
       this.viewModes = this.viewMode.split(',');
       this.viewType = null;

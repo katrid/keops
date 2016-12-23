@@ -114,7 +114,7 @@
         scope._viewCache = {};
         scope.dataSet = [];
         scope.model = new Katrid.Services.Model(field.model);
-        scope.data = new Katrid.Data.DataSource(scope);
+        scope.dataSource = new Katrid.Data.DataSource(scope);
         scope.model.getViewInfo({
           view_type: 'list'
         }).done(function(res) {
@@ -136,7 +136,7 @@
         };
         scope.showDialog = function(index) {
           if (!scope.dataSet[index]) {
-            scope.data.get(scope.records[index].id).done(function(res) {
+            scope.dataSource.get(scope.records[index].id).done(function(res) {
               if (res.ok) {
                 return scope.$apply(function() {
                   scope.record = res.result.data[0];

@@ -56,6 +56,7 @@
     var init;
     $scope.Katrid = Katrid;
     $scope.data = null;
+    $scope.location = $location;
     $scope.record = null;
     $scope.recordIndex = null;
     $scope.recordId = null;
@@ -64,7 +65,6 @@
     $scope.recordCount = 0;
     $scope.dataSource = new Katrid.Data.DataSource($scope);
     $scope.compile = $compile;
-    console.log(action);
     $scope.$on('$routeUpdate', function() {
       return $scope.action.routeUpdate($location.$$search);
     });
@@ -76,7 +76,7 @@
       var act;
       if (action) {
         $scope.model = new Katrid.Services.Model(action.model[1]);
-        $scope.action = act = new Katrid.Actions[action.action_type](action, $scope, $location);
+        $scope.action = act = new Katrid.Actions[action.action_type](action, $scope);
         return act.routeUpdate($location.$$search);
       }
     };

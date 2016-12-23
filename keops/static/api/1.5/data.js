@@ -63,7 +63,7 @@
       newIndex = this.scope.recordIndex + index - 1;
       if (newIndex > -1 && newIndex < this.scope.records.length) {
         this.scope.recordIndex = newIndex + 1;
-        return $location.search('id', this.scope.records[newIndex].id);
+        return this.scope.location.search('id', this.scope.records[newIndex].id);
       }
     };
 
@@ -79,14 +79,15 @@
     };
 
     DataSource.prototype.next = function() {
-      return this.scope.moveBy(1);
+      return this.moveBy(1);
     };
 
     DataSource.prototype.prior = function() {
-      return this.scope.moveBy(-1);
+      return this.moveBy(-1);
     };
 
     DataSource.prototype.setRecordIndex = function(index) {
+      console.log(index);
       return this.scope.recordIndex = index + 1;
     };
 
