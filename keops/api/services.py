@@ -135,14 +135,30 @@ class ModelService(ViewService):
     def get_name(self, instance):
         return [instance.pk, str(instance)]
 
-    def _search(self, *args, **kwargs):
-        return self.model.objects.filter(**kwargs)[:100]
+    def _search(self, count=None, page=None, *args, **kwargs):
+        params = kwargs.get('params', {}) or {}
+        qs = self.model.objects.filter(**params)
+        _count = None
+        if count:
+            _count = qs.count()
+        if page:
+            page = int(page)
+        else:
+            page = 1
+        offset = 1
+        if page > 1:
+            offset = (page - 1) * PAGE_SIZE
+        qs = qs[offset:offset + PAGE_SIZE]
+        qs._count = _count
+        return qs
 
     @service_method
     def search(self, *args, **kwargs):
         qs = self._search(*args, **kwargs)
+        count = qs._count
         if self.list_fields:
             qs = qs.only(*self.list_fields)
+        qs._count = count
         return qs
 
     @service_method

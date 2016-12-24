@@ -166,6 +166,7 @@
           var data;
           data = {};
           data[field.field] = key;
+          scope.records = [];
           return scope.model.search(data).done(function(res) {
             return scope.$apply(function() {
               return scope.records = res.result.data;

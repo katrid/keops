@@ -5,6 +5,14 @@
   DataSource = (function() {
     function DataSource(scope) {
       this.scope = scope;
+      this.recordCount = null;
+      this.loading = false;
+      this.pageIndex = 0;
+      this.pageLimit = 100;
+      this.offset = 0;
+      this.offsetLimit = 0;
+      this.requestInterval = 300;
+      this.pendingRequest = null;
     }
 
     DataSource.prototype.findById = function(id) {
@@ -39,19 +47,48 @@
       return this.scope.records.indexOf(rec);
     };
 
-    DataSource.prototype.search = function(params) {
-      var me;
-      me = this;
-      return this.scope.model.search(params, {
-        count: true
-      }).done(function(res) {
-        return me.scope.$apply(function() {
-          if (res.result.count != null) {
-            me.scope.recordCount = res.result.count;
-          }
-          return me.scope.records = res.result.data;
-        });
-      });
+    DataSource.prototype.search = function(params, page) {
+      if (this.pendingRequest) {
+        clearTimeout(this.pendingRequest);
+      }
+      this.pendingRequest = true;
+      this.loading = true;
+      page = page || 1;
+      this.pageIndex = page;
+      params = {
+        count: true,
+        page: page,
+        params: params
+      };
+      return this.pendingRequest = setTimeout((function(_this) {
+        return function() {
+          return _this.scope.model.search(params, {
+            count: true
+          }).done(function(res) {
+            if (_this.pageIndex > 1) {
+              _this.offset = (_this.pageIndex - 1) * _this.pageLimit + 1;
+            } else {
+              _this.offset = 1;
+            }
+            return _this.scope.$apply(function() {
+              if (res.result.count != null) {
+                _this.recordCount = res.result.count;
+              }
+              _this.scope.records = res.result.data;
+              if (_this.pageIndex === 1) {
+                return _this.offsetLimit = _this.scope.records.length;
+              } else {
+                return _this.offsetLimit = _this.offset + _this.scope.records.length - 1;
+              }
+            });
+          }).always(function() {
+            _this.pendingRequest = false;
+            return _this.scope.$apply(function() {
+              return _this.loading = false;
+            });
+          });
+        };
+      })(this), this.requestInterval);
     };
 
     DataSource.prototype.goto = function(index) {
@@ -68,14 +105,22 @@
     };
 
     DataSource.prototype.get = function(id) {
-      var me;
-      me = this;
-      return this.scope.model.get(id).done(function(res) {
-        return me.scope.$apply(function() {
-          me.scope.record = res.result.data[0];
-          return me.scope.recordId = me.scope.record.id;
-        });
-      });
+      if (this.pendingRequest) {
+        clearTimeout(this.pendingRequest);
+      }
+      this.loading = true;
+      return this.pendingRequest = setTimeout((function(_this) {
+        return function() {
+          return _this.scope.model.get(id).done(function(res) {
+            return _this.scope.$apply(function() {
+              _this.scope.record = res.result.data[0];
+              return _this.scope.recordId = _this.scope.record.id;
+            });
+          }).always(function() {
+            return _this.loading = false;
+          });
+        };
+      })(this), this.requestInterval);
     };
 
     DataSource.prototype.next = function() {
@@ -84,6 +129,23 @@
 
     DataSource.prototype.prior = function() {
       return this.moveBy(-1);
+    };
+
+    DataSource.prototype.nextPage = function() {
+      var p;
+      p = this.recordCount / this.pageLimit;
+      if (Math.floor(p)) {
+        p++;
+      }
+      if (p > this.pageIndex + 1) {
+        return this.scope.location.search('page', this.pageIndex + 1);
+      }
+    };
+
+    DataSource.prototype.prevPage = function() {
+      if (this.pageIndex > 1) {
+        return this.scope.location.search('page', this.pageIndex - 1);
+      }
     };
 
     DataSource.prototype.setRecordIndex = function(index) {

@@ -77,3 +77,9 @@ msgstr "Cancelar"
 
 msgid "Action"
 msgstr "Ação"
+
+msgid "Loading..."
+msgstr "Carregando..."
+
+msgid "Create"
+msgstr "Criar"

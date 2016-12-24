@@ -59,6 +59,7 @@ def rpc(request, service, method_name):
                     'ok': True,
                     'result': {
                         'data': [svc.serialize(obj) for obj in res],
+                        'count': getattr(res, '_count', None),
                     }
                 }
             else:
