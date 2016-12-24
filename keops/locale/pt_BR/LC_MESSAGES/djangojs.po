@@ -83,3 +83,6 @@ msgstr "Carregando..."
 
 msgid "Create"
 msgstr "Criar"
+
+msgid "Delete"
+msgstr "Excluir"

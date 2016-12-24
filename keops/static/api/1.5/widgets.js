@@ -10,7 +10,7 @@
     Widget.prototype.tag = 'div';
 
     function Widget() {
-      this.classes = [];
+      this.classes = ['form-field'];
     }
 
     Widget.prototype.ngModel = function(attrs) {
@@ -22,12 +22,18 @@
     };
 
     Widget.prototype.getWidgetAttrs = function(scope, el, attrs, field) {
-      var classes, cls, html, i, len, ref;
+      var attr, attrName, classes, cls, html, i, len, ref;
       html = '';
       if (field.required) {
         html = ' required';
       }
       html += ' ng-model="' + this.ngModel(attrs) + '"';
+      for (attr in attrs) {
+        if (attr.startsWith('fieldNg')) {
+          attrName = attr.substr(7, attr.length - 7);
+          html += " ng-" + attrName + "=\"" + attrs[attr] + "\" ";
+        }
+      }
       classes = '';
       ref = this.classes;
       for (i = 0, len = ref.length; i < len; i++) {
@@ -112,7 +118,6 @@
       var html, id;
       widgetCount++;
       id = this.getId(widgetCount);
-      console.log('scope', scope);
       html = '<' + this.tag + ' id="' + id + '" name="' + attrs.name + '" ' + this.getWidgetAttrs(scope, el, attrs, field) + '>' + '<option ng-repeat="choice in view.fields.' + attrs.name + '.choices" value="${choice[0]}">${choice[1]}</option>' + '>';
       attrs._id = id;
       html = '<div><label for="' + attrs._id + '">' + field.caption + '</label>' + html + '</div>';

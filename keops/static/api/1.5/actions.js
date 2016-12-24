@@ -39,17 +39,21 @@
     };
 
     WindowAction.prototype.saveChanges = function() {
-      var me;
-      me = this;
+      var data, el;
+      el = $('[ng-form]').first();
+      data = this.scope.dataSource.getModifiedData(this.scope.form, el, this.scope.record);
+      console.log(data);
+      return;
       return this.scope.model.write({
-        id: this.scope.record.id,
-        values: this.scope.record
-      }).then(function() {
-        return me.scope.$apply(function() {
-          me.scope.dataSource.search();
-          return me.setViewType('list');
-        });
-      });
+        data: data
+      }).then((function(_this) {
+        return function() {
+          return _this.scope.$apply(function() {
+            _this.scope.dataSource.search();
+            return _this.setViewType('list');
+          });
+        };
+      })(this));
     };
 
     WindowAction.prototype.createNew = function() {
@@ -72,17 +76,20 @@
 
     WindowAction.prototype.routeUpdate = function(search) {
       if (search.view_type != null) {
+        if (this.scope.records == null) {
+          this.scope.records = [];
+        }
         if (this.viewType !== search.view_type) {
           this.viewType = search.view_type;
           this.execute();
-          if (this.scope.records == null) {
-            this.scope.dataSource.search({});
-          }
         }
-        if (search.page !== this.scope.dataSource.pageIndex) {
+        if (search.view_type === 'list' && !search.page) {
+          this.location.search('page', 1);
+          return;
+        }
+        if (search.view_type === 'list' && search.page !== this.scope.dataSource.pageIndex) {
           this.scope.dataSource.pageIndex = search.page;
-          this.scope.records = [];
-          this.scope.dataSource.search({}, parseInt(search.page));
+          this.scope.dataSource.search({}, search.page);
         }
         if (search.id && (((this.scope.record != null) && this.scope.record.id !== search.id) || (this.scope.record == null))) {
           return this.scope.dataSource.get(search.id);
