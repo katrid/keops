@@ -1,0 +1,28 @@
+td.DecimalField,
+th.DecimalField {
+  text-align: right;
+}
+.page-badge-ref {
+  position: absolute;
+  right: 50px;
+  top: 20px;
+}
+.modal {
+  z-index: 9999;
+}
+.tab-pane {
+  padding-top: 10px;
+}
+.nav-tabs {
+  border-bottom: 1px solid #ddd;
+}
+.select2-container {
+  width: 100%;
+}
+.select2-container .select2-choice {
+  border-radius: 2px;
+  height: 30px;
+}
+.select2-container .select2-choice .select2-arrow {
+  border-radius: 0 2px 2px 0;
+}
