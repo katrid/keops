@@ -72,6 +72,12 @@ class IntegerField(models.IntegerField):
         super(IntegerField, self).__init__(*args, **kwargs)
 
 
+class BigIntegerField(models.BigIntegerField):
+    def __init__(self, *args, **kwargs):
+        _adjust_field(self, kwargs)
+        super(BigIntegerField, self).__init__(*args, **kwargs)
+
+
 class ImageField(models.ImageField):
     def __init__(self, *args, **kwargs):
         _adjust_field(self, kwargs)

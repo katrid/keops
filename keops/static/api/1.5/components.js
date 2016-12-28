@@ -124,7 +124,7 @@
         scope.fieldName = attrs.name;
         scope.field = field;
         scope.records = [];
-        scope.recordIndex = null;
+        scope.recordIndex = -1;
         scope._viewCache = {};
         scope.dataSet = [];
         scope.model = new Katrid.Services.Model(field.model);
@@ -158,15 +158,24 @@
           el.modal('show');
           el.on('hidden.bs.modal', function() {
             el.remove();
-            return scope.gridDialog = null;
+            scope.gridDialog = null;
+            return scope.recordIndex = -1;
           });
           return false;
         };
         scope.save = function() {
-          var data;
-          return data = scope.dataSource.applyModifiedData(scope.form, scope.gridDialog, scope.record);
+          var attr, data, rec;
+          data = scope.dataSource.applyModifiedData(scope.form, scope.gridDialog, scope.record);
+          if (scope.recordIndex > -1) {
+            rec = scope.records[scope.recordIndex];
+            for (attr in data) {
+              rec[attr] = data[attr];
+            }
+          }
+          scope.gridDialog.modal('toggle');
         };
         scope.showDialog = function(index) {
+          scope.recordIndex = index;
           if (!scope.dataSet[index]) {
             scope.dataSource.get(scope.records[index].id, 0).done(function(res) {
               if (res.ok) {

@@ -110,8 +110,10 @@
 
     Model.prototype.write = function(data, params) {
       return this.post('write', params, {
-        data: data
-      }).always(function() {
+        kwargs: {
+          data: data
+        }
+      }).done(function() {
         return Katrid.Dialogs.Alerts.success(Katrid.i18n.gettext('Record changes successfully saved'));
       }).fail(function() {
         return Katrid.Dialogs.Alerts.error(Katrid.i18n.gettext('Error saving record changes'));

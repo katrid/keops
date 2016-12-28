@@ -34,28 +34,6 @@
       this.cachedViews = {};
     }
 
-    WindowAction.prototype.cancelChanges = function() {
-      return this.setViewType('list');
-    };
-
-    WindowAction.prototype.saveChanges = function() {
-      var data, el;
-      el = $('[ng-form]').first();
-      data = this.scope.dataSource.getModifiedData(this.scope.form, el, this.scope.record);
-      console.log(data);
-      return;
-      return this.scope.model.write({
-        data: data
-      }).then((function(_this) {
-        return function() {
-          return _this.scope.$apply(function() {
-            _this.scope.dataSource.search();
-            return _this.setViewType('list');
-          });
-        };
-      })(this));
-    };
-
     WindowAction.prototype.createNew = function() {
       this.setViewType('form');
       this.scope.record = {};

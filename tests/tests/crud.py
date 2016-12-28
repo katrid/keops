@@ -49,7 +49,7 @@ class CrudTestCase(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(result['status'], 'ok')
         self.assertTrue(result['ok'])
-        self.assertEqual(result['result']['data']['name'], 'Author 1')
+        self.assertEqual(result['result']['data'][0]['name'], 'Author 1')
 
     def test_update(self):
         author = models.Author.objects.first()
@@ -105,3 +105,61 @@ class CrudTestCase(TestCase):
         self.assertEqual(data['status'], 'not found')
         self.assertFalse(data['ok'])
         self.assertTrue(data['fail'])
+
+    def test_nested_data(self):
+        data = [{
+            'name': 'New Author',
+            'books': [
+                {
+                    'action': 'CREATE',
+                    'values': {
+                        'name': 'Book 1'
+                    }
+                },
+                {
+                    'action': 'CREATE',
+                    'values': {
+                        'name': 'Book 2'
+                    }
+                }
+            ]
+        }]
+
+        r = self.connection.post(
+            '/api/rpc/testapp.author/write/',
+            json.dumps({'kwargs': {'data': data}}),
+            content_type='application/json'
+        )
+
+        self.assertEqual(r.status_code, 200)
+        author = models.Author.objects.get(name='New Author')
+        self.assertEqual(author.books.count(), 2)
+
+        data = [{
+            'name': 'New Author 2',
+            'books': [
+                {
+                    'action': 'CREATE',
+                    'values': {
+                        'name': 'Author 2 Book 1'
+                    }
+                },
+                {
+                    'action': 'CREATE',
+                    'values': {
+                        'name': 'Author 2 Book 2'
+                    }
+                }
+            ]
+        }]
+
+        r = self.connection.post(
+            '/api/rpc/testapp.author/write/',
+            json.dumps({'kwargs': {'data': data}}),
+            content_type='application/json'
+        )
+
+        self.assertEqual(r.status_code, 200)
+        author = models.Author.objects.get(name='New Author 2')
+
+        self.assertEqual(author.books.count(), 2)

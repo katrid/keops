@@ -32,7 +32,31 @@
       this.fieldName = null;
       this.children = [];
       this.modifiedData = null;
+      this.uploading = 0;
     }
+
+    DataSource.prototype.cancelChanges = function() {
+      return this.scope.action.setViewType('list');
+    };
+
+    DataSource.prototype.saveChanges = function() {
+      var data, el;
+      el = $('[ng-form]').first();
+      data = this.getModifiedData(this.scope.form, el, this.scope.record);
+      this.uploading++;
+      return this.scope.model.write([data]).done((function(_this) {
+        return function() {
+          return _this.scope.$apply(function() {
+            _this.search();
+            return _this.scope.action.setViewType('list');
+          });
+        };
+      })(this)).always((function(_this) {
+        return function() {
+          return _this.uploading--;
+        };
+      })(this));
+    };
 
     DataSource.prototype.findById = function(id) {
       var i, len, rec, ref;
@@ -155,11 +179,12 @@
         }
         for (attr in data) {
           obj[attr] = data[attr];
+          record[attr] = data[attr];
         }
         this.modifiedData = ds;
         this.masterSource.scope.form.$setDirty();
-        return console.log(this.modifiedData);
       }
+      return data;
     };
 
     DataSource.prototype.getModifiedData = function(form, element, record) {
