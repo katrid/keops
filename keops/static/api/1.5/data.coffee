@@ -33,12 +33,9 @@ class DataSource
 
     @uploading++
     @scope.model.write([data])
-    .done =>
-      @scope.$apply =>
-        @search()
-        @scope.action.setViewType('list')
     .always =>
-      @uploading--
+      @scope.$apply =>
+        @uploading--
 
   findById: (id) ->
     for rec in @scope.records

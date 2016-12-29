@@ -44,16 +44,11 @@
       el = $('[ng-form]').first();
       data = this.getModifiedData(this.scope.form, el, this.scope.record);
       this.uploading++;
-      return this.scope.model.write([data]).done((function(_this) {
+      return this.scope.model.write([data]).always((function(_this) {
         return function() {
           return _this.scope.$apply(function() {
-            _this.search();
-            return _this.scope.action.setViewType('list');
+            return _this.uploading--;
           });
-        };
-      })(this)).always((function(_this) {
-        return function() {
-          return _this.uploading--;
         };
       })(this));
     };

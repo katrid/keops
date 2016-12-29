@@ -113,8 +113,6 @@
         kwargs: {
           data: data
         }
-      }).done(function() {
-        return Katrid.Dialogs.Alerts.success(Katrid.i18n.gettext('Record changes successfully saved'));
       }).fail(function() {
         return Katrid.Dialogs.Alerts.error(Katrid.i18n.gettext('Error saving record changes'));
       });

@@ -53,8 +53,6 @@ class Model extends Service
 
   write: (data, params) ->
     @post('write', params, { kwargs: { data: data } })
-    .done ->
-      Katrid.Dialogs.Alerts.success(Katrid.i18n.gettext('Record changes successfully saved'))
     .fail ->
       Katrid.Dialogs.Alerts.error(Katrid.i18n.gettext('Error saving record changes'))
 

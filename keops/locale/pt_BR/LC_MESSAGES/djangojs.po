@@ -86,3 +86,6 @@ msgstr "Criar"
 
 msgid "Delete"
 msgstr "Excluir"
+
+msgid "Error saving record changes"
+msgstr "Erro salvando as alterações do registro"
