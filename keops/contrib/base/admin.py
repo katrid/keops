@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model, models as auth
 
-from keops.api import services
+from keops.api import site, services
 from . import models
 
 
@@ -18,3 +18,9 @@ class UserService(services.ModelService):
 
 class GroupService(services.ModelService):
     model = auth.Group
+
+
+site.register_service(UserService)
+site.register_service(GroupService)
+site.register_service(MenuService)
+site.register_service(WindowActionService)
