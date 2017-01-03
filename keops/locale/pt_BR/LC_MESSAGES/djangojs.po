@@ -89,3 +89,6 @@ msgstr "Excluir"
 
 msgid "Error saving record changes"
 msgstr "Erro salvando as alterações do registro"
+
+msgid "No pending changes"
+msgstr "Não existem alterações pendentes"

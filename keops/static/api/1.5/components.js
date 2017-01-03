@@ -62,15 +62,13 @@
           field = scope.view.fields[attrs.name];
           templ = $compile(widget.template(scope, element, attrs, field))(scope);
           element.append(templ);
-          fcontrol = templ.find('input.form-field');
+          fcontrol = templ.find('.form-field');
           if (fcontrol.length) {
             fcontrol = fcontrol[0];
             form = element.controller('form');
             ctrl = angular.element(fcontrol).data().$ngModelController;
             if (ctrl) {
               form.$addControl(ctrl);
-            } else {
-              console.log(fcontrol);
             }
           }
           return widget.link(scope, element, attrs, $compile, field);

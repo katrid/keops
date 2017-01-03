@@ -31,11 +31,17 @@ class DataSource
     el = $('[ng-form]').first()
     data = @getModifiedData(@scope.form, el, @scope.record)
 
-    @uploading++
-    @scope.model.write([data])
-    .always =>
-      @scope.$apply =>
-        @uploading--
+    if data
+      @uploading++
+      @scope.model.write([data])
+      .done =>
+        @scope.form.$setPristine()
+      .always =>
+        @scope.$apply =>
+          @uploading--
+    else
+      Katrid.Dialogs.Alerts.warn Katrid.i18n.gettext 'No pending changes'
+    return
 
   findById: (id) ->
     for rec in @scope.records
@@ -130,11 +136,10 @@ class DataSource
   getModifiedData: (form, element, record) ->
     if form.$dirty
       data = {}
-      for el in $(element).find('input.form-field.ng-dirty')
+      for el in $(element).find('.form-field.ng-dirty')
         nm = el.name
         data[nm] = record[nm]
       for child in @children
-        console.log(child)
         subData = data[child.fieldName] or []
         for attr of child.modifiedData
           obj = child.modifiedData[attr]

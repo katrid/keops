@@ -43,14 +43,22 @@
       var data, el;
       el = $('[ng-form]').first();
       data = this.getModifiedData(this.scope.form, el, this.scope.record);
-      this.uploading++;
-      return this.scope.model.write([data]).always((function(_this) {
-        return function() {
-          return _this.scope.$apply(function() {
-            return _this.uploading--;
-          });
-        };
-      })(this));
+      if (data) {
+        this.uploading++;
+        this.scope.model.write([data]).done((function(_this) {
+          return function() {
+            return _this.scope.form.$setPristine();
+          };
+        })(this)).always((function(_this) {
+          return function() {
+            return _this.scope.$apply(function() {
+              return _this.uploading--;
+            });
+          };
+        })(this));
+      } else {
+        Katrid.Dialogs.Alerts.warn(Katrid.i18n.gettext('No pending changes'));
+      }
     };
 
     DataSource.prototype.findById = function(id) {
@@ -186,7 +194,7 @@
       var attr, child, data, el, i, j, len, len1, nm, obj, ref, ref1, subData;
       if (form.$dirty) {
         data = {};
-        ref = $(element).find('input.form-field.ng-dirty');
+        ref = $(element).find('.form-field.ng-dirty');
         for (i = 0, len = ref.length; i < len; i++) {
           el = ref[i];
           nm = el.name;
@@ -195,7 +203,6 @@
         ref1 = this.children;
         for (j = 0, len1 = ref1.length; j < len1; j++) {
           child = ref1[j];
-          console.log(child);
           subData = data[child.fieldName] || [];
           for (attr in child.modifiedData) {
             obj = child.modifiedData[attr];

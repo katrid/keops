@@ -55,15 +55,13 @@ uiKatrid.directive 'field', ($compile) ->
       element.append(templ)
 
       # Add input field for tracking on FormController
-      fcontrol = templ.find('input.form-field')
+      fcontrol = templ.find('.form-field')
       if fcontrol.length
         fcontrol = fcontrol[0]
         form = element.controller('form')
         ctrl = angular.element(fcontrol).data().$ngModelController
         if ctrl
           form.$addControl(ctrl)
-        else
-          console.log(fcontrol)
 
       widget.link(scope, element, attrs, $compile, field)
 

@@ -126,6 +126,8 @@ class ModelService(ViewService):
             if exclude and f.name in exclude:
                 continue
             data[f.name] = self.serialize_value(instance, f)
+        if 'id' not in data:
+            data['id'] = instance.pk
         data['display_name'] = str(instance)
         return data
 

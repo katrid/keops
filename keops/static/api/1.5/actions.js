@@ -67,7 +67,9 @@
         }
         if (search.view_type === 'list' && search.page !== this.scope.dataSource.pageIndex) {
           this.scope.dataSource.pageIndex = search.page;
-          this.scope.dataSource.search({}, search.page);
+          this.scope.dataSource.search({}, search.page).done(function(res) {
+            return console.log(res);
+          });
         }
         if (search.id && (((this.scope.record != null) && this.scope.record.id !== search.id) || (this.scope.record == null))) {
           return this.scope.dataSource.get(search.id);

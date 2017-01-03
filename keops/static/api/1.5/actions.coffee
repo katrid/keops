@@ -45,6 +45,8 @@ class WindowAction extends Action
       if search.view_type is 'list' and search.page isnt @scope.dataSource.pageIndex
         @scope.dataSource.pageIndex = search.page
         @scope.dataSource.search({}, search.page)
+        .done (res) ->
+          console.log(res)
 
       if search.id and ((@scope.record? and @scope.record.id != search.id) or not @scope.record?)
         @scope.dataSource.get(search.id)

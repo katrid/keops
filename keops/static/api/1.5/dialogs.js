@@ -9,6 +9,10 @@
       return toastr['success'](msg);
     };
 
+    Alerts.prototype.warn = function(msg) {
+      return toastr['warning'](msg);
+    };
+
     Alerts.prototype.error = function(msg) {
       return toastr['error'](msg);
     };
