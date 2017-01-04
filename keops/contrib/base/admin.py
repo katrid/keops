@@ -13,6 +13,7 @@ class WindowActionService(services.ModelService):
 
 
 class UserService(services.ModelService):
+    list_fields = ['username', 'email', 'last_login', 'is_superuser']
     model = get_user_model()
 
 

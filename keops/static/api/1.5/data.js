@@ -65,7 +65,9 @@
         this.uploading++;
         this.scope.model.write([data]).done((function(_this) {
           return function() {
-            return _this.scope.form.$setPristine();
+            _this.scope.form.$setPristine();
+            _this.scope.action.setViewType('list');
+            return _this.search();
           };
         })(this)).always((function(_this) {
           return function() {

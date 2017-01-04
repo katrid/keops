@@ -66,7 +66,7 @@
           element.append(templ);
           fcontrol = templ.find('.form-field');
           if (fcontrol.length) {
-            fcontrol = fcontrol[0];
+            fcontrol = fcontrol[fcontrol.length - 1];
             form = element.controller('form');
             ctrl = angular.element(fcontrol).data().$ngModelController;
             if (ctrl) {
@@ -413,6 +413,7 @@
         var config, f, newItem, sel;
         f = scope.view.fields['model'];
         sel = el;
+        el.addClass('form-field');
         newItem = function() {};
         config = {
           allowClear: true,

@@ -45,6 +45,8 @@ class DataSource
       @scope.model.write([data])
       .done =>
         @scope.form.$setPristine()
+        @scope.action.setViewType('list')
+        @search()
       .always =>
         @scope.$apply =>
           @uploading--

@@ -59,7 +59,7 @@ uiKatrid.directive 'field', ($compile) ->
       # Add input field for tracking on FormController
       fcontrol = templ.find('.form-field')
       if fcontrol.length
-        fcontrol = fcontrol[0]
+        fcontrol = fcontrol[fcontrol.length - 1]
         form = element.controller('form')
         ctrl = angular.element(fcontrol).data().$ngModelController
         if ctrl
@@ -328,6 +328,8 @@ Katrid.uiKatrid.directive 'foreignkey', ->
     f = scope.view.fields['model']
     sel = el
 
+    el.addClass 'form-field'
+
     newItem = () ->
 
     config =
@@ -359,7 +361,7 @@ Katrid.uiKatrid.directive 'foreignkey', ->
 
     if attrs.multiple
       config['multiple'] = true
-      
+
     sel = sel.select2(config)
 
     sel.on 'change', (e) ->

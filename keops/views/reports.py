@@ -7,10 +7,12 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
 from django.utils.translation import gettext as _
+from django.contrib.auth.decorators import login_required
 
 from keops.models import reports as report_models
 
 
+@login_required
 def dashboard(request):
     if request.method == 'POST':
         return report(request)
@@ -61,6 +63,7 @@ def dashboard(request):
     })
 
 
+@login_required
 def report(request):
 
     def clone(file, params, dest_file, templ):
@@ -209,6 +212,7 @@ def get_report_file(filename):
     return et.fromstring(open(os.path.join(settings.BASE_DIR, 'reports', filename), encoding='utf-8').read())
 
 
+@login_required
 def choices(request):
     if 'sql_choices' in request.GET:
         conn_str = 'Dsn=gsf;uid=sped2;pwd=sped2'

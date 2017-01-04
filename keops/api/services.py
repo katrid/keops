@@ -7,7 +7,7 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.text import capfirst
 from django.apps import apps
 from django.db.models.query_utils import DeferredAttribute
-from django.db.models.fields.related import ManyToOneRel
+from django.db.models.fields.related import ManyToOneRel, ManyToManyField
 
 from keops.models.fields import OneToManyField
 
@@ -101,13 +101,14 @@ class ModelService(ViewService):
     def serialize_value(self, instance, field):
         try:
             v = getattr(instance, field.name)
-            if isinstance(field, ImageField):
-                if v:
+            if v:
+                if isinstance(field, ImageField):
                     return v.name
-                else:
-                    return
-            elif isinstance(field, ForeignKey) and v:
-                return [v.pk, str(v)]
+                elif isinstance(field, ForeignKey):
+                    return [v.pk, str(v)]
+                elif isinstance(field, ManyToManyField):
+                    return [v for v in v.all()]
+
         except FieldDoesNotExist:
             return getattr(instance, field.name)
         return getattr(instance, field.attname)
@@ -201,6 +202,7 @@ class ModelService(ViewService):
 
     @service_method
     def write(cls, data):
+        objs = []
         for row in data:
             pk = row.pop('id', None)
             if pk:
@@ -208,7 +210,8 @@ class ModelService(ViewService):
             else:
                 obj = cls.model()
             cls.deserialize(obj, row)
-        return True
+            objs.append(obj.pk)
+        return objs
 
     @service_method
     def destroy(cls, ids):
@@ -257,7 +260,7 @@ class ModelService(ViewService):
         if service in cls.site.services:
             service = cls.site.services[service](cls.request)
             q = cls.request.GET.get('q', None)
-            d = service.search_names(**{service.disp_field + '__icontains': q})
+            d = service.search_names(params={service.disp_field + '__icontains': q})
             return d
 
     @service_method
