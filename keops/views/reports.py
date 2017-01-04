@@ -2,7 +2,6 @@ import re
 import os
 import json
 from xml.etree import ElementTree as et
-import pyodbc
 import tempfile
 from django.shortcuts import render
 from django.http import JsonResponse
