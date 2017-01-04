@@ -40,7 +40,7 @@ class Model extends Service
     @post('search', params, data)
 
   destroy: (id) ->
-    @post('destroy', null, { id: id })
+    @post('destroy', null, { kwargs: { ids: [id] } })
 
   get: (id) ->
     @post('get', null, { kwargs: { id: id } })

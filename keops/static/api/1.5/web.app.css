@@ -26,3 +26,7 @@ th.DecimalField {
 .select2-container .select2-choice .select2-arrow {
   border-radius: 0 2px 2px 0;
 }
+section div.checkbox {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}

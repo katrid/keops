@@ -3,11 +3,13 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.db import models
 from django.core import exceptions
+from django.contrib.auth.decorators import login_required
 
 from keops.api.services import ViewService, ModelService
 from keops.api.registry import site
 
 
+@login_required
 def rpc(request, service, method_name):
     svc = site.services[service]
     if issubclass(svc, ViewService):

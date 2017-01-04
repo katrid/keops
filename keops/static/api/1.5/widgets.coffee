@@ -116,7 +116,7 @@ class ManyToManyField extends Widget
 class CheckBox extends InputWidget
   constructor: ->
     super
-    @classes = []
+    @classes = ['form-field']
 
   getWidgetAttrs: (scope, el, attrs, field) ->
     html = ''

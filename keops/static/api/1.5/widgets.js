@@ -218,7 +218,7 @@
 
     function CheckBox() {
       CheckBox.__super__.constructor.apply(this, arguments);
-      this.classes = [];
+      this.classes = ['form-field'];
     }
 
     CheckBox.prototype.getWidgetAttrs = function(scope, el, attrs, field) {

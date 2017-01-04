@@ -9,3 +9,6 @@ class Rule(models.Model):
     active = models.BooleanField(verbose_name=_('Active'), db_index=True)
     domain = models.TextField(verbose_name=_('Domain'), null=False)
     group = models.ForeignKey('auth.group', verbose_name=_('Group'))
+
+    def __str__(self):
+        return self.name

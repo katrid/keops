@@ -47,7 +47,7 @@
         this.scope.model.destroy(this.scope.record.id);
         i = this.scope.records.indexOf(this.scope.record);
         if (i) {
-          this.scope.search({});
+          this.scope.dataSource.search({});
         }
         return this.setViewType('list');
       }

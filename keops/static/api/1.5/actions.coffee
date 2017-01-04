@@ -27,7 +27,7 @@ class WindowAction extends Action
       @scope.model.destroy(@scope.record.id)
       i = @scope.records.indexOf(@scope.record)
       if i
-        @scope.search({})
+        @scope.dataSource.search({})
       @setViewType('list')
 
   routeUpdate: (search) ->

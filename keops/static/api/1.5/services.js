@@ -84,7 +84,9 @@
 
     Model.prototype.destroy = function(id) {
       return this.post('destroy', null, {
-        id: id
+        kwargs: {
+          ids: [id]
+        }
       });
     };
 

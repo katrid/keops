@@ -98,3 +98,9 @@ msgstr "(Novo)"
 
 msgid "Add"
 msgstr "Adicionar"
+
+msgid "yes"
+msgstr "sim"
+
+msgid "no"
+msgstr "não"

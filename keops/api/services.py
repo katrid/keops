@@ -71,6 +71,8 @@ class ModelService(ViewService):
 
     def deserialize_value(self, instance, field_name, value):
         field = instance.__class__._meta.get_field(field_name)
+        if value == '':
+            value = None
         if isinstance(field, ManyToOneRel):
             self.post_data[id(instance)][field] = value
             return
