@@ -21,7 +21,12 @@ class GroupService(services.ModelService):
     model = auth.Group
 
 
+class RuleService(services.ModelService):
+    model = models.Rule
+
+
 site.register_service(UserService)
 site.register_service(GroupService)
 site.register_service(MenuService)
 site.register_service(WindowActionService)
+site.register_service(RuleService)
