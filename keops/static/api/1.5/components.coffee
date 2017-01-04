@@ -43,8 +43,10 @@ uiKatrid.directive 'field', ($compile) ->
           if field.max_length and field.max_length < 30
             cols = 3
         else if tp is 'OneToManyField'
-          widget = 'OneToManyField'
+          widget = tp
           cols = 12
+        else if tp is 'ManyToManyField'
+          widget = tp
         else
           widget = 'TextField'
 
@@ -121,7 +123,7 @@ uiKatrid.directive 'grid', ($compile, $http) ->
     .done (res) ->
       scope.$apply ->
         scope.view = res.result
-        html = Katrid.UI.Utils.Templates.renderList(scope, $(scope.view.content), attrs, 'showDialog($index)')
+        html = Katrid.UI.Utils.Templates.renderGrid(scope, $(scope.view.content), attrs, 'showDialog($index)')
         element.replaceWith($compile(html)(scope))
 
     renderDialog = ->
@@ -136,6 +138,9 @@ uiKatrid.directive 'grid', ($compile, $http) ->
         scope.recordIndex = -1
       return false
 
+    scope.addItem = ->
+      scope.showDialog()
+
     scope.save = ->
       data = scope.dataSource.applyModifiedData(scope.form, scope.gridDialog, scope.record)
       if scope.recordIndex > -1
@@ -146,17 +151,22 @@ uiKatrid.directive 'grid', ($compile, $http) ->
       return
 
     scope.showDialog = (index) ->
-      # Show item dialog
-      scope.recordIndex = index
+      if index?
+        # Show item dialog
+        scope.recordIndex = index
 
-      if not scope.dataSet[index]
-        scope.dataSource.get(scope.records[index].id, 0)
-        .done (res) ->
-          if res.ok
-            scope.$apply ->
-              scope.dataSet[index] = scope.record
+        if not scope.dataSet[index]
+          scope.dataSource.get(scope.records[index].id, 0)
+          .done (res) ->
+            if res.ok
+              scope.$apply ->
+                scope.dataSet[index] = scope.record
+        rec = scope.dataSet[index]
+      else
+        scope.recordIndex = -1
+        rec = {}
 
-      scope.record = scope.dataSet[index]
+      scope.record = rec
 
       if scope._viewCache.form
         setTimeout ->
@@ -225,59 +235,59 @@ uiKatrid.directive 'datepicker', ->
 
 
 uiKatrid.directive 'ajaxChoices', ($location) ->
-    restrict: 'A'
-    require: '?ngModel'
-    link: (scope, element, attrs, controller) ->
-      multiple = attrs.multiple
-      serviceName = attrs.ajaxChoices
-      cfg =
-        ajax:
-          url: serviceName
-          dataType: 'json'
-          quietMillis: 500
-          data: (term, page) ->
-            q: term,
-            t: 1,
-            p: page - 1
-            file: attrs.reportFile
-            sql_choices: attrs.sqlChoices
-          results: (data, page) ->
-            console.log(data)
-            data = data.items
-            more = (page * 10) < data.count
-            if not multiple and (page is 1)
-              data.splice(0, 0, {id: null, text: '---------'})
-            results: data
-            more: more
-        escapeMarkup: (m) ->
-          m
-        initSelection: (element, callback) ->
-          v = controller.$modelValue
-          if v
-            if multiple
-              values = []
-              for i in v
-                values.push({id: i[0], text: i[1]})
-              callback(values)
-            else
-              callback({id: v[0], text: v[1]})
-      if multiple
-        cfg['multiple'] = true
-      el = element.select2(cfg)
-      element.on '$destroy', ->
-        $('.select2-hidden-accessible').remove()
-        $('.select2-drop').remove()
-        $('.select2-drop-mask').remove()
-      el.on 'change', (e) ->
-        v = el.select2('data')
-        controller.$setDirty()
+  restrict: 'A'
+  require: '?ngModel'
+  link: (scope, element, attrs, controller) ->
+    multiple = attrs.multiple
+    serviceName = attrs.ajaxChoices
+    cfg =
+      ajax:
+        url: serviceName
+        dataType: 'json'
+        quietMillis: 500
+        data: (term, page) ->
+          q: term,
+          t: 1,
+          p: page - 1
+          file: attrs.reportFile
+          sql_choices: attrs.sqlChoices
+        results: (data, page) ->
+          console.log(data)
+          data = data.items
+          more = (page * 10) < data.count
+          if not multiple and (page is 1)
+            data.splice(0, 0, {id: null, text: '---------'})
+          results: data
+          more: more
+      escapeMarkup: (m) ->
+        m
+      initSelection: (element, callback) ->
+        v = controller.$modelValue
         if v
-          controller.$viewValue = v
-        scope.$apply()
+          if multiple
+            values = []
+            for i in v
+              values.push({id: i[0], text: i[1]})
+            callback(values)
+          else
+            callback({id: v[0], text: v[1]})
+    if multiple
+      cfg['multiple'] = true
+    el = element.select2(cfg)
+    element.on '$destroy', ->
+      $('.select2-hidden-accessible').remove()
+      $('.select2-drop').remove()
+      $('.select2-drop-mask').remove()
+    el.on 'change', (e) ->
+      v = el.select2('data')
+      controller.$setDirty()
+      if v
+        controller.$viewValue = v
+      scope.$apply()
 
-      controller.$render = ->
-        if (controller.$viewValue)
-          element.select2('val', controller.$viewValue)
+    controller.$render = ->
+      if (controller.$viewValue)
+        element.select2('val', controller.$viewValue)
 
 
 uiKatrid.directive 'decimal', ($filter) ->
@@ -308,6 +318,71 @@ uiKatrid.directive 'decimal', ($filter) ->
         element.val($filter('number')(controller.$viewValue, precision))
       else
         element.val('')
+
+
+Katrid.uiKatrid.directive 'foreignkey', ->
+  restrict: 'A'
+  require: 'ngModel'
+  link: (scope, el, attrs, controller) ->
+
+    f = scope.view.fields['model']
+    sel = el
+
+    newItem = () ->
+
+    config =
+      allowClear: true
+      ajax:
+        url: '/api/rpc/' + scope.model.name + '/get_field_choices/?args=' + attrs.name
+
+        data: (term, page) ->
+          q: term
+
+        results: (data, page) ->
+          msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...')
+          r = ({id: item[0], text: item[1]} for item in data.result)
+          if sel.data('select2').search.val()
+            r.push({id: newItem, text: msg})
+          results: r
+
+      formatResult: (state) ->
+        s = sel.data('select2').search.val()
+        if state.id is newItem
+          state.str = s
+          return '<strong>' + state.text.format(s) + '</strong>'
+        return state.text
+
+      initSelection: (el, cb) ->
+        v = controller.$modelValue
+        if v
+          cb({id: v[0], text: v[1]})
+
+    if attrs.multiple
+      config['multiple'] = true
+      
+    sel = sel.select2(config)
+
+    sel.on 'change', (e) ->
+      v = sel.select2('data')
+      if v.id is newItem
+        service = new Katrid.Services.Model(scope.view.fields[attrs.name].model)
+        service.createName(v.str)
+        .then (res) ->
+          controller.$setDirty()
+          controller.$setViewValue res.result
+          sel.select2('val', {id: res.result[0], text: res.result[1]})
+      else
+        controller.$setDirty()
+        if v
+          controller.$setViewValue [v.id, v.text]
+        else
+          controller.$setViewValue null
+
+    controller.$render = ->
+      if controller.$viewValue
+        sel.select2('val', controller.$viewValue[0])
+      else
+        sel.select2('val', null)
 
 
 uiKatrid.controller 'TabsetController', [

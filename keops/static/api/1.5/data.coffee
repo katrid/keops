@@ -1,8 +1,16 @@
 
-class DataState
-  @destroyed = ->
-  @created = ->
-  @modified = ->
+class RecordState
+  @destroyed = 'destroyed'
+  @created = 'created'
+  @modified = 'modified'
+
+
+class DataSourceState
+  @inserting = 'inserting'
+  @browsing = 'browsing'
+  @editing = 'editing'
+  @loading = 'loading'
+  @inactive = 'inactive'
 
 
 class DataSource
@@ -22,6 +30,7 @@ class DataSource
     @children = []
     @modifiedData = null
     @uploading = 0
+    @state = null
 
   cancelChanges: ->
     @scope.action.setViewType('list')
@@ -73,7 +82,7 @@ class DataSource
     @pendingRequest = setTimeout =>
       @scope.model.search(params, {count: true})
       .fail (res) =>
-        def.rejct(res)
+        def.reject(res)
       .done (res) =>
         if @pageIndex > 1
           @offset = (@pageIndex - 1) * @pageLimit + 1
@@ -143,7 +152,7 @@ class DataSource
         subData = data[child.fieldName] or []
         for attr of child.modifiedData
           obj = child.modifiedData[attr]
-          if obj.__state is DataState.destroyed
+          if obj.__state is RecordState.destroyed
             obj =
               action: 'DESTROY'
               id: obj.id
@@ -175,8 +184,7 @@ class DataSource
         def.reject(res)
       .done (res) =>
         @scope.$apply =>
-          @scope.record = res.result.data[0]
-          @scope.recordId = @scope.record.id
+          @_setRecord(res.result.data[0])
         def.resolve(res)
       .always =>
         @scope.$apply =>
@@ -188,6 +196,11 @@ class DataSource
       @pendingRequest = setTimeout _get, timeout or @requestInterval
 
     return def.promise()
+
+  _setRecord: (rec) ->
+    @scope.record = rec
+    @scope.recordId = rec.id
+    @state = DataSourceState.browsing
 
   next: ->
     @moveBy(1)
@@ -218,4 +231,5 @@ class Record
 Katrid.Data =
   DataSource: DataSource
   Record: Record
-  DataState: DataState
+  RecordState: RecordState
+  DataSourceState: DataSourceState

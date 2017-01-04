@@ -7,7 +7,6 @@ class Action
   execute: (scope) ->
 
 
-
 class WindowAction extends Action
   @actionType: 'sys.action.window'
   constructor: (info, scope) ->
@@ -19,11 +18,12 @@ class WindowAction extends Action
 
   createNew: ->
     @setViewType('form')
+    @scope.dataSource.state = 'CREATING'
     @scope.record = {}
-    @scope.record.display_name = '(New)'
+    @scope.record.display_name = Katrid.i18n.gettext '(New)'
 
   deleteSelection: ->
-    if confirm(Katrid.i18n.gettext('Confirm delete record?'))
+    if confirm(Katrid.i18n.gettext 'Confirm delete record?')
       @scope.model.destroy(@scope.record.id)
       i = @scope.records.indexOf(@scope.record)
       if i
@@ -45,10 +45,9 @@ class WindowAction extends Action
       if search.view_type is 'list' and search.page isnt @scope.dataSource.pageIndex
         @scope.dataSource.pageIndex = search.page
         @scope.dataSource.search({}, search.page)
-        .done (res) ->
-          console.log(res)
 
       if search.id and ((@scope.record? and @scope.record.id != search.id) or not @scope.record?)
+        @scope.record = null
         @scope.dataSource.get(search.id)
     else
       @setViewType(@viewModes[0])
@@ -71,7 +70,7 @@ class WindowAction extends Action
       me.apply()
     else
       r = @scope.model.getViewInfo({ view_type: @viewType })
-      r.success (res) ->
+      r.done (res) ->
         view = res.result
         me.cachedViews[me.viewType] = view
         me.scope.$apply ->

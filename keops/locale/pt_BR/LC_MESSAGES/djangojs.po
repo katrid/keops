@@ -92,3 +92,9 @@ msgstr "Erro salvando as alterações do registro"
 
 msgid "No pending changes"
 msgstr "Não existem alterações pendentes"
+
+msgid "(New)"
+msgstr "(Novo)"
+
+msgid "Add"
+msgstr "Adicionar"

@@ -9,7 +9,7 @@
       return this["render_" + viewType];
     };
 
-    Templates.prototype.getButtons = function(scope) {
+    Templates.prototype.getViewModesButtons = function(scope) {
       var act, buttons;
       act = scope.action;
       buttons = {
@@ -24,7 +24,7 @@
     Templates.prototype.getViewButtons = function(scope) {
       var act, buttons, i, len, r, ref, vt;
       act = scope.action;
-      buttons = this.getButtons(scope);
+      buttons = this.getViewModesButtons(scope);
       r = [];
       ref = act.viewModes;
       for (i = 0, len = ref.length; i < len; i++) {
@@ -98,6 +98,12 @@
       }
       s = "<table ng-show=\"!dataSource.loading\" class=\"table table-striped table-bordered table-hover display responsive nowrap dataTable no-footer dtr-column\">\n<thead><tr>" + ths + "</tr></thead>\n<tbody>\n<tr ng-repeat=\"row in records\" ng-click=\"" + rowClick + "\">" + cols + "</tr>\n</tbody>\n</table>\n<div ng-show=\"dataSource.loading\" class=\"col-sm-12 margin-bottom-16 margin-top-16\">" + (Katrid.i18n.gettext('Loading...')) + "</div>";
       return s;
+    };
+
+    Templates.prototype.renderGrid = function(scope, element, attrs, rowClick) {
+      var tbl;
+      tbl = this.renderList(scope, element, attrs, rowClick);
+      return "<div><div><button class=\"btn btn-default\" ng-click=\"addItem()\" type=\"button\">" + (Katrid.i18n.gettext('Add')) + "</button></div>" + tbl + "</div>";
     };
 
     return Templates;

@@ -242,6 +242,8 @@ class ModelService(ViewService):
             if self.list_fields:
                 fields = {f.name: f for f in fields if f.name in self.list_fields}
                 fields = [fields[f] for f in self.list_fields]
+        elif view_type == 'form':
+            fields = chain(fields, self.model._meta.many_to_many)
         return templ.render({
             'opts': self.model._meta,
             'fields': fields,

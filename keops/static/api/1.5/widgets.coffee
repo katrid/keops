@@ -104,6 +104,15 @@ class OneToManyField extends Widget
     return html
 
 
+class ManyToManyField extends Widget
+  tag: 'input foreignkey multiple'
+
+  template: (scope, el, attrs, field) ->
+    html = super(scope, el, attrs, field, 'hidden')
+    html = '<div><label for="' + attrs._id + '">' + field.caption + '</label>' + html + '</div>'
+    return html
+
+
 class CheckBox extends InputWidget
   constructor: ->
     super
@@ -133,69 +142,6 @@ class CheckBox extends InputWidget
     return html
 
 
-Katrid.uiKatrid.directive 'foreignkey', ->
-  restrict: 'A'
-  require: 'ngModel'
-  link: (scope, el, attrs, controller) ->
-
-    f = scope.view.fields['model']
-    sel = el
-
-    newItem = () ->
-
-    config =
-      allowClear: true
-      ajax:
-        url: '/api/rpc/' + scope.model.name + '/get_field_choices/?args=' + attrs.name
-
-        data: (term, page) ->
-          q: term
-
-        results: (data, page) ->
-          msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...')
-          r = ({id: item[0], text: item[1]} for item in data.result)
-          if sel.data('select2').search.val()
-            r.push({id: newItem, text: msg})
-          results: r
-
-      formatResult: (state) ->
-        s = sel.data('select2').search.val()
-        if state.id is newItem
-          state.str = s
-          return '<strong>' + state.text.format(s) + '</strong>'
-        return state.text
-
-      initSelection: (el, cb) ->
-        v = controller.$modelValue
-        if v
-          cb({id: v[0], text: v[1]})
-
-
-    sel = sel.select2(config)
-
-    sel.on 'change', (e) ->
-      v = sel.select2('data')
-      if v.id is newItem
-        service = new Katrid.Services.Model(scope.view.fields[attrs.name].model)
-        service.createName(v.str)
-        .then (res) ->
-          controller.$setDirty()
-          controller.$setViewValue res.result
-          sel.select2('val', {id: res.result[0], text: res.result[1]})
-      else
-        controller.$setDirty()
-        if v
-          controller.$setViewValue [v.id, v.text]
-        else
-          controller.$setViewValue null
-
-    controller.$render = ->
-      if controller.$viewValue
-        sel.select2('val', controller.$viewValue[0])
-      else
-        sel.select2('val', null)
-
-
 @Katrid.UI.Widgets =
   Widget: Widget
   InputWidget: InputWidget
@@ -204,5 +150,6 @@ Katrid.uiKatrid.directive 'foreignkey', ->
   ForeignKey: ForeignKey
   TextareaField: TextareaField
   DecimalField: DecimalField
-  OneToManyField: OneToManyField
   CheckBox: CheckBox
+  OneToManyField: OneToManyField
+  ManyToManyField: ManyToManyField

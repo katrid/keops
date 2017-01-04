@@ -51,8 +51,10 @@
                 cols = 3;
               }
             } else if (tp === 'OneToManyField') {
-              widget = 'OneToManyField';
+              widget = tp;
               cols = 12;
+            } else if (tp === 'ManyToManyField') {
+              widget = tp;
             } else {
               widget = 'TextField';
             }
@@ -143,7 +145,7 @@
           return scope.$apply(function() {
             var html;
             scope.view = res.result;
-            html = Katrid.UI.Utils.Templates.renderList(scope, $(scope.view.content), attrs, 'showDialog($index)');
+            html = Katrid.UI.Utils.Templates.renderGrid(scope, $(scope.view.content), attrs, 'showDialog($index)');
             return element.replaceWith($compile(html)(scope));
           });
         });
@@ -161,6 +163,9 @@
           });
           return false;
         };
+        scope.addItem = function() {
+          return scope.showDialog();
+        };
         scope.save = function() {
           var attr, data, rec;
           data = scope.dataSource.applyModifiedData(scope.form, scope.gridDialog, scope.record);
@@ -173,17 +178,24 @@
           scope.gridDialog.modal('toggle');
         };
         scope.showDialog = function(index) {
-          scope.recordIndex = index;
-          if (!scope.dataSet[index]) {
-            scope.dataSource.get(scope.records[index].id, 0).done(function(res) {
-              if (res.ok) {
-                return scope.$apply(function() {
-                  return scope.dataSet[index] = scope.record;
-                });
-              }
-            });
+          var rec;
+          if (index != null) {
+            scope.recordIndex = index;
+            if (!scope.dataSet[index]) {
+              scope.dataSource.get(scope.records[index].id, 0).done(function(res) {
+                if (res.ok) {
+                  return scope.$apply(function() {
+                    return scope.dataSet[index] = scope.record;
+                  });
+                }
+              });
+            }
+            rec = scope.dataSet[index];
+          } else {
+            scope.recordIndex = -1;
+            rec = {};
           }
-          scope.record = scope.dataSet[index];
+          scope.record = rec;
           if (scope._viewCache.form) {
             setTimeout(function() {
               return renderDialog();
@@ -387,6 +399,108 @@
             return element.val($filter('number')(controller.$viewValue, precision));
           } else {
             return element.val('');
+          }
+        };
+      }
+    };
+  });
+
+  Katrid.uiKatrid.directive('foreignkey', function() {
+    return {
+      restrict: 'A',
+      require: 'ngModel',
+      link: function(scope, el, attrs, controller) {
+        var config, f, newItem, sel;
+        f = scope.view.fields['model'];
+        sel = el;
+        newItem = function() {};
+        config = {
+          allowClear: true,
+          ajax: {
+            url: '/api/rpc/' + scope.model.name + '/get_field_choices/?args=' + attrs.name,
+            data: function(term, page) {
+              return {
+                q: term
+              };
+            },
+            results: function(data, page) {
+              var item, msg, r;
+              msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...');
+              r = (function() {
+                var j, len, ref, results;
+                ref = data.result;
+                results = [];
+                for (j = 0, len = ref.length; j < len; j++) {
+                  item = ref[j];
+                  results.push({
+                    id: item[0],
+                    text: item[1]
+                  });
+                }
+                return results;
+              })();
+              if (sel.data('select2').search.val()) {
+                r.push({
+                  id: newItem,
+                  text: msg
+                });
+              }
+              return {
+                results: r
+              };
+            }
+          },
+          formatResult: function(state) {
+            var s;
+            s = sel.data('select2').search.val();
+            if (state.id === newItem) {
+              state.str = s;
+              return '<strong>' + state.text.format(s) + '</strong>';
+            }
+            return state.text;
+          },
+          initSelection: function(el, cb) {
+            var v;
+            v = controller.$modelValue;
+            if (v) {
+              return cb({
+                id: v[0],
+                text: v[1]
+              });
+            }
+          }
+        };
+        if (attrs.multiple) {
+          config['multiple'] = true;
+        }
+        sel = sel.select2(config);
+        sel.on('change', function(e) {
+          var service, v;
+          v = sel.select2('data');
+          if (v.id === newItem) {
+            service = new Katrid.Services.Model(scope.view.fields[attrs.name].model);
+            return service.createName(v.str).then(function(res) {
+              controller.$setDirty();
+              controller.$setViewValue(res.result);
+              return sel.select2('val', {
+                id: res.result[0],
+                text: res.result[1]
+              });
+            });
+          } else {
+            controller.$setDirty();
+            if (v) {
+              return controller.$setViewValue([v.id, v.text]);
+            } else {
+              return controller.$setViewValue(null);
+            }
+          }
+        });
+        return controller.$render = function() {
+          if (controller.$viewValue) {
+            return sel.select2('val', controller.$viewValue[0]);
+          } else {
+            return sel.select2('val', null);
           }
         };
       }

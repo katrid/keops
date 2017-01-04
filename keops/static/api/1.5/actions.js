@@ -36,8 +36,9 @@
 
     WindowAction.prototype.createNew = function() {
       this.setViewType('form');
+      this.scope.dataSource.state = 'CREATING';
       this.scope.record = {};
-      return this.scope.record.display_name = '(New)';
+      return this.scope.record.display_name = Katrid.i18n.gettext('(New)');
     };
 
     WindowAction.prototype.deleteSelection = function() {
@@ -67,11 +68,10 @@
         }
         if (search.view_type === 'list' && search.page !== this.scope.dataSource.pageIndex) {
           this.scope.dataSource.pageIndex = search.page;
-          this.scope.dataSource.search({}, search.page).done(function(res) {
-            return console.log(res);
-          });
+          this.scope.dataSource.search({}, search.page);
         }
         if (search.id && (((this.scope.record != null) && this.scope.record.id !== search.id) || (this.scope.record == null))) {
+          this.scope.record = null;
           return this.scope.dataSource.get(search.id);
         }
       } else {
@@ -101,7 +101,7 @@
         r = this.scope.model.getViewInfo({
           view_type: this.viewType
         });
-        r.success(function(res) {
+        r.done(function(res) {
           view = res.result;
           me.cachedViews[me.viewType] = view;
           return me.scope.$apply(function() {

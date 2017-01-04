@@ -4,7 +4,7 @@ class Templates
   getViewRenderer: (viewType) ->
     return @["render_" + viewType]
 
-  getButtons: (scope) ->
+  getViewModesButtons: (scope) ->
     act = scope.action
     buttons =
       list: '<button class="btn btn-default" type="button" ng-click="action.setViewType(\'list\')"><i class="fa fa-list"></i></button>'
@@ -16,7 +16,7 @@ class Templates
   # buttons group include
   getViewButtons: (scope) ->
     act = scope.action
-    buttons = @getButtons(scope)
+    buttons = @getViewModesButtons(scope)
     r = []
     for vt in act.viewModes
       r.push(buttons[vt])
@@ -177,7 +177,9 @@ class Templates
 """
     return s
 
-
+  renderGrid: (scope, element, attrs, rowClick) ->
+    tbl = @renderList(scope, element, attrs, rowClick)
+    return """<div><div><button class="btn btn-default" ng-click="addItem()" type="button">#{Katrid.i18n.gettext 'Add'}</button></div>#{tbl}</div>"""
 
 @Katrid.UI.Utils =
   Templates: new Templates()
