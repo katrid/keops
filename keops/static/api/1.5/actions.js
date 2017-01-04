@@ -122,9 +122,18 @@
         action_name: viewAction,
         target: target
       }).done(function(res) {
+        var j, len, msg, ref, results;
         console.log(res);
         if (res.status === 'open') {
           return window.open(res.open);
+        } else if (res.status === 'fail') {
+          ref = res.messages;
+          results = [];
+          for (j = 0, len = ref.length; j < len; j++) {
+            msg = ref[j];
+            results.push(Katrid.Dialogs.Alerts.error(msg));
+          }
+          return results;
         }
       });
     };

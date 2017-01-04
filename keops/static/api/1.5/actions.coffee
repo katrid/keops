@@ -87,6 +87,9 @@ class WindowAction extends Action
       console.log(res)
       if res.status is 'open'
         window.open(res.open)
+      else if res.status is 'fail'
+        for msg in res.messages
+          Katrid.Dialogs.Alerts.error msg
 
 
 @Katrid.Actions =
