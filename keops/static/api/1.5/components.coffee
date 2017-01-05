@@ -356,10 +356,15 @@ Katrid.uiKatrid.directive 'foreignkey', ->
 
       initSelection: (el, cb) ->
         v = controller.$modelValue
-        if v
+        if multiple
+          v = ({id: obj[0], text: obj[1]} for obj in v)
+          cb(v)
+        else if v
           cb({id: v[0], text: v[1]})
 
-    if attrs.multiple
+    multiple = attrs.multiple
+
+    if multiple
       config['multiple'] = true
 
     sel = sel.select2(config)
@@ -373,6 +378,9 @@ Katrid.uiKatrid.directive 'foreignkey', ->
           controller.$setDirty()
           controller.$setViewValue res.result
           sel.select2('val', {id: res.result[0], text: res.result[1]})
+      else if v and multiple
+        v = (obj.id for obj in v)
+        controller.$setViewValue v
       else
         controller.$setDirty()
         if v
@@ -381,6 +389,10 @@ Katrid.uiKatrid.directive 'foreignkey', ->
           controller.$setViewValue null
 
     controller.$render = ->
+      if multiple
+        if controller.$viewValue
+          v = (obj[0] for obj in controller.$viewValue)
+          sel.select2('val', v)
       if controller.$viewValue
         sel.select2('val', controller.$viewValue[0])
       else

@@ -45,6 +45,7 @@ class ModelService(ViewService):
     def __init__(self, request):
         super(ModelService, self).__init__(request)
         self.post_data = defaultdict(dict)
+        self.m2m = {}
 
     @classmethod
     def init_service(cls):
@@ -69,8 +70,13 @@ class ModelService(ViewService):
                 obj = rel_model._default_manager.get(pk=v['values']['id'])
             self.deserialize(obj, v['values'])
 
-    def deserialize_value(self, instance, field_name, value):
-        field = instance.__class__._meta.get_field(field_name)
+    def deserialize_value(self, instance, field, value):
+        field_name = field.name
+
+        if isinstance(field, ManyToManyField):
+            self.m2m[field.name] = value
+            return
+
         if value == '':
             value = None
         if isinstance(field, ManyToOneRel):
@@ -85,16 +91,20 @@ class ModelService(ViewService):
     def deserialize(self, instance, data):
         data.pop('id', None)
         for k, v in data.items():
-            self.deserialize_value(instance, k, v)
+            field = instance.__class__._meta.get_field(k)
+            self.deserialize_value(instance, field, v)
         instance.full_clean()
         if instance.pk:
-            flds = data.keys() - [f.name for f in self.post_data[id(instance)].keys()]
+            flds = data.keys() - [f.name for f in self.post_data[id(instance)].keys()] - self.m2m.keys()
             if flds:
                 instance.save(update_fields=flds)
         else:
             instance.save()
 
         post_data = self.post_data.pop(id(instance), None)
+
+        for k, v in self.m2m.items():
+            getattr(instance, k).set(v)
 
         if post_data:
             for f, v in post_data.items():
@@ -109,7 +119,7 @@ class ModelService(ViewService):
                 elif isinstance(field, ForeignKey):
                     return [v.pk, str(v)]
                 elif isinstance(field, ManyToManyField):
-                    return [v for v in v.all()]
+                    return [(v.id, str(v)) for v in v.all()]
 
         except FieldDoesNotExist:
             return getattr(instance, field.name)

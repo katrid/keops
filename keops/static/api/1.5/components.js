@@ -410,7 +410,7 @@
       restrict: 'A',
       require: 'ngModel',
       link: function(scope, el, attrs, controller) {
-        var config, f, newItem, sel;
+        var config, f, multiple, newItem, sel;
         f = scope.view.fields['model'];
         sel = el;
         el.addClass('form-field');
@@ -461,9 +461,23 @@
             return state.text;
           },
           initSelection: function(el, cb) {
-            var v;
+            var obj, v;
             v = controller.$modelValue;
-            if (v) {
+            if (multiple) {
+              v = (function() {
+                var j, len, results;
+                results = [];
+                for (j = 0, len = v.length; j < len; j++) {
+                  obj = v[j];
+                  results.push({
+                    id: obj[0],
+                    text: obj[1]
+                  });
+                }
+                return results;
+              })();
+              return cb(v);
+            } else if (v) {
               return cb({
                 id: v[0],
                 text: v[1]
@@ -471,12 +485,13 @@
             }
           }
         };
-        if (attrs.multiple) {
+        multiple = attrs.multiple;
+        if (multiple) {
           config['multiple'] = true;
         }
         sel = sel.select2(config);
         sel.on('change', function(e) {
-          var service, v;
+          var obj, service, v;
           v = sel.select2('data');
           if (v.id === newItem) {
             service = new Katrid.Services.Model(scope.view.fields[attrs.name].model);
@@ -488,6 +503,17 @@
                 text: res.result[1]
               });
             });
+          } else if (v && multiple) {
+            v = (function() {
+              var j, len, results;
+              results = [];
+              for (j = 0, len = v.length; j < len; j++) {
+                obj = v[j];
+                results.push(obj.id);
+              }
+              return results;
+            })();
+            return controller.$setViewValue(v);
           } else {
             controller.$setDirty();
             if (v) {
@@ -498,6 +524,22 @@
           }
         });
         return controller.$render = function() {
+          var obj, v;
+          if (multiple) {
+            if (controller.$viewValue) {
+              v = (function() {
+                var j, len, ref, results;
+                ref = controller.$viewValue;
+                results = [];
+                for (j = 0, len = ref.length; j < len; j++) {
+                  obj = ref[j];
+                  results.push(obj[0]);
+                }
+                return results;
+              })();
+              sel.select2('val', v);
+            }
+          }
           if (controller.$viewValue) {
             return sel.select2('val', controller.$viewValue[0]);
           } else {
