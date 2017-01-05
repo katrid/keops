@@ -54,6 +54,7 @@
     };
 
     WindowAction.prototype.routeUpdate = function(search) {
+      var filter;
       if (search.view_type != null) {
         if (this.scope.records == null) {
           this.scope.records = [];
@@ -66,9 +67,15 @@
           this.location.search('page', 1);
           return;
         }
+        filter = {};
+        if (search.q != null) {
+          filter.q = search.q;
+        }
         if (search.view_type === 'list' && search.page !== this.scope.dataSource.pageIndex) {
           this.scope.dataSource.pageIndex = search.page;
-          this.scope.dataSource.search({}, search.page);
+          this.scope.dataSource.search(filter, search.page);
+        } else if (search.view_type === 'list' && (search.q != null)) {
+          this.scope.dataSource.search(filter, search.page);
         }
         if (search.id && (((this.scope.record != null) && this.scope.record.id !== search.id) || (this.scope.record == null))) {
           this.scope.record = null;
@@ -114,7 +121,11 @@
     };
 
     WindowAction.prototype.render = function(scope, html, viewType) {
-      return scope.setContent(Katrid.UI.Utils.Templates['render_' + viewType](scope, html));
+      return scope.setContent(Katrid.UI.Utils.Templates['preRender_' + viewType](scope, html));
+    };
+
+    WindowAction.prototype.searchText = function(q) {
+      return this.location.search('q', q);
     };
 
     WindowAction.prototype.doViewAction = function(viewAction, target) {

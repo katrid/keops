@@ -185,7 +185,16 @@ class ModelService(ViewService):
 
     def _search(self, count=None, page=None, *args, **kwargs):
         params = kwargs.get('params', {}) or {}
+        q = None
+        if 'q' in params:
+            q = params.pop('q')
         qs = self.model.objects.filter(**params)
+
+        if q:
+            if self.search_fields:
+                qs = qs.filter(**{self.search_fields[0] + '__icontains': q})
+            else:
+                qs = qs.filter(**{self.title_field + '__icontains': q})
 
         # Check rules
         if not self.request.user.is_superuser:

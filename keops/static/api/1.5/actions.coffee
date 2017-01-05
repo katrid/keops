@@ -42,9 +42,15 @@ class WindowAction extends Action
         @location.search('page', 1)
         return
 
+      filter = {}
+      if search.q?
+        filter.q = search.q
+
       if search.view_type is 'list' and search.page isnt @scope.dataSource.pageIndex
         @scope.dataSource.pageIndex = search.page
-        @scope.dataSource.search({}, search.page)
+        @scope.dataSource.search(filter, search.page)
+      else if search.view_type is 'list' and search.q?
+        @scope.dataSource.search(filter, search.page)
 
       if search.id and ((@scope.record? and @scope.record.id != search.id) or not @scope.record?)
         @scope.record = null
@@ -79,7 +85,10 @@ class WindowAction extends Action
       return r
 
   render: (scope, html, viewType) ->
-    scope.setContent(Katrid.UI.Utils.Templates['render_' + viewType](scope, html))
+    scope.setContent(Katrid.UI.Utils.Templates['preRender_' + viewType](scope, html))
+
+  searchText: (q) ->
+    @location.search('q', q)
 
   doViewAction: (viewAction, target) ->
     @scope.model.doViewAction({ action_name: viewAction, target: target })

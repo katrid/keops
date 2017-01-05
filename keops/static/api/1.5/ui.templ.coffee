@@ -46,7 +46,7 @@ class Templates
   </div>
   """
 
-  render_form: (scope, html) ->
+  preRender_form: (scope, html) ->
     buttons = @getViewButtons(scope)
     actions = ''
     if scope.view.view_actions
@@ -94,25 +94,24 @@ class Templates
 <div class=\"panel-body\"><div class=\"row\">#{html}</div></div></div></div></div>"""
     return html
 
-  render_list: (scope, html) ->
+  preRender_list: (scope, html) ->
     buttons = @getViewButtons(scope)
     """<div class=\"data-heading panel panel-default\">
     <div class=\"panel-body\">
-      <div>
-        <a href=\"javascript:void(0)\" title=\"Add to favorite\"><i class=\"fa star fa-star-o pull-right\"></i></a>
-        <ol class=\"breadcrumb\">
+      <div class='row'>
+        <div class="col-sm-6">
+        <ol class="breadcrumb">
           <li>${ action.info.display_name }</li>
         </ol>
-        <div class=\"pull-right\">
-            <span>
-              <strong>${dataSource.offset|number} - ${dataSource.offsetLimit|number}</strong> of <strong>${dataSource.recordCount|number}</strong>
-            </span>
         </div>
-        <p class=\"help-block\">${ action.info.usage }&nbsp;</p>
+        <div class="search-view col-md-6">
+          <input ng-model="searchBox" type="text" class="form-control" placeholder="#{Katrid.i18n.gettext 'Search...'}" ng-enter="action.searchText(searchBox)">
+        </div>
+        <!--<p class=\"help-block\">${ action.info.usage }&nbsp;</p>-->
       </div>
-      <div class=\"toolbar\">
-  <button class=\"btn btn-primary\" type=\"button\" ng-click=\"action.createNew()\">#{Katrid.i18n.gettext 'Create'}</button>
-  <span ng-show="dataSource.loading" class="badge page-badge-ref fadeIn animated">${dataSource.pageIndex}</span>
+      <div class="toolbar">
+        <button class=\"btn btn-primary\" type=\"button\" ng-click=\"action.createNew()\">#{Katrid.i18n.gettext 'Create'}</button>
+        <span ng-show="dataSource.loading" class="badge page-badge-ref fadeIn animated">${dataSource.pageIndex}</span>
 
   <div class=\"btn-group\">
     <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\">
@@ -123,6 +122,9 @@ class Templates
   </div>
 
   <div class=\"pull-right\">
+            <div class="pagination-area">
+              <span class="paginator">${dataSource.offset|number} - ${dataSource.offsetLimit|number}</span> / <span class="total-pages">${dataSource.recordCount|number}</span>
+            </div>
     <div class=\"btn-group\">
       <button class=\"btn btn-default\" type=\"button\" ng-click=\"dataSource.prevPage()\"><i class=\"fa fa-chevron-left\"></i>
       </button>

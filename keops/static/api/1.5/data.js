@@ -66,6 +66,7 @@
         this.scope.model.write([data]).done((function(_this) {
           return function() {
             _this.scope.form.$setPristine();
+            _this.scope.record = null;
             _this.scope.action.setViewType('list');
             return _this.search();
           };

@@ -341,10 +341,11 @@ Katrid.uiKatrid.directive 'foreignkey', ->
           q: term
 
         results: (data, page) ->
-          msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...')
           r = ({id: item[0], text: item[1]} for item in data.result)
-          if sel.data('select2').search.val()
-            r.push({id: newItem, text: msg})
+          if not multiple
+            msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...')
+            if sel.data('select2').search.val()
+              r.push({id: newItem, text: msg})
           results: r
 
       formatResult: (state) ->

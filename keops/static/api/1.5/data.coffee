@@ -45,6 +45,7 @@ class DataSource
       @scope.model.write([data])
       .done =>
         @scope.form.$setPristine()
+        @scope.record = null
         @scope.action.setViewType('list')
         @search()
       .always =>

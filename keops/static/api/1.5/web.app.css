@@ -30,3 +30,7 @@ section div.checkbox {
   margin-top: 6px;
   margin-bottom: 6px;
 }
+.pagination-area {
+  display: inline-block;
+  margin: 0 6px 0 0;
+}

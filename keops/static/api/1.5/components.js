@@ -426,7 +426,6 @@
             },
             results: function(data, page) {
               var item, msg, r;
-              msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...');
               r = (function() {
                 var j, len, ref, results;
                 ref = data.result;
@@ -440,11 +439,14 @@
                 }
                 return results;
               })();
-              if (sel.data('select2').search.val()) {
-                r.push({
-                  id: newItem,
-                  text: msg
-                });
+              if (!multiple) {
+                msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...');
+                if (sel.data('select2').search.val()) {
+                  r.push({
+                    id: newItem,
+                    text: msg
+                  });
+                }
               }
               return {
                 results: r

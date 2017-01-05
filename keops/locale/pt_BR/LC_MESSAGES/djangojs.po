@@ -104,3 +104,6 @@ msgstr "sim"
 
 msgid "no"
 msgstr "não"
+
+msgid "Search..."
+msgstr "Pesquisar..."
