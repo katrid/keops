@@ -42,6 +42,7 @@ class ModelService(ViewService):
     title_field = 'name'
     list_fields = None
     extra_fields = None
+    search_fields = None
 
     def __init__(self, request):
         super(ModelService, self).__init__(request)
@@ -291,7 +292,13 @@ class ModelService(ViewService):
         if service in cls.site.services:
             service = cls.site.services[service](cls.request)
             q = cls.request.GET.get('q', None)
-            d = service.search_names(params={service.title_field + '__icontains': q})
+            params = None
+            if q:
+                if service.search_fields:
+                    params = {s + '__icontains': q for s in service.search_fields}
+                else:
+                    params = {service.title_field + '__icontains': q}
+            d = service.search_names(params=params)
             return d
 
     @service_method
