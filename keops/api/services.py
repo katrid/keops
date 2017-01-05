@@ -197,19 +197,20 @@ class ModelService(ViewService):
             offset = (page - 1) * PAGE_SIZE
 
         # Check rules
-        from keops.contrib.base.models import Rule
+        if not self.request.user.is_superuser:
+            from keops.contrib.base.models import Rule
 
-        rules = Rule.objects.filter(model=self.name, active=True)
-        for rule in rules:
-            if rule.domain:
-                try:
-                    domain = eval(rule.domain, None, {'user': self.request.user})
-                    for k, v in domain.items():
-                        if isinstance(v, QuerySet):
-                            domain[k] = [obj.pk for obj in v]
-                    qs = qs.filter(**domain)
-                except Exception as e:
-                    print('Error applying rule', e)
+            rules = Rule.objects.filter(model=self.name, active=True)
+            for rule in rules:
+                if rule.domain:
+                    try:
+                        domain = eval(rule.domain, None, {'user': self.request.user})
+                        for k, v in domain.items():
+                            if isinstance(v, QuerySet):
+                                domain[k] = [obj.pk for obj in v]
+                        qs = qs.filter(**domain)
+                    except Exception as e:
+                        print('Error applying rule', e)
 
         qs = qs[offset:offset + PAGE_SIZE]
         qs._count = _count
