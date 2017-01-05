@@ -20,7 +20,7 @@ class WindowAction extends Action
     @setViewType('form')
     @scope.dataSource.state = 'CREATING'
     @scope.record = {}
-    @scope.record.display_name = Katrid.i18n.gettext '(New)'
+    @scope.record.__str__ = Katrid.i18n.gettext '(New)'
 
   deleteSelection: ->
     if confirm(Katrid.i18n.gettext 'Confirm delete record?')

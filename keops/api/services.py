@@ -39,7 +39,7 @@ class ModelService(ViewService):
     group_fields = None
     writable_fields = None
     readable_fields = None
-    disp_field = 'name'
+    title_field = 'name'
     list_fields = None
     extra_fields = None
 
@@ -142,7 +142,7 @@ class ModelService(ViewService):
             data[f.name] = self.serialize_value(instance, f)
         if 'id' not in data:
             data['id'] = instance.pk
-        data['display_name'] = str(instance)
+        data['__str__'] = str(instance)
         return data
 
     def get_fields_info(self, view_type):
@@ -290,7 +290,7 @@ class ModelService(ViewService):
         if service in cls.site.services:
             service = cls.site.services[service](cls.request)
             q = cls.request.GET.get('q', None)
-            d = service.search_names(params={service.disp_field + '__icontains': q})
+            d = service.search_names(params={service.title_field + '__icontains': q})
             return d
 
     @service_method

@@ -59,7 +59,7 @@ class Templates
         <a href=\"javascript:void(0)\" title=\"Add to favorite\"><i class=\"fa star fa-star-o pull-right\"></i></a>
         <ol class=\"breadcrumb\">
           <li><a href=\"javascript:void(0)\" ng-click=\"action.setViewType(\'list\')\">${ action.info.display_name }</a></li>
-          <li>${ (dataSource.loadingRecord && Katrid.i18n.gettext('Loading...')) || record.display_name }</li>
+          <li>${ (dataSource.loadingRecord && Katrid.i18n.gettext('Loading...')) || record.__str__ }</li>
         </ol>
         <div class=\"pull-right\">
             <span ng-show="records.length">
