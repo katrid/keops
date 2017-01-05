@@ -185,16 +185,6 @@ class ModelService(ViewService):
     def _search(self, count=None, page=None, *args, **kwargs):
         params = kwargs.get('params', {}) or {}
         qs = self.model.objects.filter(**params)
-        _count = None
-        if count:
-            _count = qs.count()
-        if page:
-            page = int(page)
-        else:
-            page = 1
-        offset = 0
-        if page > 1:
-            offset = (page - 1) * PAGE_SIZE
 
         # Check rules
         if not self.request.user.is_superuser:
@@ -211,6 +201,17 @@ class ModelService(ViewService):
                         qs = qs.filter(**domain)
                     except Exception as e:
                         print('Error applying rule', e)
+
+        _count = None
+        if count:
+            _count = qs.count()
+        if page:
+            page = int(page)
+        else:
+            page = 1
+        offset = 0
+        if page > 1:
+            offset = (page - 1) * PAGE_SIZE
 
         qs = qs[offset:offset + PAGE_SIZE]
         qs._count = _count
