@@ -1,7 +1,7 @@
 import json
 from itertools import chain
 from collections import defaultdict
-from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist, ValidationError
 from django.db.models import ForeignKey, ImageField
 from django.template import loader
 from django.http import HttpResponse, JsonResponse
@@ -10,6 +10,7 @@ from django.apps import apps
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.fields.related import ManyToOneRel, ManyToManyField
 from django.db.models import QuerySet
+from django.db.models import NOT_PROVIDED
 
 from keops.models.fields import OneToManyField
 from .decorators import service_method
@@ -188,9 +189,19 @@ class ModelService(ViewService):
     def get_name(self, instance):
         return [instance.pk, str(instance)]
 
+    @service_method
+    def get_defaults(self):
+        r = {}
+        for f in self.model._meta.fields:
+            if f.default is not NOT_PROVIDED:
+                if callable(f.default):
+                    r[f.name] = f.default()
+                else:
+                    r[f.name] = f.default
+        return r or None
+
     def _search(self, count=None, page=None, *args, **kwargs):
         params = kwargs.get('params', {}) or {}
-        print(params)
         qs = self.model.objects.filter(**params)
 
         # Check rules

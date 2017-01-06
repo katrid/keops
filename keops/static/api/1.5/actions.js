@@ -35,9 +35,7 @@
 
     WindowAction.prototype.createNew = function() {
       this.setViewType('form');
-      this.scope.dataSource.state = 'CREATING';
-      this.scope.record = {};
-      return this.scope.record.__str__ = Katrid.i18n.gettext('(New)');
+      return this.scope.dataSource.newRecord();
     };
 
     WindowAction.prototype.deleteSelection = function() {

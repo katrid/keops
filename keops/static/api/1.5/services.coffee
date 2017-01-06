@@ -45,6 +45,9 @@ class Model extends Service
   getById: (id) ->
     @post('get', null, { kwargs: { id: id } })
 
+  getDefaults: ->
+    @post('get_defaults')
+
   getViewInfo: (data) ->
     @post('get_view_info', null, { kwargs: data })
 

@@ -44,3 +44,7 @@ section div.checkbox {
 .search-view .select2-container-multi .select2-search-choice-close {
   left: inherit;
 }
+input[type=text].ng-touched.ng-invalid {
+  border-color: #a94442;
+  background-color: #ffe5e6;
+}

@@ -39,6 +39,8 @@ def rpc(request, service, method_name):
         except exceptions.PermissionDenied:
             status = 403
             res = {'status': 'denied', 'ok': False, 'fail': True, 'result': None}
+        except exceptions.ValidationError as e:
+            res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'messages': e.message_dict}
         except:
             raise
             status = 500

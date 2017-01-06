@@ -421,7 +421,9 @@ uiKatrid.directive 'searchBox', ->
 
       id: (obj) ->
         if obj.field
+          return obj.field.name
           return '<' + obj.field.name + ' ' + obj.id + '>'
+        return obj.id.name
         return obj.id.name + '-' + obj.text
 
       formatResult: (obj, element, query) =>

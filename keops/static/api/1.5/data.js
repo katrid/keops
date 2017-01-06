@@ -60,25 +60,47 @@
     DataSource.prototype.saveChanges = function() {
       var data, el;
       el = $('[ng-form]').first();
-      data = this.getModifiedData(this.scope.form, el, this.scope.record);
-      if (data) {
-        this.uploading++;
-        this.scope.model.write([data]).done((function(_this) {
-          return function() {
-            _this.scope.form.$setPristine();
-            _this.scope.record = null;
-            _this.scope.action.setViewType('list');
-            return _this.search();
-          };
-        })(this)).always((function(_this) {
-          return function() {
-            return _this.scope.$apply(function() {
-              return _this.uploading--;
-            });
-          };
-        })(this));
-      } else {
-        Katrid.Dialogs.Alerts.warn(Katrid.i18n.gettext('No pending changes'));
+      if (this.validate()) {
+        data = this.getModifiedData(this.scope.form, el, this.scope.record);
+        if (data) {
+          this.uploading++;
+          this.scope.model.write([data]).done((function(_this) {
+            return function(res) {
+              var elfield, field, fld, i, len, msg, msgs, s;
+              if (res.ok) {
+                _this.scope.form.$setPristine();
+                _this.scope.record = null;
+                _this.scope.action.setViewType('list');
+                return _this.search();
+              } else {
+                s = "<span>" + (Katrid.i18n.gettext('The following fields are invalid:')) + "<hr></span>";
+                for (fld in res.messages) {
+                  msgs = res.messages[fld];
+                  field = _this.scope.view.fields[fld];
+                  elfield = el.find(".form-field[name=\"" + field.name + "\"]");
+                  elfield.addClass('ng-invalid ng-touched');
+                  s += "<strong>" + field.caption + "</strong><ul>";
+                  console.log(field);
+                  for (i = 0, len = msgs.length; i < len; i++) {
+                    msg = msgs[i];
+                    s += "<li>" + msg + "</li>";
+                  }
+                  s += '</ul>';
+                }
+                elfield.focus();
+                return Katrid.Dialogs.Alerts.error(s);
+              }
+            };
+          })(this)).always((function(_this) {
+            return function() {
+              return _this.scope.$apply(function() {
+                return _this.uploading--;
+              });
+            };
+          })(this));
+        } else {
+          Katrid.Dialogs.Alerts.warn(Katrid.i18n.gettext('No pending changes'));
+        }
       }
     };
 
@@ -106,6 +128,33 @@
         }
       }
       return results;
+    };
+
+    DataSource.prototype.validate = function() {
+      var child, el, elfield, errorType, field, form, i, j, len, len1, ref, ref1, s;
+      if (this.scope.form.$invalid) {
+        s = "<span>" + (Katrid.i18n.gettext('The following fields are invalid:')) + "</span><hr>";
+        el = $('[ng-form]').first();
+        for (errorType in this.scope.form.$error) {
+          ref = this.scope.form.$error[errorType];
+          for (i = 0, len = ref.length; i < len; i++) {
+            form = ref[i];
+            ref1 = form.$error[errorType];
+            for (j = 0, len1 = ref1.length; j < len1; j++) {
+              child = ref1[j];
+              elfield = el.find(".form-field[name=\"" + child.$name + "\"]");
+              elfield.addClass('ng-touched');
+              field = this.scope.view.fields[child.$name];
+              s += "<span>" + field.caption + "</span><ul><li>" + (Katrid.i18n.gettext('This field cannot be empty.')) + "</li></ul>";
+            }
+          }
+        }
+        console.log(elfield);
+        elfield.focus();
+        Katrid.Dialogs.Alerts.error(s);
+        return false;
+      }
+      return true;
     };
 
     DataSource.prototype.getIndex = function(obj) {
@@ -286,6 +335,33 @@
         this.pendingRequest = setTimeout(_get, timeout || this.requestInterval);
       }
       return def.promise();
+    };
+
+    DataSource.prototype.newRecord = function() {
+      this.scope.record = {};
+      this.scope.record.__str__ = Katrid.i18n.gettext('(New)');
+      return this.scope.model.getDefaults().done((function(_this) {
+        return function(res) {
+          if (res.result) {
+            return _this.scope.$apply(function() {
+              var attr, child, controller, el, results;
+              el = $('[ng-form]').first();
+              results = [];
+              for (attr in res.result) {
+                child = el.find(".form-field[name=\"" + attr + "\"]");
+                controller = child.data().$ngModelController;
+                if (controller) {
+                  _this.scope.record[attr] = res.result[attr];
+                  results.push(controller.$setDirty());
+                } else {
+                  results.push(void 0);
+                }
+              }
+              return results;
+            });
+          }
+        };
+      })(this));
     };
 
     DataSource.prototype._setRecord = function(rec) {

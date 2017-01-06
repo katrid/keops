@@ -17,9 +17,7 @@ class WindowAction extends Action
 
   createNew: ->
     @setViewType('form')
-    @scope.dataSource.state = 'CREATING'
-    @scope.record = {}
-    @scope.record.__str__ = Katrid.i18n.gettext '(New)'
+    @scope.dataSource.newRecord()
 
   deleteSelection: ->
     if confirm(Katrid.i18n.gettext 'Confirm delete record?')

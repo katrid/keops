@@ -98,6 +98,10 @@
       });
     };
 
+    Model.prototype.getDefaults = function() {
+      return this.post('get_defaults');
+    };
+
     Model.prototype.getViewInfo = function(data) {
       return this.post('get_view_info', null, {
         kwargs: data

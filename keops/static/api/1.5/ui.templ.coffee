@@ -114,7 +114,8 @@ class Templates
         <span ng-show="dataSource.loading" class="badge page-badge-ref fadeIn animated">${dataSource.pageIndex}</span>
 
   <div class=\"btn-group\">
-    <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\">
+    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+      ng-show="selection.length" aria-haspopup="true">
       #{Katrid.i18n.gettext 'Action'} <span class=\"caret\"></span></button>
     <ul class=\"dropdown-menu animated flipInX\">
       <li><a href='javascript:void(0)' ng-click=\"action.deleteSelection()\"><i class=\"fa fa-fw fa-trash\"></i> #{Katrid.i18n.gettext 'Delete'}</a></li>

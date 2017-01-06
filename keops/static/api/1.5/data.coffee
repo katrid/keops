@@ -38,21 +38,38 @@ class DataSource
   saveChanges: ->
     # Submit fields with dirty state only
     el = $('[ng-form]').first()
-    data = @getModifiedData(@scope.form, el, @scope.record)
+    if @validate()
+      data = @getModifiedData(@scope.form, el, @scope.record)
 
-    if data
-      @uploading++
-      @scope.model.write([data])
-      .done =>
-        @scope.form.$setPristine()
-        @scope.record = null
-        @scope.action.setViewType('list')
-        @search()
-      .always =>
-        @scope.$apply =>
-          @uploading--
-    else
-      Katrid.Dialogs.Alerts.warn Katrid.i18n.gettext 'No pending changes'
+      if data
+        @uploading++
+        @scope.model.write([data])
+        .done (res) =>
+          if res.ok
+            @scope.form.$setPristine()
+            @scope.record = null
+            @scope.action.setViewType('list')
+            @search()
+          else
+            s = "<span>#{Katrid.i18n.gettext 'The following fields are invalid:'}<hr></span>"
+            for fld of res.messages
+              msgs = res.messages[fld]
+              field = @scope.view.fields[fld]
+              elfield = el.find(""".form-field[name="#{field.name}"]""")
+              elfield.addClass('ng-invalid ng-touched')
+              s += "<strong>#{field.caption}</strong><ul>"
+              console.log(field)
+              for msg in msgs
+                s += "<li>#{msg}</li>"
+              s += '</ul>'
+            elfield.focus()
+
+            Katrid.Dialogs.Alerts.error s
+        .always =>
+          @scope.$apply =>
+            @uploading--
+      else
+        Katrid.Dialogs.Alerts.warn Katrid.i18n.gettext 'No pending changes'
     return
 
   findById: (id) ->
@@ -64,6 +81,23 @@ class DataSource
     for rec in @scope.records
       if rec.id is id
         true
+
+  validate: ->
+    if @scope.form.$invalid
+      s = "<span>#{Katrid.i18n.gettext 'The following fields are invalid:'}</span><hr>"
+      el = $('[ng-form]').first()
+      for errorType of @scope.form.$error
+        for form in @scope.form.$error[errorType]
+          for child in form.$error[errorType]
+            elfield = el.find(""".form-field[name="#{child.$name}"]""")
+            elfield.addClass('ng-touched')
+            field = @scope.view.fields[child.$name]
+            s += "<span>#{field.caption}</span><ul><li>#{Katrid.i18n.gettext 'This field cannot be empty.'}</li></ul>"
+      console.log(elfield)
+      elfield.focus()
+      Katrid.Dialogs.Alerts.error s
+      return false
+    return true
 
   getIndex: (obj) ->
     rec = @findById(obj.id)
@@ -199,6 +233,21 @@ class DataSource
       @pendingRequest = setTimeout _get, timeout or @requestInterval
 
     return def.promise()
+
+  newRecord: ->
+    @scope.record = {}
+    @scope.record.__str__ = Katrid.i18n.gettext '(New)'
+    @scope.model.getDefaults()
+    .done (res) =>
+      if res.result
+        @scope.$apply =>
+          el = $('[ng-form]').first()
+          for attr of res.result
+            child = el.find(""".form-field[name="#{attr}"]""")
+            controller = child.data().$ngModelController
+            if controller
+              @scope.record[attr] = res.result[attr]
+              controller.$setDirty()
 
   _setRecord: (rec) ->
     @scope.record = rec

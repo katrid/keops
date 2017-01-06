@@ -107,3 +107,9 @@ msgstr "não"
 
 msgid "Search..."
 msgstr "Pesquisar..."
+
+msgid "The following fields are invalid:"
+msgstr "Os seguintes campos são inválidos:"
+
+msgid "This field cannot be empty."
+msgstr "Este campo não pode estar vazio."
