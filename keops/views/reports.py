@@ -215,6 +215,7 @@ def get_report_file(filename):
 @login_required
 def choices(request):
     if 'sql_choices' in request.GET:
+        import pyodbc
         conn_str = 'Dsn=gsf;uid=sped2;pwd=sped2'
         conn = pyodbc.connect(conn_str)
         xml = get_report_file(request.GET['file'])
