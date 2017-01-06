@@ -14,7 +14,6 @@ class WindowAction extends Action
     @viewMode = info.view_mode
     @viewModes = @viewMode.split(',')
     @viewType = null
-    @cachedViews = {}
 
   createNew: ->
     @setViewType('form')
@@ -66,22 +65,18 @@ class WindowAction extends Action
     @render(@scope, @scope.view.content, @viewType)
 
   execute: ->
-    scope = @scope
-    me = @
-    #view = @cachedViews[@viewType]
-    # TODO CACHED VIEWS
-    view = null
-    if view
-      scope.view = view
-      me.apply()
+    if @views?
+      @scope.view = @views[@viewType]
+      @apply()
     else
-      r = @scope.model.getViewInfo({ view_type: @viewType })
-      r.done (res) ->
-        view = res.result
-        me.cachedViews[me.viewType] = view
-        me.scope.$apply ->
-          me.scope.view = view
-          me.apply()
+      r = @scope.model.loadViews()
+      r.done (res) =>
+        views = res.result
+        @views = views
+        @scope.$apply =>
+          @scope.views = views
+          @scope.view = views[@viewType]
+          @apply()
       return r
 
   render: (scope, html, viewType) ->
@@ -89,6 +84,20 @@ class WindowAction extends Action
 
   searchText: (q) ->
     @location.search('q', q)
+
+  _prepareParams: (params) ->
+    r = {}
+    for p in params
+      console.log(p)
+      if p.id.field and p.id.field.type is 'ForeignKey'
+        r[p.id.name] = p.id.id
+      else
+        r[p.id.name + '__icontains'] = p.text
+    return r
+
+  setSearchParams: (params) ->
+    data = @_prepareParams(params)
+    @scope.dataSource.search(data)
 
   doViewAction: (viewAction, target) ->
     @scope.model.doViewAction({ action_name: viewAction, target: target })

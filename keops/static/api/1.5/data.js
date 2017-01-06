@@ -265,7 +265,7 @@
       def = new $.Deferred();
       _get = (function(_this) {
         return function() {
-          return _this.scope.model.get(id).fail(function(res) {
+          return _this.scope.model.getById(id).fail(function(res) {
             return def.reject(res);
           }).done(function(res) {
             _this.scope.$apply(function() {

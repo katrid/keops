@@ -105,7 +105,7 @@ class Templates
         </ol>
         </div>
         <div class="search-view col-md-6">
-          <input ng-model="searchBox" type="text" class="form-control" placeholder="#{Katrid.i18n.gettext 'Search...'}" ng-enter="action.searchText(searchBox)">
+          <input search-box type="hidden" ng-model="searchParams" ng-change="action.setSearchParams(searchParams)" />
         </div>
         <!--<p class=\"help-block\">${ action.info.usage }&nbsp;</p>-->
       </div>

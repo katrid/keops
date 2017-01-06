@@ -31,7 +31,6 @@
       this.viewMode = info.view_mode;
       this.viewModes = this.viewMode.split(',');
       this.viewType = null;
-      this.cachedViews = {};
     }
 
     WindowAction.prototype.createNew = function() {
@@ -97,25 +96,24 @@
     };
 
     WindowAction.prototype.execute = function() {
-      var me, r, scope, view;
-      scope = this.scope;
-      me = this;
-      view = null;
-      if (view) {
-        scope.view = view;
-        return me.apply();
+      var r;
+      if (this.views != null) {
+        this.scope.view = this.views[this.viewType];
+        return this.apply();
       } else {
-        r = this.scope.model.getViewInfo({
-          view_type: this.viewType
-        });
-        r.done(function(res) {
-          view = res.result;
-          me.cachedViews[me.viewType] = view;
-          return me.scope.$apply(function() {
-            me.scope.view = view;
-            return me.apply();
-          });
-        });
+        r = this.scope.model.loadViews();
+        r.done((function(_this) {
+          return function(res) {
+            var views;
+            views = res.result;
+            _this.views = views;
+            return _this.scope.$apply(function() {
+              _this.scope.views = views;
+              _this.scope.view = views[_this.viewType];
+              return _this.apply();
+            });
+          };
+        })(this));
         return r;
       }
     };
@@ -126,6 +124,27 @@
 
     WindowAction.prototype.searchText = function(q) {
       return this.location.search('q', q);
+    };
+
+    WindowAction.prototype._prepareParams = function(params) {
+      var j, len, p, r;
+      r = {};
+      for (j = 0, len = params.length; j < len; j++) {
+        p = params[j];
+        console.log(p);
+        if (p.id.field && p.id.field.type === 'ForeignKey') {
+          r[p.id.name] = p.id.id;
+        } else {
+          r[p.id.name + '__icontains'] = p.text;
+        }
+      }
+      return r;
+    };
+
+    WindowAction.prototype.setSearchParams = function(params) {
+      var data;
+      data = this._prepareParams(params);
+      return this.scope.dataSource.search(data);
     };
 
     WindowAction.prototype.doViewAction = function(viewAction, target) {

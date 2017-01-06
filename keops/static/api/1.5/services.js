@@ -90,7 +90,7 @@
       });
     };
 
-    Model.prototype.get = function(id) {
+    Model.prototype.getById = function(id) {
       return this.post('get', null, {
         kwargs: {
           id: id
@@ -101,6 +101,23 @@
     Model.prototype.getViewInfo = function(data) {
       return this.post('get_view_info', null, {
         kwargs: data
+      });
+    };
+
+    Model.prototype.loadViews = function(data) {
+      return this.post('load_views', null, {
+        kwargs: data
+      });
+    };
+
+    Model.prototype.getFieldChoices = function(field, term) {
+      console.log({
+        args: field,
+        q: term
+      });
+      return this.get('get_field_choices', {
+        args: field,
+        q: term
       });
     };
 

@@ -34,3 +34,13 @@ section div.checkbox {
   display: inline-block;
   margin: 0 6px 0 0;
 }
+.search-view .select2-container-multi .select2-choices .select2-search-choice {
+  padding-left: 3px;
+  padding-right: 18px;
+}
+.search-view .select2-container-multi .select2-choices .select2-search-choice .search-term {
+  margin-left: 6px;
+}
+.search-view .select2-container-multi .select2-search-choice-close {
+  left: inherit;
+}

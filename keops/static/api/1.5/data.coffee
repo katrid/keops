@@ -182,7 +182,7 @@ class DataSource
     def = new $.Deferred()
 
     _get = =>
-      @scope.model.get(id)
+      @scope.model.getById(id)
       .fail (res) =>
         def.reject(res)
       .done (res) =>

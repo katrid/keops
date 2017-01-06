@@ -149,12 +149,17 @@ class ModelService(ViewService):
     def get_fields_info(self, view_type):
         opts = self.model._meta
         r = {}
-        for field in chain(opts.fields, opts.many_to_many, self.extra_fields or []):
+        if view_type == 'search':
+            fields = self.searchable_fields
+        else:
+            fields = chain(opts.fields, opts.many_to_many, self.extra_fields or [])
+        for field in fields:
             r[field.name] = self.get_field_info(field)
         return r
 
     def get_field_info(self, field):
         info = {
+            'name': field.name,
             'help_text': field.help_text,
             'required': not field.blank,
             'readonly': not field.editable,
@@ -174,8 +179,8 @@ class ModelService(ViewService):
         return info
 
     @service_method
-    def get(cls, id):
-        return cls._search(params={'pk': id})[0]
+    def get(self, id):
+        return self._search(params={'pk': id})[0]
 
     def get_names(self, queryset):
         return [self.get_name(obj) for obj in queryset]
@@ -185,16 +190,8 @@ class ModelService(ViewService):
 
     def _search(self, count=None, page=None, *args, **kwargs):
         params = kwargs.get('params', {}) or {}
-        q = None
-        if 'q' in params:
-            q = params.pop('q')
+        print(params)
         qs = self.model.objects.filter(**params)
-
-        if q:
-            if self.search_fields:
-                qs = qs.filter(**{self.search_fields[0] + '__icontains': q})
-            else:
-                qs = qs.filter(**{self.title_field + '__icontains': q})
 
         # Check rules
         if not self.request.user.is_superuser:
@@ -228,36 +225,36 @@ class ModelService(ViewService):
         return qs
 
     @service_method
-    def search(cls, *args, **kwargs):
-        qs = cls._search(*args, **kwargs)
+    def search(self, *args, **kwargs):
+        qs = self._search(*args, **kwargs)
         count = qs._count
-        if cls.list_fields:
-            qs = qs.only(*cls.list_fields)
+        if self.list_fields:
+            qs = qs.only(*self.list_fields)
         qs._count = count
         return qs
 
     @service_method
-    def search_names(cls, *args, **kwargs):
-        qs = cls._search(*args, **kwargs)
-        return cls.get_names(qs)
+    def search_names(self, *args, **kwargs):
+        qs = self._search(*args, **kwargs)
+        return self.get_names(qs)
 
     @service_method
-    def write(cls, data):
+    def write(self, data):
         objs = []
         for row in data:
             pk = row.pop('id', None)
             if pk:
-                obj = cls.get(pk)
+                obj = self.get(pk)
             else:
-                obj = cls.model()
-            cls.deserialize(obj, row)
+                obj = self.model()
+            self.deserialize(obj, row)
             objs.append(obj.pk)
         return objs
 
     @service_method
-    def destroy(cls, ids):
-        ids = [v[0] for v in cls._search(params={'id__in': ids}).only('pk').values_list('pk')]
-        cls.model.objects.filter(id__in=ids).delete()
+    def destroy(self, ids):
+        ids = [v[0] for v in self._search(params={'id__in': ids}).only('pk').values_list('pk')]
+        self.model.objects.filter(id__in=ids).delete()
         if not ids:
             raise ObjectDoesNotExist()
         return {
@@ -265,12 +262,26 @@ class ModelService(ViewService):
         }
 
     @service_method
-    def get_view_info(cls, view_type):
+    def get_view_info(self, view_type):
         return {
-            'content': cls.window_view(view_type),
-            'fields': cls.get_fields_info(view_type),
-            'view_actions': cls.get_view_actions(view_type),
+            'content': self.window_view(view_type),
+            'fields': self.get_fields_info(view_type),
+            'view_actions': self.get_view_actions(view_type),
         }
+
+    @service_method
+    def load_views(self, views=None):
+        if views is None:
+            views = ['form', 'list', 'search']
+        return {v: self.get_view_info(v) for v in views}
+
+    @property
+    def searchable_fields(self):
+        if self.search_fields:
+            for f in self.search_fields:
+                yield self.model._meta.get_field(f.split('__')[0])
+        elif self.title_field:
+            yield self.model._meta.get_field(self.title_field)
 
     def get_view_actions(self, view_type):
         return []
@@ -292,27 +303,29 @@ class ModelService(ViewService):
             'opts': self.model._meta,
             'fields': fields,
             'request': self.request,
+            'service': self,
         })
 
     @service_method
-    def get_field_choices(cls, field):
-        field = cls.model._meta.get_field(field)
+    def get_field_choices(self, field):
+        field = self.model._meta.get_field(field)
         service = str(field.related_model._meta).lower()
-        if service in cls.site.services:
-            service = cls.site.services[service](cls.request)
-            q = cls.request.GET.get('q', None)
+        if service in self.site.services:
+            service = self.site.services[service](self.request)
+            q = self.request.GET.get('q', None)
             params = None
             if q:
+                params = {}
                 if service.search_fields:
-                    params = {s + '__icontains': q for s in service.search_fields}
+                    params = {s: q for s in service.search_fields}
                 else:
                     params = {service.title_field + '__icontains': q}
             d = service.search_names(params=params)
             return d
 
     @service_method
-    def do_view_action(cls, action_name, target):
-        return cls.dispatch_view_action(action_name, target)
+    def do_view_action(self, action_name, target):
+        return self.dispatch_view_action(action_name, target)
 
     def dispatch_view_action(self, action_name, target):
         raise NotImplemented()

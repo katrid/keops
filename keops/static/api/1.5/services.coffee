@@ -42,11 +42,18 @@ class Model extends Service
   destroy: (id) ->
     @post('destroy', null, { kwargs: { ids: [id] } })
 
-  get: (id) ->
+  getById: (id) ->
     @post('get', null, { kwargs: { id: id } })
 
   getViewInfo: (data) ->
     @post('get_view_info', null, { kwargs: data })
+
+  loadViews: (data) ->
+    @post('load_views', null, { kwargs: data })
+
+  getFieldChoices: (field, term) ->
+    console.log({ args: field, q: term })
+    @get('get_field_choices', { args: field, q: term })
 
   doViewAction: (data) ->
     @post('do_view_action', null, { kwargs: data })

@@ -1,0 +1,5 @@
+<search>
+  {% for f in service.searchable_fields %}
+  <field name="{{ f.name }}" />
+  {% endfor %}
+</search>

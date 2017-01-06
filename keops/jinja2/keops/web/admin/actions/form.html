@@ -1,0 +1,8 @@
+<form>
+  {#% set fields = opts.get_field_group('editable') %#}
+  {% for f in fields %}
+    {% if f.editable and not f.primary_key %}
+  <field name="{{ f.name }}" />
+    {% endif %}
+  {% endfor %}
+</form>

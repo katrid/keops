@@ -1,0 +1,7 @@
+<list>
+  {% for f in fields %}
+    {% if f.editable and not f.primary_key %}
+  <field name="{{ f.name }}" />
+    {% endif %}
+  {% endfor %}
+</list>

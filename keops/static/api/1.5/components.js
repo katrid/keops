@@ -552,6 +552,120 @@
     };
   });
 
+  uiKatrid.directive('searchBox', function() {
+    return {
+      restrict: 'A',
+      require: 'ngModel',
+      link: function(scope, el, attrs, controller) {
+        var cfg, fields, fkSearch, i, view;
+        view = scope.views.search;
+        fields = view.fields;
+        i = 1;
+        fkSearch = {};
+        cfg = {
+          multiple: true,
+          minimumInputLength: 1,
+          formatSelection: (function(_this) {
+            return function(obj, element) {
+              if (obj.id.field) {
+                element.append("<span class=\"search-icon\">" + obj.id.field.caption + "</span>: <i class=\"search-term\">" + obj.text + "</i>");
+              } else if (obj.id.caption) {
+                element.append("<span class=\"search-icon\">" + obj.id.caption + "</span>: <i class=\"search-term\">" + obj.text + "</i>");
+              } else {
+                element.append('<span class="fa fa-filter search-icon"></span><span class="search-term">' + obj.text + '</span>');
+              }
+            };
+          })(this),
+          id: function(obj) {
+            return i++;
+          },
+          formatResult: (function(_this) {
+            return function(obj, element, query) {
+              if (obj.id.type === 'ForeignKey') {
+                return "> Pesquisar <i>" + obj.id.caption + "</i> por: <strong>" + obj.text + "</strong>";
+              } else if (obj.id.field && obj.id.field.type === 'ForeignKey') {
+                return ">>> <strong>" + obj.text + "</strong>";
+              } else {
+                return "Pesquisar <i>" + obj.id.caption + "</i> por: <strong>" + obj.text + "</strong>";
+              }
+            };
+          })(this),
+          query: (function(_this) {
+            return function(options) {
+              var f;
+              if (options.field) {
+                scope.model.getFieldChoices(options.field.name, options.term).done(function(res) {
+                  var obj;
+                  return options.callback({
+                    results: (function() {
+                      var j, len, ref, results;
+                      ref = res.result;
+                      results = [];
+                      for (j = 0, len = ref.length; j < len; j++) {
+                        obj = ref[j];
+                        results.push({
+                          id: {
+                            name: options.field.name,
+                            field: options.field,
+                            id: obj[0]
+                          },
+                          text: obj[1]
+                        });
+                      }
+                      return results;
+                    })()
+                  });
+                });
+                return;
+              }
+              options.callback({
+                results: (function() {
+                  var results;
+                  results = [];
+                  for (f in fields) {
+                    results.push({
+                      id: fields[f],
+                      text: options.term
+                    });
+                  }
+                  return results;
+                })()
+              });
+            };
+          })(this)
+        };
+        $(el).select2(cfg);
+        el.on('change', (function(_this) {
+          return function() {
+            return controller.$setViewValue(el.select2('data'));
+          };
+        })(this));
+        el.on('select2-selecting', (function(_this) {
+          return function(e) {
+            var v;
+            if (e.choice.id.type === 'ForeignKey') {
+              v = el.data('select2');
+              v.opts.query({
+                element: v.opts.element,
+                term: v.search.val(),
+                field: e.choice.id,
+                callback: function(data) {
+                  v.opts.populateResults.call(v, v.results, data.results, {
+                    term: '',
+                    page: null,
+                    context: v.context
+                  });
+                  return v.postprocessResults(data, false, false);
+                }
+              });
+              return e.preventDefault();
+            }
+          };
+        })(this));
+      }
+    };
+  });
+
   uiKatrid.controller('TabsetController', [
     '$scope', function($scope) {
       var ctrl, destroyed, tabs;

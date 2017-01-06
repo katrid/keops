@@ -400,6 +400,71 @@ Katrid.uiKatrid.directive 'foreignkey', ->
         sel.select2('val', null)
 
 
+uiKatrid.directive 'searchBox', ->
+  restrict: 'A'
+  require: 'ngModel'
+  link: (scope, el, attrs, controller) ->
+    view = scope.views.search
+    fields = view.fields
+
+    i = 1
+
+    fkSearch = {}
+
+    cfg =
+      multiple: true
+      minimumInputLength: 1
+      formatSelection: (obj, element) =>
+        if obj.id.field
+          element.append("""<span class="search-icon">#{obj.id.field.caption}</span>: <i class="search-term">#{obj.text}</i>""")
+        else if obj.id.caption
+          element.append("""<span class="search-icon">#{obj.id.caption}</span>: <i class="search-term">#{obj.text}</i>""")
+        else
+          element.append('<span class="fa fa-filter search-icon"></span><span class="search-term">' + obj.text + '</span>')
+        return
+
+      id: (obj) ->
+        return i++
+
+      formatResult: (obj, element, query) =>
+        if obj.id.type is 'ForeignKey'
+          return """> Pesquisar <i>#{obj.id.caption}</i> por: <strong>#{obj.text}</strong>"""
+        else if obj.id.field and obj.id.field.type is 'ForeignKey'
+          return """>>> <strong>#{obj.text}</strong>"""
+        else
+          return """Pesquisar <i>#{obj.id.caption}</i> por: <strong>#{obj.text}</strong>"""
+
+      query: (options) =>
+        if options.field
+          scope.model.getFieldChoices(options.field.name, options.term)
+          .done (res) ->
+            options.callback
+              results: ({ id: { name: options.field.name, field: options.field, id: obj[0] }, text: obj[1] } for obj in res.result)
+          return
+
+        options.callback
+          results: ({ id: fields[f], text: options.term } for f of fields)
+        return
+
+    $(el).select2(cfg)
+    el.on 'change', =>
+      controller.$setViewValue(el.select2('data'))
+
+    el.on 'select2-selecting', (e) =>
+      if e.choice.id.type is 'ForeignKey'
+        v = el.data('select2')
+        v.opts.query
+          element: v.opts.element
+          term: v.search.val()
+          field: e.choice.id
+          callback: (data) ->
+            v.opts.populateResults.call(v, v.results, data.results, {term: '', page: null, context:v.context})
+            v.postprocessResults(data, false, false)
+
+        e.preventDefault()
+
+    return
+
 uiKatrid.controller 'TabsetController', [
   '$scope'
   ($scope) ->
