@@ -557,18 +557,16 @@
       restrict: 'A',
       require: 'ngModel',
       link: function(scope, el, attrs, controller) {
-        var cfg, fields, fkSearch, i, view;
+        var cfg, fields, view;
         view = scope.views.search;
         fields = view.fields;
-        i = 1;
-        fkSearch = {};
         cfg = {
           multiple: true,
           minimumInputLength: 1,
           formatSelection: (function(_this) {
             return function(obj, element) {
-              if (obj.id.field) {
-                element.append("<span class=\"search-icon\">" + obj.id.field.caption + "</span>: <i class=\"search-term\">" + obj.text + "</i>");
+              if (obj.field) {
+                element.append("<span class=\"search-icon\">" + obj.field.caption + "</span>: <i class=\"search-term\">" + obj.text + "</i>");
               } else if (obj.id.caption) {
                 element.append("<span class=\"search-icon\">" + obj.id.caption + "</span>: <i class=\"search-term\">" + obj.text + "</i>");
               } else {
@@ -577,14 +575,17 @@
             };
           })(this),
           id: function(obj) {
-            return i++;
+            if (obj.field) {
+              return '<' + obj.field.name + ' ' + obj.id + '>';
+            }
+            return obj.id.name + '-' + obj.text;
           },
           formatResult: (function(_this) {
             return function(obj, element, query) {
               if (obj.id.type === 'ForeignKey') {
                 return "> Pesquisar <i>" + obj.id.caption + "</i> por: <strong>" + obj.text + "</strong>";
-              } else if (obj.id.field && obj.id.field.type === 'ForeignKey') {
-                return ">>> <strong>" + obj.text + "</strong>";
+              } else if (obj.field && obj.field.type === 'ForeignKey') {
+                return obj.field.caption + ": <i>" + obj.text + "</i>";
               } else {
                 return "Pesquisar <i>" + obj.id.caption + "</i> por: <strong>" + obj.text + "</strong>";
               }
@@ -604,12 +605,9 @@
                       for (j = 0, len = ref.length; j < len; j++) {
                         obj = ref[j];
                         results.push({
-                          id: {
-                            name: options.field.name,
-                            field: options.field,
-                            id: obj[0]
-                          },
-                          text: obj[1]
+                          id: obj[0],
+                          text: obj[1],
+                          field: options.field
                         });
                       }
                       return results;

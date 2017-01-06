@@ -131,9 +131,8 @@
       r = {};
       for (j = 0, len = params.length; j < len; j++) {
         p = params[j];
-        console.log(p);
-        if (p.id.field && p.id.field.type === 'ForeignKey') {
-          r[p.id.name] = p.id.id;
+        if (p.field && p.field.type === 'ForeignKey') {
+          r[p.field.name] = p.id;
         } else {
           r[p.id.name + '__icontains'] = p.text;
         }

@@ -88,9 +88,8 @@ class WindowAction extends Action
   _prepareParams: (params) ->
     r = {}
     for p in params
-      console.log(p)
-      if p.id.field and p.id.field.type is 'ForeignKey'
-        r[p.id.name] = p.id.id
+      if p.field and p.field.type is 'ForeignKey'
+        r[p.field.name] = p.id
       else
         r[p.id.name + '__icontains'] = p.text
     return r

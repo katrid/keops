@@ -407,16 +407,12 @@ uiKatrid.directive 'searchBox', ->
     view = scope.views.search
     fields = view.fields
 
-    i = 1
-
-    fkSearch = {}
-
     cfg =
       multiple: true
       minimumInputLength: 1
       formatSelection: (obj, element) =>
-        if obj.id.field
-          element.append("""<span class="search-icon">#{obj.id.field.caption}</span>: <i class="search-term">#{obj.text}</i>""")
+        if obj.field
+          element.append("""<span class="search-icon">#{obj.field.caption}</span>: <i class="search-term">#{obj.text}</i>""")
         else if obj.id.caption
           element.append("""<span class="search-icon">#{obj.id.caption}</span>: <i class="search-term">#{obj.text}</i>""")
         else
@@ -424,13 +420,15 @@ uiKatrid.directive 'searchBox', ->
         return
 
       id: (obj) ->
-        return i++
+        if obj.field
+          return '<' + obj.field.name + ' ' + obj.id + '>'
+        return obj.id.name + '-' + obj.text
 
       formatResult: (obj, element, query) =>
         if obj.id.type is 'ForeignKey'
           return """> Pesquisar <i>#{obj.id.caption}</i> por: <strong>#{obj.text}</strong>"""
-        else if obj.id.field and obj.id.field.type is 'ForeignKey'
-          return """>>> <strong>#{obj.text}</strong>"""
+        else if obj.field and obj.field.type is 'ForeignKey'
+          return """#{obj.field.caption}: <i>#{obj.text}</i>"""
         else
           return """Pesquisar <i>#{obj.id.caption}</i> por: <strong>#{obj.text}</strong>"""
 
@@ -439,7 +437,7 @@ uiKatrid.directive 'searchBox', ->
           scope.model.getFieldChoices(options.field.name, options.term)
           .done (res) ->
             options.callback
-              results: ({ id: { name: options.field.name, field: options.field, id: obj[0] }, text: obj[1] } for obj in res.result)
+              results: ({ id: obj[0], text: obj[1], field: options.field } for obj in res.result)
           return
 
         options.callback
