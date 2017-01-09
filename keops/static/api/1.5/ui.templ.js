@@ -60,7 +60,7 @@
     };
 
     Templates.prototype.renderList = function(scope, element, attrs, rowClick, parentDataSource) {
-      var choice, cls, col, cols, fieldInfo, i, j, len, len1, name, ref, ref1, s, ths;
+      var choice, cls, col, colHtml, cols, fieldInfo, i, j, len, len1, name, ref, ref1, s, ths;
       ths = '';
       cols = '';
       ref = element.children();
@@ -79,7 +79,10 @@
         cls = fieldInfo.type + " list-column";
         ths += "<th class=\"" + cls + "\" name=\"" + name + "\"><label>${view.fields." + name + ".caption}</label></th>";
         cls = fieldInfo.type + " field-" + name;
-        if (fieldInfo.type === 'ForeignKey') {
+        colHtml = $(col).html();
+        if (colHtml) {
+          cols += "<td><a data-id=\"${row." + name + "[0]}\">" + colHtml + "</a></td>";
+        } else if (fieldInfo.type === 'ForeignKey') {
           cols += "<td><a data-id=\"${row." + name + "[0]}\">${row." + name + "[1]}</a></td>";
         } else if (fieldInfo._listChoices) {
           cols += "<td class=\"" + cls + "\">${view.fields." + name + "._listChoices[row." + name + "]}</td>";

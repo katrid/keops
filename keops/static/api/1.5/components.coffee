@@ -6,18 +6,22 @@ uiKatrid.directive 'field', ($compile) ->
   fieldType = null
   widget = null
   restrict: 'E'
-  priority: -1
+  priority: 0
   replace: true
-  transclude: true
+  #transclude: true
   template: (element, attrs) ->
     if (element.parent('list').length)
       fieldType = 'column'
-      return '<column></column>'
+      return '<column/>'
     else
       fieldType = 'field'
       return """<section class="section-field-#{attrs.name} form-group" />"""
 
-  link: (scope, element, attrs) ->
+  compile: (el, attrs) ->
+    console.log(el)
+    return
+
+  link: (scope, element, attrs, ctrl, transclude) ->
     field = scope.view.fields[attrs.name]
 
     if fieldType == 'field'
@@ -77,11 +81,20 @@ uiKatrid.directive 'field', ($compile) ->
       # Remove field attrs from section element
       fieldAttrs = {}
       for att, v of attrs when att.startsWith('field')
-          fieldAttrs[att] = v
-          element.removeAttr(att)
-          attrs.$set(att)
+        fieldAttrs[att] = v
+        element.removeAttr(att)
+        attrs.$set(att)
 
       fieldAttrs.name = attrs.name
+
+    console.log(transclude())
+    element.append(transclude())
+
+
+uiKatrid.directive 'blabla', ->
+  restrict: 'E'
+  link: (scope, element, attrs) ->
+    console.log(element)
 
 
 uiKatrid.directive 'view', ->
@@ -99,6 +112,7 @@ uiKatrid.directive 'view', ->
 
 uiKatrid.directive 'list', ($compile, $http) ->
   restrict: 'E'
+  priority: -1
   link: (scope, element, attrs) ->
     html = Katrid.UI.Utils.Templates.renderList(scope, element, attrs)
     element.replaceWith($compile(html)(scope))
@@ -464,6 +478,7 @@ uiKatrid.directive 'searchBox', ->
 
     cfg =
       multiple: true
+      minimumInputLength: 1
       formatSelection: (obj, element) =>
         if obj.field
           element.append("""<span class="search-icon">#{obj.field.caption}</span>: <i class="search-term">#{obj.text}</i>""")

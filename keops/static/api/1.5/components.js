@@ -12,20 +12,22 @@
     widget = null;
     return {
       restrict: 'E',
-      priority: -1,
+      priority: 0,
       replace: true,
-      transclude: true,
       template: function(element, attrs) {
         if ((element.parent('list').length)) {
           fieldType = 'column';
-          return '<column></column>';
+          return '<column/>';
         } else {
           fieldType = 'field';
           return "<section class=\"section-field-" + attrs.name + " form-group\" />";
         }
       },
-      link: function(scope, element, attrs) {
-        var att, cols, ctrl, fcontrol, field, fieldAttrs, form, templ, tp, v;
+      compile: function(el, attrs) {
+        console.log(el);
+      },
+      link: function(scope, element, attrs, ctrl, transclude) {
+        var att, cols, fcontrol, field, fieldAttrs, form, templ, tp, v;
         field = scope.view.fields[attrs.name];
         if (fieldType === 'field') {
           element.removeAttr('name');
@@ -91,8 +93,19 @@
             element.removeAttr(att);
             attrs.$set(att);
           }
-          return fieldAttrs.name = attrs.name;
+          fieldAttrs.name = attrs.name;
         }
+        console.log(transclude());
+        return element.append(transclude());
+      }
+    };
+  });
+
+  uiKatrid.directive('blabla', function() {
+    return {
+      restrict: 'E',
+      link: function(scope, element, attrs) {
+        return console.log(element);
       }
     };
   });
@@ -118,6 +131,7 @@
   uiKatrid.directive('list', function($compile, $http) {
     return {
       restrict: 'E',
+      priority: -1,
       link: function(scope, element, attrs) {
         var html;
         html = Katrid.UI.Utils.Templates.renderList(scope, element, attrs);
@@ -634,6 +648,7 @@
         fields = view.fields;
         cfg = {
           multiple: true,
+          minimumInputLength: 1,
           formatSelection: (function(_this) {
             return function(obj, element) {
               if (obj.field) {

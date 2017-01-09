@@ -75,7 +75,7 @@
     };
     $scope.setContent = function(content) {
       var el;
-      $scope.content = content;
+      $scope.content = $(content);
       el = angular.element('#katrid-action-view').html($compile(content)($scope));
       $scope.formElement = el.find('form').first();
       return $scope.form = $scope.formElement.controller('form');
