@@ -6,25 +6,20 @@ uiKatrid.directive 'field', ($compile) ->
   fieldType = null
   widget = null
   restrict: 'E'
-  priority: 0
   replace: true
   #transclude: true
-  template: (element, attrs) ->
-    if (element.parent('list').length)
-      fieldType = 'column'
-      return '<column/>'
-    else
-      fieldType = 'field'
-      return """<section class="section-field-#{attrs.name} form-group" />"""
-
-  compile: (el, attrs) ->
-    console.log(el)
-    return
+#  template: (element, attrs) ->
+#    if (element.parent('list').length)
+#      fieldType = 'column'
+#      return '<column/>'
+#    else
+#      fieldType = 'field'
+#      return """<section class="section-field-#{attrs.name} form-group" />"""
 
   link: (scope, element, attrs, ctrl, transclude) ->
     field = scope.view.fields[attrs.name]
 
-    if fieldType == 'field'
+    if element.parent('list').length is 0
       element.removeAttr('name')
       widget = attrs.widget
       if not widget
@@ -61,22 +56,25 @@ uiKatrid.directive 'field', ($compile) ->
         else
           widget = 'TextField'
 
-      element.addClass("col-md-#{attrs.cols or cols or 6}")
       widget = new Katrid.UI.Widgets[widget]
       field = scope.view.fields[attrs.name]
-      templ = $compile(widget.template(scope, element, attrs, field))(scope)
-      element.append(templ)
+      templ = """<section class="section-field-#{attrs.name} form-group">""" +
+        widget.template(scope, element, attrs, field) +
+        '</section>'
+      templ = $compile(templ)(scope)
+      element.replaceWith(templ)
+      templ.addClass("col-md-#{attrs.cols or cols or 6}")
 
       # Add input field for tracking on FormController
       fcontrol = templ.find('.form-field')
       if fcontrol.length
         fcontrol = fcontrol[fcontrol.length - 1]
-        form = element.controller('form')
+        form = templ.controller('form')
         ctrl = angular.element(fcontrol).data().$ngModelController
         if ctrl
           form.$addControl(ctrl)
 
-      widget.link(scope, element, fieldAttrs, $compile, field)
+      widget.link(scope, templ, fieldAttrs, $compile, field)
 
       # Remove field attrs from section element
       fieldAttrs = {}
@@ -86,15 +84,6 @@ uiKatrid.directive 'field', ($compile) ->
         attrs.$set(att)
 
       fieldAttrs.name = attrs.name
-
-    console.log(transclude())
-    element.append(transclude())
-
-
-uiKatrid.directive 'blabla', ->
-  restrict: 'E'
-  link: (scope, element, attrs) ->
-    console.log(element)
 
 
 uiKatrid.directive 'view', ->
@@ -112,8 +101,9 @@ uiKatrid.directive 'view', ->
 
 uiKatrid.directive 'list', ($compile, $http) ->
   restrict: 'E'
-  priority: -1
+  priority: 700
   link: (scope, element, attrs) ->
+    console.log('im list', 1)
     html = Katrid.UI.Utils.Templates.renderList(scope, element, attrs)
     element.replaceWith($compile(html)(scope))
 
@@ -584,7 +574,7 @@ uiKatrid.directive 'tabset', ->
   scope:
     type: '@'
   controller: 'TabsetController',
-  template: "<div>\n" +
+  template: "<div><div class=\"clearfix\"></div>\n" +
             "  <ul class=\"nav nav-{{type || 'tabs'}}\" ng-class=\"{'nav-stacked': vertical, 'nav-justified': justified}\" ng-transclude></ul>\n" +
             "  <div class=\"tab-content\">\n" +
             "    <div class=\"tab-pane\" \n" +

@@ -12,24 +12,11 @@
     widget = null;
     return {
       restrict: 'E',
-      priority: 0,
       replace: true,
-      template: function(element, attrs) {
-        if ((element.parent('list').length)) {
-          fieldType = 'column';
-          return '<column/>';
-        } else {
-          fieldType = 'field';
-          return "<section class=\"section-field-" + attrs.name + " form-group\" />";
-        }
-      },
-      compile: function(el, attrs) {
-        console.log(el);
-      },
       link: function(scope, element, attrs, ctrl, transclude) {
         var att, cols, fcontrol, field, fieldAttrs, form, templ, tp, v;
         field = scope.view.fields[attrs.name];
-        if (fieldType === 'field') {
+        if (element.parent('list').length === 0) {
           element.removeAttr('name');
           widget = attrs.widget;
           if (!widget) {
@@ -68,21 +55,22 @@
               widget = 'TextField';
             }
           }
-          element.addClass("col-md-" + (attrs.cols || cols || 6));
           widget = new Katrid.UI.Widgets[widget];
           field = scope.view.fields[attrs.name];
-          templ = $compile(widget.template(scope, element, attrs, field))(scope);
-          element.append(templ);
+          templ = ("<section class=\"section-field-" + attrs.name + " form-group\">") + widget.template(scope, element, attrs, field) + '</section>';
+          templ = $compile(templ)(scope);
+          element.replaceWith(templ);
+          templ.addClass("col-md-" + (attrs.cols || cols || 6));
           fcontrol = templ.find('.form-field');
           if (fcontrol.length) {
             fcontrol = fcontrol[fcontrol.length - 1];
-            form = element.controller('form');
+            form = templ.controller('form');
             ctrl = angular.element(fcontrol).data().$ngModelController;
             if (ctrl) {
               form.$addControl(ctrl);
             }
           }
-          widget.link(scope, element, fieldAttrs, $compile, field);
+          widget.link(scope, templ, fieldAttrs, $compile, field);
           fieldAttrs = {};
           for (att in attrs) {
             v = attrs[att];
@@ -93,19 +81,8 @@
             element.removeAttr(att);
             attrs.$set(att);
           }
-          fieldAttrs.name = attrs.name;
+          return fieldAttrs.name = attrs.name;
         }
-        console.log(transclude());
-        return element.append(transclude());
-      }
-    };
-  });
-
-  uiKatrid.directive('blabla', function() {
-    return {
-      restrict: 'E',
-      link: function(scope, element, attrs) {
-        return console.log(element);
       }
     };
   });
@@ -131,9 +108,10 @@
   uiKatrid.directive('list', function($compile, $http) {
     return {
       restrict: 'E',
-      priority: -1,
+      priority: 700,
       link: function(scope, element, attrs) {
         var html;
+        console.log('im list', 1);
         html = Katrid.UI.Utils.Templates.renderList(scope, element, attrs);
         return element.replaceWith($compile(html)(scope));
       }
@@ -800,7 +778,7 @@
         type: '@'
       },
       controller: 'TabsetController',
-      template: "<div>\n" + "  <ul class=\"nav nav-{{type || 'tabs'}}\" ng-class=\"{'nav-stacked': vertical, 'nav-justified': justified}\" ng-transclude></ul>\n" + "  <div class=\"tab-content\">\n" + "    <div class=\"tab-pane\" \n" + "         ng-repeat=\"tab in tabs\" \n" + "         ng-class=\"{active: tab.active}\"\n" + "         tab-content-transclude=\"tab\">\n" + "    </div>\n" + "  </div>\n" + "</div>\n",
+      template: "<div><div class=\"clearfix\"></div>\n" + "  <ul class=\"nav nav-{{type || 'tabs'}}\" ng-class=\"{'nav-stacked': vertical, 'nav-justified': justified}\" ng-transclude></ul>\n" + "  <div class=\"tab-content\">\n" + "    <div class=\"tab-pane\" \n" + "         ng-repeat=\"tab in tabs\" \n" + "         ng-class=\"{active: tab.active}\"\n" + "         tab-content-transclude=\"tab\">\n" + "    </div>\n" + "  </div>\n" + "</div>\n",
       link: function(scope, element, attrs) {
         scope.vertical = angular.isDefined(attrs.vertical) ? scope.$parent.$eval(attrs.vertical) : false;
         return scope.justified = angular.isDefined(attrs.justified) ? scope.$parent.$eval(attrs.justified) : false;
