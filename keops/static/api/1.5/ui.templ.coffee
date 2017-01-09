@@ -146,11 +146,8 @@ class Templates
     ths = ''
     cols = ''
     for col in element.children()
-
       col = $(col)
-
       name = col.attr('name')
-
       if not name
         cols += """<td>#{col.html()}</td>"""
         ths += """<th><label>${col.attr('caption')}</label></th>"""
@@ -159,6 +156,7 @@ class Templates
       if col.attr('visible') is 'False'
         continue
 
+        
       name = col.attr('name')
       fieldInfo = scope.view.fields[name]
 
