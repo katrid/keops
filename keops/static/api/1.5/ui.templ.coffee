@@ -149,6 +149,13 @@ class Templates
 
       col = $(col)
 
+      name = col.attr('name')
+
+      if not name
+        cols += """<td>#{col.html()}</td>"""
+        ths += """<th><label>${col.attr('caption')}</label></th>"""
+        continue
+
       if col.attr('visible') is 'False'
         continue
 

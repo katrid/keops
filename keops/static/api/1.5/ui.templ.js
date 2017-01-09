@@ -67,6 +67,12 @@
       for (i = 0, len = ref.length; i < len; i++) {
         col = ref[i];
         col = $(col);
+        name = col.attr('name');
+        if (!name) {
+          cols += "<td>" + (col.html()) + "</td>";
+          ths += "<th><label>${col.attr('caption')}</label></th>";
+          continue;
+        }
         if (col.attr('visible') === 'False') {
           continue;
         }
