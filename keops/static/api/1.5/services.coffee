@@ -48,14 +48,24 @@ class Model extends Service
   getDefaults: ->
     @post('get_defaults')
 
+  _prepareFields: (view) ->
+    for f, v of view.fields
+      # Add field display choices object
+      if v.choices
+        v.displayChoices = _.object(v.choices)
+
   getViewInfo: (data) ->
     @post('get_view_info', null, { kwargs: data })
+    .done (res) =>
+      @_prepareFields(res.result)
 
   loadViews: (data) ->
     @post('load_views', null, { kwargs: data })
+    .done (res) =>
+      for view, obj of res.result
+        @_prepareFields(obj)
 
   getFieldChoices: (field, term) ->
-    console.log({ args: field, q: term })
     @get('get_field_choices', { args: field, q: term })
 
   doViewAction: (data) ->

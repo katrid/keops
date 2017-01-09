@@ -24,22 +24,23 @@ class Templates
 
   gridDialog: ->
     """
-  <div ng-form="form" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <h4 class="modal-title" id="myModalLabel">${field.caption}</h4>
         </div>
-        <div ng-form="form" class="modal-body">
+        <div class="modal-body">
   <div class="row">
   <!-- view content -->
   </div>
   <div class="clearfix"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" type="button" ng-click="save()">#{Katrid.i18n.gettext 'Save'}</button>
-          <button type="button" class="btn btn-default" type="button" data-dismiss="modal">#{Katrid.i18n.gettext 'Cancel'}</button>
+          <button type="button" class="btn btn-primary" type="button" ng-click="save()" ng-show="dataSource.changing">#{Katrid.i18n.gettext 'Save'}</button>
+          <button type="button" class="btn btn-default" type="button" data-dismiss="modal" ng-show="dataSource.changing">#{Katrid.i18n.gettext 'Cancel'}</button>
+          <button type="button" class="btn btn-default" type="button" data-dismiss="modal" ng-show="!dataSource.changing">#{Katrid.i18n.gettext 'Close'}</button>
         </div>
       </div>
     </div>
@@ -59,7 +60,7 @@ class Templates
         <a href=\"javascript:void(0)\" title=\"Add to favorite\"><i class=\"fa star fa-star-o pull-right\"></i></a>
         <ol class=\"breadcrumb\">
           <li><a href=\"javascript:void(0)\" ng-click=\"action.setViewType(\'list\')\">${ action.info.display_name }</a></li>
-          <li>${ (dataSource.loadingRecord && Katrid.i18n.gettext('Loading...')) || record.__str__ }</li>
+          <li>${ (dataSource.loadingRecord && Katrid.i18n.gettext('Loading...')) || record.display_name }</li>
         </ol>
         <div class=\"pull-right\">
             <span ng-show="records.length">
@@ -69,8 +70,9 @@ class Templates
         <p class=\"help-block\">${ action.info.usage }&nbsp;</p>
       </div>
       <div class=\"toolbar\">
-  <button class=\"btn btn-primary\" type=\"button\" ng-disabled="dataSource.uploading" ng-click=\"dataSource.saveChanges()\">#{Katrid.i18n.gettext 'Save'}</button>
-  <button class=\"btn btn-default\" type=\"button\" ng-click=\"dataSource.cancelChanges()\"><i class=\"fa fa-fw fa-remove text-danger\"></i> #{Katrid.i18n.gettext 'Cancel'}</button>
+  <button class=\"btn btn-primary\" type=\"button\" ng-disabled="dataSource.uploading" ng-click=\"dataSource.saveChanges()\" ng-show="dataSource.changing">#{Katrid.i18n.gettext 'Save'}</button>
+  <button class=\"btn btn-primary\" type=\"button\" ng-disabled="dataSource.uploading" ng-click=\"dataSource.editRecord()\" ng-show="!dataSource.changing">#{Katrid.i18n.gettext 'Edit'}</button>
+  <button class=\"btn btn-default\" type=\"button\" ng-click=\"dataSource.cancelChanges()\" ng-show="dataSource.changing">#{Katrid.i18n.gettext 'Cancel'}</button>
   <div class=\"btn-group\">
     <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\">
       #{Katrid.i18n.gettext 'Action'} <span class=\"caret\"></span></button>
@@ -105,7 +107,7 @@ class Templates
         </ol>
         </div>
         <div class="search-view col-md-6">
-          <input search-box type="hidden" ng-model="searchParams" ng-change="action.setSearchParams(searchParams)" />
+          <input search-box type="hidden" ng-model="searchParams" ng-change="action.setSearchParams(searchParams)">
         </div>
         <!--<p class=\"help-block\">${ action.info.usage }&nbsp;</p>-->
       </div>
@@ -114,8 +116,7 @@ class Templates
         <span ng-show="dataSource.loading" class="badge page-badge-ref fadeIn animated">${dataSource.pageIndex}</span>
 
   <div class=\"btn-group\">
-    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-      ng-show="selection.length" aria-haspopup="true">
+    <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\">
       #{Katrid.i18n.gettext 'Action'} <span class=\"caret\"></span></button>
     <ul class=\"dropdown-menu animated flipInX\">
       <li><a href='javascript:void(0)' ng-click=\"action.deleteSelection()\"><i class=\"fa fa-fw fa-trash\"></i> #{Katrid.i18n.gettext 'Delete'}</a></li>
@@ -141,7 +142,7 @@ class Templates
 <div class=\"panel-body no-padding\">
 <div class=\"dataTables_wrapper form-inline dt-bootstrap no-footer\">#{html}</div></div></div></div>"""
 
-  renderList: (scope, element, attrs, rowClick) ->
+  renderList: (scope, element, attrs, rowClick, parentDataSource) ->
     ths = ''
     cols = ''
     for col in element.children()
@@ -153,11 +154,11 @@ class Templates
         for choice in fieldInfo.choices
           fieldInfo._listChoices[choice[0]] = choice[1]
 
-      cls = """#{fieldInfo.type} field-#{name}"""
-      ths += """<th class="#{cls}"><label>${view.fields.#{name}.caption}</label></th>"""
+      cls = """#{fieldInfo.type} list-column"""
+      ths += """<th class="#{cls}" name="#{name}"><label>${view.fields.#{name}.caption}</label></th>"""
       cls = """#{fieldInfo.type} field-#{name}"""
       if fieldInfo.type is 'ForeignKey'
-        cols += """<td><a href="javscript:void(0)" ng-click="$event.stopPropagation();" data-id="${row.#{name}[0]}">${row.#{name}[1]}</a></td>"""
+        cols += """<td><a data-id="${row.#{name}[0]}">${row.#{name}[1]}</a></td>"""
       else if  fieldInfo._listChoices
         cols += """<td class="#{cls}">${view.fields.#{name}._listChoices[row.#{name}]}</td>"""
       else if fieldInfo.type is 'BooleanField'
@@ -168,6 +169,9 @@ class Templates
         cols += """<td class="#{cls}">${row.#{name}|date:shortDate}</td>"""
       else
         cols += """<td>${row.#{name}}</td>"""
+    if parentDataSource
+      ths += """<th class="list-column-delete" ng-show="parent.dataSource.changing">"""
+      cols += """<td class="list-column-delete" ng-show="parent.dataSource.changing" ng-click="removeItem($index);$event.stopPropagation();"><i class="fa fa-trash"></i></td>"""
     if not rowClick?
       rowClick = 'dataSource.setRecordIndex($index);action.location.search({view_type: \'form\', id: row.id});'
     s = """<table ng-show="!dataSource.loading" class="table table-striped table-bordered table-hover display responsive nowrap dataTable no-footer dtr-column">
@@ -181,8 +185,8 @@ class Templates
     return s
 
   renderGrid: (scope, element, attrs, rowClick) ->
-    tbl = @renderList(scope, element, attrs, rowClick)
-    return """<div><div><button class="btn btn-default" ng-click="addItem()" type="button">#{Katrid.i18n.gettext 'Add'}</button></div>#{tbl}</div>"""
+    tbl = @renderList(scope, element, attrs, rowClick, true)
+    return """<div><div><button class="btn btn-default" ng-click="addItem()" ng-show="parent.dataSource.changing" type="button">#{Katrid.i18n.gettext 'Add'}</button></div>#{tbl}</div>"""
 
 @Katrid.UI.Utils =
   Templates: new Templates()

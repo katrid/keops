@@ -6,8 +6,9 @@ uiKatrid.directive 'field', ($compile) ->
   fieldType = null
   widget = null
   restrict: 'E'
+  priority: -1
   replace: true
-  transclude: false
+  transclude: true
   template: (element, attrs) ->
     if (element.parent('list').length)
       fieldType = 'column'
@@ -34,6 +35,12 @@ uiKatrid.directive 'field', ($compile) ->
           widget = 'CheckBox'
         else if tp is 'DecimalField'
           widget = 'DecimalField'
+          cols = 3
+        else if tp is 'DateField'
+          widget = 'DateField'
+          cols = 3
+        else if tp is 'DateTimeField'
+          widget = 'DateField'
           cols = 3
         else if tp is 'IntegerField'
           widget = 'TextField'
@@ -65,7 +72,16 @@ uiKatrid.directive 'field', ($compile) ->
         if ctrl
           form.$addControl(ctrl)
 
-      widget.link(scope, element, attrs, $compile, field)
+      widget.link(scope, element, fieldAttrs, $compile, field)
+
+      # Remove field attrs from section element
+      fieldAttrs = {}
+      for att, v of attrs when att.startsWith('field')
+          fieldAttrs[att] = v
+          element.removeAttr(att)
+          attrs.$set(att)
+
+      fieldAttrs.name = attrs.name
 
 
 uiKatrid.directive 'view', ->
@@ -88,12 +104,25 @@ uiKatrid.directive 'list', ($compile, $http) ->
     element.replaceWith($compile(html)(scope))
 
 
-uiKatrid.controller 'dialogForm', ($scope) ->
-  console.log('start controller')
-  $scope.form
+uiKatrid.directive 'ngSum', ->
+  restrict: 'A'
+  priority: 9999
+  require: 'ngModel'
+  link: (scope, element, attrs, controller) ->
+    nm = attrs.ngSum.split('.')
+    field = nm[0]
+    subField = nm[1]
+    scope.$watch 'record.$' + field, (newValue, oldValue) ->
+      if newValue and scope.record
+        v = 0
+        scope.record[field].map (obj) => v += parseFloat(obj[subField])
+        if v.toString() != controller.$modelValue
+          controller.$setViewValue v
+          controller.$render()
+        return
 
 
-uiKatrid.directive 'grid', ($compile, $http) ->
+uiKatrid.directive 'grid', ($compile) ->
   restrict: 'E'
   replace: true
   scope: {}
@@ -105,7 +134,9 @@ uiKatrid.directive 'grid', ($compile, $http) ->
     scope.records = []
     scope.recordIndex = -1
     scope._viewCache = {}
+    scope._changeCount = 0
     scope.dataSet = []
+    scope.parent = scope.$parent
     scope.model = new Katrid.Services.Model(field.model)
 
     # Set parent/master data source
@@ -123,31 +154,55 @@ uiKatrid.directive 'grid', ($compile, $http) ->
     .done (res) ->
       scope.$apply ->
         scope.view = res.result
-        html = Katrid.UI.Utils.Templates.renderGrid(scope, $(scope.view.content), attrs, 'showDialog($index)')
+        html = Katrid.UI.Utils.Templates.renderGrid(scope, $(scope.view.content), attrs, 'openItem($index)')
         element.replaceWith($compile(html)(scope))
 
     renderDialog = ->
       html = scope._viewCache.form.content
       html = $(Katrid.UI.Utils.Templates.gridDialog().replace('<!-- view content -->', html))
       el = $compile(html)(scope)
+
+      # Get the first form controller
+      scope.formElement = el.find('form').first()
+      scope.form = scope.formElement.controller('form')
+
       scope.gridDialog = el
       el.modal('show')
       el.on 'hidden.bs.modal', ->
+        scope.dataSource.setState(Katrid.Data.DataSourceState.browsing)
         el.remove()
         scope.gridDialog = null
         scope.recordIndex = -1
       return false
 
     scope.addItem = ->
+      scope.dataSource.newRecord()
       scope.showDialog()
+
+    scope.openItem = (index) ->
+      if scope.parent.dataSource.changing
+        scope.dataSource.editRecord()
+      scope.showDialog(index)
+
+    scope.removeItem = (idx) ->
+      scope.records.splice(idx, 1)
+
+    scope.set = (field, value) =>
+      scope.form[field].$setViewValue value
+      scope.form[field].$render()
+      return true
 
     scope.save = ->
       data = scope.dataSource.applyModifiedData(scope.form, scope.gridDialog, scope.record)
       if scope.recordIndex > -1
         rec = scope.records[scope.recordIndex]
-        for attr of data
-          rec[attr] = data[attr]
+        for attr, v of data
+          rec[attr] = v
+      else if scope.recordIndex is -1
+        scope.records.push(scope.record)
       scope.gridDialog.modal('toggle')
+      scope.parent.record['$' + scope.fieldName] = ++scope._changeCount
+      scope.parent.record[scope.fieldName] = scope.records
       return
 
     scope.showDialog = (index) ->
@@ -162,11 +217,9 @@ uiKatrid.directive 'grid', ($compile, $http) ->
               scope.$apply ->
                 scope.dataSet[index] = scope.record
         rec = scope.dataSet[index]
+        scope.record = rec
       else
         scope.recordIndex = -1
-        rec = {}
-
-      scope.record = rec
 
       if scope._viewCache.form
         setTimeout ->
@@ -184,6 +237,7 @@ uiKatrid.directive 'grid', ($compile, $http) ->
       # Ajax load nested data
       data = {}
       data[field.field] = key
+      scope._changeCount = 0
       scope.records = []
       scope.dataSource.search(data)
 
@@ -309,9 +363,10 @@ uiKatrid.directive 'decimal', ($filter) ->
       allowNegative: negative
       allowZero: true
     .bind 'keyup blur', (event) ->
-      controller.$setViewValue(element.val().replace(RegExp('\\' + thousands, 'g'), '').replace(RegExp('\\' + decimal, 'g'), '.'))
-      controller.$modelValue = parseFloat(element.val().replace(RegExp('\\' + thousands, 'g'), '').replace(RegExp('\\' + decimal, 'g'), '.'))
-      scope.$apply()
+      newVal = element.maskMoney('unmasked')[0]
+      if newVal.toString() != controller.$viewValue
+        controller.$setViewValue(newVal)
+        scope.$apply()
 
     controller.$render = ->
       if controller.$viewValue
@@ -409,7 +464,6 @@ uiKatrid.directive 'searchBox', ->
 
     cfg =
       multiple: true
-      minimumInputLength: 1
       formatSelection: (obj, element) =>
         if obj.field
           element.append("""<span class="search-icon">#{obj.field.caption}</span>: <i class="search-term">#{obj.text}</i>""")
@@ -619,3 +673,7 @@ uiKatrid.directive 'tabContentTransclude', ->
 
   }
 
+uiKatrid.filter 'm2m', ->
+  return (input) ->
+    if _.isArray input
+      return (obj[1] for obj in input).join(', ')

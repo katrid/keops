@@ -108,6 +108,12 @@ msgstr "não"
 msgid "Search..."
 msgstr "Pesquisar..."
 
+msgid "Close"
+msgstr "Fechar"
+
+msgid "Edit"
+msgstr "Editar"
+
 msgid "The following fields are invalid:"
 msgstr "Os seguintes campos são inválidos:"
 

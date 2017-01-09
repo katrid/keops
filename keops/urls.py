@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^web/login/$', keops.views.auth.login),
     url(r'^web/logout/$', keops.views.auth.logout),
     url(r'^web/action/(?P<service>.*)/(?P<action_id>.*)/$', keops.views.web.action),
+    url(r'^web/action/(?P<action_id>\d*)/$', keops.views.web.action, {'service': None}),
 ] + site.get_urls()

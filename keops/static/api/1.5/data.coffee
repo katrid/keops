@@ -33,11 +33,13 @@ class DataSource
     @state = null
 
   cancelChanges: ->
-    @scope.action.setViewType('list')
+    #@scope.record = null
+    #@scope.action.setViewType('list')
+    @setState(DataSourceState.browsing)
 
   saveChanges: ->
     # Submit fields with dirty state only
-    el = $('[ng-form]').first()
+    el = @scope.formElement
     if @validate()
       data = @getModifiedData(@scope.form, el, @scope.record)
 
@@ -85,14 +87,13 @@ class DataSource
   validate: ->
     if @scope.form.$invalid
       s = "<span>#{Katrid.i18n.gettext 'The following fields are invalid:'}</span><hr>"
-      el = $('[ng-form]').first()
+      el = @scope.formElement
       for errorType of @scope.form.$error
-        for form in @scope.form.$error[errorType]
-          for child in form.$error[errorType]
-            elfield = el.find(""".form-field[name="#{child.$name}"]""")
-            elfield.addClass('ng-touched')
-            field = @scope.view.fields[child.$name]
-            s += "<span>#{field.caption}</span><ul><li>#{Katrid.i18n.gettext 'This field cannot be empty.'}</li></ul>"
+        for child in @scope.form.$error[errorType]
+          elfield = el.find(""".form-field[name="#{child.$name}"]""")
+          elfield.addClass('ng-touched')
+          field = @scope.view.fields[child.$name]
+          s += "<span>#{field.caption}</span><ul><li>#{Katrid.i18n.gettext 'This field cannot be empty.'}</li></ul>"
       console.log(elfield)
       elfield.focus()
       Katrid.Dialogs.Alerts.error s
@@ -235,19 +236,28 @@ class DataSource
     return def.promise()
 
   newRecord: ->
+    @setState(DataSourceState.inserting)
     @scope.record = {}
     @scope.record.__str__ = Katrid.i18n.gettext '(New)'
     @scope.model.getDefaults()
     .done (res) =>
       if res.result
         @scope.$apply =>
-          el = $('[ng-form]').first()
-          for attr of res.result
-            child = el.find(""".form-field[name="#{attr}"]""")
-            controller = child.data().$ngModelController
-            if controller
-              @scope.record[attr] = res.result[attr]
-              controller.$setDirty()
+          for attr, v of res.result
+            control = @scope.form[attr]
+            control.$setViewValue v
+            control.$render()
+            # Force dirty (bug fix for boolean (false) value
+            if v is false
+              @scope.record[attr] = v
+              control.$setDirty()
+
+  editRecord: ->
+    @setState(DataSourceState.editing)
+
+  setState: (state) ->
+    @state = state
+    @changing =  @state in [DataSourceState.editing, DataSourceState.inserting]
 
   _setRecord: (rec) ->
     @scope.record = rec

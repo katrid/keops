@@ -1,4 +1,5 @@
 import json
+import decimal
 from itertools import chain
 from collections import defaultdict
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist, ValidationError
@@ -9,8 +10,9 @@ from django.utils.text import capfirst
 from django.apps import apps
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.fields.related import ManyToOneRel, ManyToManyField
+from django.db.models import DecimalField
 from django.db.models import QuerySet
-from django.db.models import NOT_PROVIDED
+from django.db.models import NOT_PROVIDED, BooleanField
 
 from keops.models.fields import OneToManyField
 from .decorators import service_method
@@ -40,7 +42,7 @@ class ModelService(ViewService):
     group_fields = None
     writable_fields = None
     readable_fields = None
-    title_field = 'name'
+    title_field = None
     list_fields = None
     extra_fields = None
     search_fields = None
@@ -54,6 +56,11 @@ class ModelService(ViewService):
     def init_service(cls):
         if not cls.name:
             cls.name = str(cls.model._meta)
+        if cls.title_field is None:
+            try:
+                cls.title_field = cls.model._meta.get_field('name').name
+            except FieldDoesNotExist:
+                pass
         if cls.extra_fields:
             for f in cls.extra_fields:
                 f.model = cls.model
@@ -89,6 +96,9 @@ class ModelService(ViewService):
             field_name = field.attname
             if isinstance(value, list):
                 value = value[0]
+        elif isinstance(field, DecimalField):
+            if isinstance(value, (str, float)):
+                value = decimal.Decimal(str(value))
         setattr(instance, field_name, value)
 
     def deserialize(self, instance, data):
@@ -198,6 +208,8 @@ class ModelService(ViewService):
                     r[f.name] = f.default()
                 else:
                     r[f.name] = f.default
+            elif isinstance(f, BooleanField):
+                r[f.name] = False
         return r or None
 
     def _search(self, count=None, page=None, *args, **kwargs):
@@ -350,6 +362,9 @@ class ModelService(ViewService):
         })
 
     def dispatch_action(self, action_id):
-        if action_id == 'view':
+        from keops.contrib.base.models import Action
+        if isinstance(action_id, Action):
+            return action_id.dispatch_action(self)
+        elif action_id == 'view':
             view_type = self.request.GET.get('view_type', 'list')
             return self.view_action(view_type)

@@ -15,14 +15,14 @@
         if (id) {
           return $.get("/web/action/" + service + "/" + id + "/");
         } else {
-          return $.get("/web/action/" + id + "/");
+          return $.get("/web/action/" + service + "/");
         }
       }
     };
   });
 
   ngApp.config(function($routeProvider) {
-    $routeProvider.when('/action/:actionId', {
+    $routeProvider.when('/action/:actionId/', {
       controller: 'ActionController',
       reloadOnSearch: false,
       resolve: {
@@ -33,7 +33,7 @@
         ]
       },
       template: "<div id=\"katrid-action-view\">" + (Katrid.i18n.gettext('Loading...')) + "</div>"
-    }).when('/action/:service/:actionId', {
+    }).when('/action/:service/:actionId/', {
       controller: 'ActionController',
       reloadOnSearch: false,
       resolve: {
@@ -68,9 +68,17 @@
     $scope.$on('$routeUpdate', function() {
       return $scope.action.routeUpdate($location.$$search);
     });
+    $scope.set = function(field, value) {
+      $scope.form[field].$setViewValue(value);
+      $scope.form[field].$render();
+      return true;
+    };
     $scope.setContent = function(content) {
+      var el;
       $scope.content = content;
-      return angular.element('#katrid-action-view').html($compile(content)($scope));
+      el = angular.element('#katrid-action-view').html($compile(content)($scope));
+      $scope.formElement = el.find('form').first();
+      return $scope.form = $scope.formElement.controller('form');
     };
     init = function(action) {
       var act;

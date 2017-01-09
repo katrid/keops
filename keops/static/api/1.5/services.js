@@ -102,23 +102,49 @@
       return this.post('get_defaults');
     };
 
+    Model.prototype._prepareFields = function(view) {
+      var f, ref, results, v;
+      ref = view.fields;
+      results = [];
+      for (f in ref) {
+        v = ref[f];
+        if (v.choices) {
+          results.push(v.displayChoices = _.object(v.choices));
+        } else {
+          results.push(void 0);
+        }
+      }
+      return results;
+    };
+
     Model.prototype.getViewInfo = function(data) {
       return this.post('get_view_info', null, {
         kwargs: data
-      });
+      }).done((function(_this) {
+        return function(res) {
+          return _this._prepareFields(res.result);
+        };
+      })(this));
     };
 
     Model.prototype.loadViews = function(data) {
       return this.post('load_views', null, {
         kwargs: data
-      });
+      }).done((function(_this) {
+        return function(res) {
+          var obj, ref, results, view;
+          ref = res.result;
+          results = [];
+          for (view in ref) {
+            obj = ref[view];
+            results.push(_this._prepareFields(obj));
+          }
+          return results;
+        };
+      })(this));
     };
 
     Model.prototype.getFieldChoices = function(field, term) {
-      console.log({
-        args: field,
-        q: term
-      });
       return this.get('get_field_choices', {
         args: field,
         q: term

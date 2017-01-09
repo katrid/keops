@@ -9,3 +9,10 @@ def method(fn):
 def service_method(fn):
     fn.exposed = True
     return fn
+
+
+def depends(fields):
+    def wrapped(fn):
+        fn = service_method(fn)
+        fn.depends = fields
+    return wrapped

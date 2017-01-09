@@ -2,8 +2,8 @@
 ngApp = angular.module('katridApp', ['ngRoute', 'ngCookies', 'ngSanitize', 'ui-katrid'])
 
 ngApp.config ($interpolateProvider) ->
-  $interpolateProvider.startSymbol('${')
-  $interpolateProvider.endSymbol('}')
+  $interpolateProvider.startSymbol '${'
+  $interpolateProvider.endSymbol '}'
 
 
 ngApp.factory 'actions', ->
@@ -11,12 +11,12 @@ ngApp.factory 'actions', ->
     if id
       $.get("/web/action/#{service}/#{id}/" )
     else
-      $.get("/web/action/#{id}/")
+      $.get("/web/action/#{service}/")
 
 
 ngApp.config ($routeProvider) ->
   $routeProvider
-  .when('/action/:actionId', {
+  .when('/action/:actionId/', {
     controller: 'ActionController'
     reloadOnSearch: false
     resolve:
@@ -25,7 +25,7 @@ ngApp.config ($routeProvider) ->
       ]
     template: "<div id=\"katrid-action-view\">#{Katrid.i18n.gettext 'Loading...'}</div>"
   })
-  .when('/action/:service/:actionId', {
+  .when('/action/:service/:actionId/', {
     controller: 'ActionController'
     reloadOnSearch: false
     resolve:
@@ -56,13 +56,21 @@ ngApp.controller 'ActionController', ($scope, $compile, action, $location) ->
   $scope.dataSource = new Katrid.Data.DataSource($scope)
   $scope.compile = $compile
 
-  $scope.$on('$routeUpdate', ->
+  $scope.$on '$routeUpdate', ->
     $scope.action.routeUpdate($location.$$search)
-  )
+
+  $scope.set = (field, value) ->
+    $scope.form[field].$setViewValue value
+    $scope.form[field].$render()
+    return true
 
   $scope.setContent = (content) ->
     $scope.content = content
-    angular.element('#katrid-action-view').html($compile(content)($scope))
+    el = angular.element('#katrid-action-view').html($compile(content)($scope))
+
+    # Get the first form controller
+    $scope.formElement = el.find('form').first()
+    $scope.form = $scope.formElement.controller('form')
 
   init = (action) ->
     if action

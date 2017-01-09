@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.utils.translation import gettext as _
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
 from keops.contrib.base.models.ui import Menu
@@ -25,5 +25,11 @@ def index(request, current_menu=None):
 
 @login_required
 def action(request, service, action_id):
+    if service is None:
+        from keops.contrib.base.models import Action
+        action = get_object_or_404(Action, pk=action_id)
+        act_cls = Action.ACTIONS[action.action_type]
+        action_id = get_object_or_404(act_cls, pk=action_id)
+        service = str(action_id.model.model_class()._meta)
     svc = site.services[service]
     return svc(request).dispatch_action(action_id)

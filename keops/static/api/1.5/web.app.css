@@ -44,7 +44,43 @@ section div.checkbox {
 .search-view .select2-container-multi .select2-search-choice-close {
   left: inherit;
 }
-input[type=text].ng-touched.ng-invalid {
-  border-color: #a94442;
-  background-color: #ffe5e6;
+.form-label {
+  font-weight: 600;
+}
+.form-field-readonly {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  border-bottom: 1px solid #e7e7e7;
+  border-left: 3px solid #e7e7e7;
+}
+.table > tbody > tr > td.list-column-delete,
+.table > thead > tr > th.list-column-delete {
+  padding: 5px;
+  text-align: center;
+}
+.table > tbody > tr {
+  cursor: pointer;
+}
+label.checkbox {
+  margin: 0;
+}
+section.form-group {
+  min-height: 59px;
+}
+input[type=text].form-field:required {
+  background-color: #eaebff;
+}
+input[type=text].form-field.ng-dirty {
+  background-color: #fffdf1;
+}
+input[type=text].form-field.ng-touched.ng-invalid {
+  border-color: #c64b49;
+  background-color: #fff5f5;
+}
+.ui-menu-item > .ui-menu-item-wrapper {
+  padding: 2px 4px;
+}
+ul.ui-autocomplete {
+  z-index: 99999;
 }

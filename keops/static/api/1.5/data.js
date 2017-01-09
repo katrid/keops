@@ -54,12 +54,12 @@
     }
 
     DataSource.prototype.cancelChanges = function() {
-      return this.scope.action.setViewType('list');
+      return this.setState(DataSourceState.browsing);
     };
 
     DataSource.prototype.saveChanges = function() {
       var data, el;
-      el = $('[ng-form]').first();
+      el = this.scope.formElement;
       if (this.validate()) {
         data = this.getModifiedData(this.scope.form, el, this.scope.record);
         if (data) {
@@ -131,22 +131,18 @@
     };
 
     DataSource.prototype.validate = function() {
-      var child, el, elfield, errorType, field, form, i, j, len, len1, ref, ref1, s;
+      var child, el, elfield, errorType, field, i, len, ref, s;
       if (this.scope.form.$invalid) {
         s = "<span>" + (Katrid.i18n.gettext('The following fields are invalid:')) + "</span><hr>";
-        el = $('[ng-form]').first();
+        el = this.scope.formElement;
         for (errorType in this.scope.form.$error) {
           ref = this.scope.form.$error[errorType];
           for (i = 0, len = ref.length; i < len; i++) {
-            form = ref[i];
-            ref1 = form.$error[errorType];
-            for (j = 0, len1 = ref1.length; j < len1; j++) {
-              child = ref1[j];
-              elfield = el.find(".form-field[name=\"" + child.$name + "\"]");
-              elfield.addClass('ng-touched');
-              field = this.scope.view.fields[child.$name];
-              s += "<span>" + field.caption + "</span><ul><li>" + (Katrid.i18n.gettext('This field cannot be empty.')) + "</li></ul>";
-            }
+            child = ref[i];
+            elfield = el.find(".form-field[name=\"" + child.$name + "\"]");
+            elfield.addClass('ng-touched');
+            field = this.scope.view.fields[child.$name];
+            s += "<span>" + field.caption + "</span><ul><li>" + (Katrid.i18n.gettext('This field cannot be empty.')) + "</li></ul>";
           }
         }
         console.log(elfield);
@@ -338,21 +334,24 @@
     };
 
     DataSource.prototype.newRecord = function() {
+      this.setState(DataSourceState.inserting);
       this.scope.record = {};
       this.scope.record.__str__ = Katrid.i18n.gettext('(New)');
       return this.scope.model.getDefaults().done((function(_this) {
         return function(res) {
           if (res.result) {
             return _this.scope.$apply(function() {
-              var attr, child, controller, el, results;
-              el = $('[ng-form]').first();
+              var attr, control, ref, results, v;
+              ref = res.result;
               results = [];
-              for (attr in res.result) {
-                child = el.find(".form-field[name=\"" + attr + "\"]");
-                controller = child.data().$ngModelController;
-                if (controller) {
-                  _this.scope.record[attr] = res.result[attr];
-                  results.push(controller.$setDirty());
+              for (attr in ref) {
+                v = ref[attr];
+                control = _this.scope.form[attr];
+                control.$setViewValue(v);
+                control.$render();
+                if (v === false) {
+                  _this.scope.record[attr] = v;
+                  results.push(control.$setDirty());
                 } else {
                   results.push(void 0);
                 }
@@ -362,6 +361,16 @@
           }
         };
       })(this));
+    };
+
+    DataSource.prototype.editRecord = function() {
+      return this.setState(DataSourceState.editing);
+    };
+
+    DataSource.prototype.setState = function(state) {
+      var ref;
+      this.state = state;
+      return this.changing = (ref = this.state) === DataSourceState.editing || ref === DataSourceState.inserting;
     };
 
     DataSource.prototype._setRecord = function(rec) {

@@ -63,7 +63,7 @@
 <script src="/static/assets/plugins/jquery.maskedinput/jquery.maskedinput.min.js"></script>
 <script src="/static/libs/plugins/masked-money/jquery.maskMoney.min.js"></script>
 <script src="/static/assets/plugins/ion-rangeSlider/ion.rangeSlider.min.js"></script>
-<script src="/static/assets/plugins/jquery-ui/jquery-ui.js"></script>
+<script src="/static/libs/plugins/jquery-ui.min.js"></script>
 <script src="/static/assets/plugins/jquery.scrollbox/jquery.scrollbox.min.js"></script>
 
 <script src="/static/assets/js/bootstrap.min.js"></script>
@@ -91,6 +91,7 @@
   })
 </script>
 
+<script src="/static/libs/underscore-min.js"></script>
 
 <script src="/static/api/1.5/services.js"></script>
 <script src="/static/api/1.5/ui.js"></script>
@@ -140,9 +141,29 @@
     // navbar search
     var items = [];
     $('.menu-item>a').each(function (idx, el) {
-      items.push($(el).text());
+      el = $(el);
+      items.push({href: el.attr('href'), name: el.text().trim()});
     });
-    $('#navbar-search').autocomplete({source: items});
+    var el = $('#navbar-search').autocomplete(
+        {
+          source: function (request, response) {
+            var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+            response($.grep(items, function (value) {
+              return matcher.test(value.name);
+            }));
+          },
+          select: function (ev, ui) {
+            if (ui.item) window.location.href = ui.item.href;
+            el.val(ui.item.name);
+          }
+        });
+    el.data('ui-autocomplete')._renderItem = function (ul, item) {
+      console.log('<a href="' + item.href + '">' + item.name + '</a>');
+      return $('<li></li>')
+          .data('item.autocomplete', item)
+          .append('<div>' + item.name + '</div>')
+          .appendTo(ul);
+    };
   });
 </script>
 <script>

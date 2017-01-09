@@ -9,8 +9,23 @@ msgstr ""
 "Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-msgid "Active"
-msgstr "Ativo"
-
 msgid "Group"
 msgstr "Grupo"
+
+msgid "Groups"
+msgstr "Grupos"
+
+msgid "Users"
+msgstr "Usuários"
+
+msgid "Sign out"
+msgstr "Finalizar Sessão"
+
+msgid "System"
+msgstr "Sistema"
+
+msgid "Security"
+msgstr "Segurança"
+
+msgid "Find resources here..."
+msgstr "Encontre recursos aqui..."

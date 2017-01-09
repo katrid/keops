@@ -27,17 +27,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='BaseModel',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', keops.models.fields.CharField(blank=True, max_length=128, null=True)),
-                ('app_label', keops.models.fields.CharField(blank=True, max_length=64, null=True)),
-            ],
-            options={
-                'db_table': 'base_table',
-            },
-        ),
-        migrations.CreateModel(
             name='Menu',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -62,8 +51,6 @@ class Migration(migrations.Migration):
                 ('limit', models.PositiveIntegerField(default=100)),
                 ('filter', models.BooleanField(default=False)),
                 ('auto_search', models.BooleanField(default=True)),
-                ('model', keops.models.fields.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='base.BaseModel')),
-                ('source_model', keops.models.fields.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='base.BaseModel')),
             ],
             options={
                 'db_table': 'base_window_action',

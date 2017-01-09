@@ -12,31 +12,56 @@ class Widget
   getId: (id) ->
     return 'katrid-input-' + id.toString()
 
-  getWidgetAttrs: (scope, el, attrs, field) ->
-    html = ''
+  widgetAttrs: (scope, el, attrs, field) ->
+    r = {}
     if field.required
-      html = ' required'
-    html += ' ng-model="' + @ngModel(attrs) + '"'
-    for attr of attrs
-      if attr.startsWith('fieldNg')
-        attrName = attr.substr(7, attr.length - 7)
-        html += """ ng-#{attrName}="#{attrs[attr]}" """
-    classes = ''
-    for cls in @classes
-      classes += ' ' + cls
-    if classes
-      html += ' class="' + classes + '"'
+      r['required'] = null
+    r['ng-model'] = @ngModel(attrs)
+    r['ng-show'] = 'dataSource.changing'
+    for attr, v of attrs when attr.startsWith 'field'
+      attrName = attrs.$attr[attr]
+      if attrName.startsWith('field-')
+        attrName = attrName.substr(6, attrName.length - 6)
+      console.log(attrName, v)
+      r[attrName] = v
+    if @classes
+      r['class'] = @classes.join(' ')
+    return r
+
+  _getWidgetAttrs: (scope, el, attrs, field) ->
+    html = ''
+    attributes = @widgetAttrs(scope, el, attrs, field)
+    for att, v of attributes
+      html += ' ' + att
+      if v
+        html += '="' + v + '"'
+    return html
+
+  innerHtml: (scope, el, attrs, field) ->
+    return ''
+
+  labelTemplate: (scope, el, attrs, field) ->
+    return """<label for="#{attrs._id}" class="form-label">#{field.caption}</label>"""
+
+  spanTemplate: (scope, el, attrs, field) ->
+    return """<span class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ record.#{attrs.name} }</span>"""
+
+  widgetTemplate: (scope, el, attrs, field, type) ->
+    html = """<#{@tag} id="#{attrs._id}" type="#{type}" name="#{attrs.name}" #{@_getWidgetAttrs(scope, el, attrs, field)}>"""
+    inner = @innerHtml(scope, el, attrs, field)
+    if inner
+      html += inner + "</#{@tag}>"
     return html
 
   template: (scope, el, attrs, field, type='text') ->
     widgetCount++
     id = @getId(widgetCount)
-    html = '<' +
-      @tag + ' id="' + id +
-      '" type="' + type + '" name="' + attrs.name +
-      '" ' + @getWidgetAttrs(scope, el, attrs, field) +
-      '>'
     attrs._id = id
+    html = '<div>' +
+      @labelTemplate(scope, el, attrs, field) +
+      @spanTemplate(scope, el, attrs, field) +
+      @widgetTemplate(scope, el, attrs, field, type) +
+      '</div>'
     return html
 
   link: (scope, el, attrs, $compile, field) ->
@@ -50,43 +75,31 @@ class InputWidget extends Widget
 
 
 class TextField extends InputWidget
-  getWidgetAttrs: (scope, el, attrs, field) ->
-    html = super(scope, el, attrs, field)
+  widgetAttrs: (scope, el, attrs, field) ->
+    attributes = super(scope, el, attrs, field)
     if field.max_length
-      html += ' maxlength="' + field.max_length.toString() + '"'
-    return html
-
-  template: (scope, el, attrs, field) ->
-    html = super(scope, el, attrs, field)
-    html = '<div><label for="' + attrs._id + '">' + field.caption + '</label>' + html + '</div>'
-    return html
+      attributes['maxlength'] = field.max_length.toString()
+    return attributes
 
 
 class SelectField extends InputWidget
   tag: 'select'
 
-  template: (scope, el, attrs, field) ->
-    widgetCount++
-    id = @getId(widgetCount)
-    html = '<' +
-      @tag + ' id="' + id + '" name="' + attrs.name +
-      '" ' + @getWidgetAttrs(scope, el, attrs, field) +
-      '>' +
-      '<option ng-repeat="choice in view.fields.' + attrs.name + '.choices" value="${choice[0]}">${choice[1]}</option>' +
-      '>'
-    attrs._id = id
+  spanTemplate: (scope, el, attrs, field) ->
+    return """<span class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ view.fields.#{attrs.name}.displayChoices[record.#{attrs.name}] }</span>"""
 
-    html = '<div><label for="' + attrs._id + '">' + field.caption + '</label>' + html + '</div>'
-    return html
-
+  innerHtml: (scope, el, attrs, field) ->
+    return """<option ng-repeat="choice in view.fields.#{attrs.name}.choices" value="${choice[0]}">${choice[1]}</option>"""
 
 
 class ForeignKey extends Widget
   tag: 'input foreignkey'
+
+  spanTemplate: (scope, el, attrs, field) ->
+    return """<a href="javascript:void(0)" class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ record.#{attrs.name}[1] }</a>"""
+
   template: (scope, el, attrs, field) ->
-    html = super(scope, el, attrs, field, 'hidden')
-    html = '<div><label for="' + attrs._id + '">' + field.caption + '</label>' + html + '</div>'
-    return html
+    return super(scope, el, attrs, field, 'hidden')
 
 
 class TextareaField extends TextField
@@ -96,8 +109,22 @@ class TextareaField extends TextField
 class DecimalField extends TextField
   tag: 'input decimal'
 
+  spanTemplate: (scope, el, attrs, field) ->
+    return """<span class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ record.#{attrs.name}|number:2 }</span>"""
+
+
+class DateField extends TextField
+  tag: 'input datepicker'
+
+  spanTemplate: (scope, el, attrs, field) ->
+    return """<span class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ record.#{attrs.name}|date:'short' }</span>"""
+
+
 class OneToManyField extends Widget
   tag: 'grid'
+
+  spanTemplate: (scope, el, attrs, field) ->
+    return ''
 
   template: (scope, el, attrs, field) ->
     html = super(scope, el, attrs, field, 'grid')
@@ -107,39 +134,33 @@ class OneToManyField extends Widget
 class ManyToManyField extends Widget
   tag: 'input foreignkey multiple'
 
+  spanTemplate: (scope, el, attrs, field) ->
+    return """<span class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ record.#{attrs.name}|m2m }</span>"""
+
   template: (scope, el, attrs, field) ->
-    html = super(scope, el, attrs, field, 'hidden')
-    html = '<div><label for="' + attrs._id + '">' + field.caption + '</label>' + html + '</div>'
-    return html
+    return super(scope, el, attrs, field, 'hidden')
 
 
 class CheckBox extends InputWidget
-  constructor: ->
-    super
-    @classes = ['form-field']
+  spanTemplate: (scope, el, attrs, field) ->
+    return """<span class="form-field-readonly" ng-show="!dataSource.changing">
+&nbsp;${ record.#{attrs.name} ? Katrid.i18n.gettext('yes') : Katrid.i18n.gettext('no') }
+</span>"""
 
-  getWidgetAttrs: (scope, el, attrs, field) ->
-    html = ''
-    html += ' ng-model="' + @ngModel(attrs) + '"'
-    classes = ''
-    for cls in @classes
-      classes += ' ' + cls
-    if classes
-      html += ' class="' + classes + '"'
-    return html
-
-  template: (scope, el, attrs, field) ->
+  widgetTemplate: (scope, el, attrs, field) ->
     html = super(scope, el, attrs, field, 'checkbox')
-    s = '<div>'
-    if field.help_text
-      s += '<label for="' + attrs._id + '">' + field.caption + '</label>'
-    html = s + '<div class="checkbox"><label>' + html
+    html = '<label class="checkbox" ng-show="dataSource.changing">' + html
     if field.help_text
       html += field.help_text
     else
       html += field.caption
-    html += '</label></div></div>'
+    html += '<i></i></label>'
     return html
+
+  labelTemplate: (scope, el, attrs, field) ->
+    if field.help_text
+      return super(scope, el, attrs, field)
+    return ''
 
 
 @Katrid.UI.Widgets =
@@ -150,6 +171,7 @@ class CheckBox extends InputWidget
   ForeignKey: ForeignKey
   TextareaField: TextareaField
   DecimalField: DecimalField
+  DateField: DateField
   CheckBox: CheckBox
   OneToManyField: OneToManyField
   ManyToManyField: ManyToManyField

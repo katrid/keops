@@ -12,8 +12,9 @@
     widget = null;
     return {
       restrict: 'E',
+      priority: -1,
       replace: true,
-      transclude: false,
+      transclude: true,
       template: function(element, attrs) {
         if ((element.parent('list').length)) {
           fieldType = 'column';
@@ -24,7 +25,7 @@
         }
       },
       link: function(scope, element, attrs) {
-        var cols, ctrl, fcontrol, field, form, templ, tp;
+        var att, cols, ctrl, fcontrol, field, fieldAttrs, form, templ, tp, v;
         field = scope.view.fields[attrs.name];
         if (fieldType === 'field') {
           element.removeAttr('name');
@@ -41,6 +42,12 @@
               widget = 'CheckBox';
             } else if (tp === 'DecimalField') {
               widget = 'DecimalField';
+              cols = 3;
+            } else if (tp === 'DateField') {
+              widget = 'DateField';
+              cols = 3;
+            } else if (tp === 'DateTimeField') {
+              widget = 'DateField';
               cols = 3;
             } else if (tp === 'IntegerField') {
               widget = 'TextField';
@@ -73,7 +80,18 @@
               form.$addControl(ctrl);
             }
           }
-          return widget.link(scope, element, attrs, $compile, field);
+          widget.link(scope, element, fieldAttrs, $compile, field);
+          fieldAttrs = {};
+          for (att in attrs) {
+            v = attrs[att];
+            if (!(att.startsWith('field'))) {
+              continue;
+            }
+            fieldAttrs[att] = v;
+            element.removeAttr(att);
+            attrs.$set(att);
+          }
+          return fieldAttrs.name = attrs.name;
         }
       }
     };
@@ -108,12 +126,36 @@
     };
   });
 
-  uiKatrid.controller('dialogForm', function($scope) {
-    console.log('start controller');
-    return $scope.form;
+  uiKatrid.directive('ngSum', function() {
+    return {
+      restrict: 'A',
+      priority: 9999,
+      require: 'ngModel',
+      link: function(scope, element, attrs, controller) {
+        var field, nm, subField;
+        nm = attrs.ngSum.split('.');
+        field = nm[0];
+        subField = nm[1];
+        return scope.$watch('record.$' + field, function(newValue, oldValue) {
+          var v;
+          if (newValue && scope.record) {
+            v = 0;
+            scope.record[field].map((function(_this) {
+              return function(obj) {
+                return v += parseFloat(obj[subField]);
+              };
+            })(this));
+            if (v.toString() !== controller.$modelValue) {
+              controller.$setViewValue(v);
+              controller.$render();
+            }
+          }
+        });
+      }
+    };
   });
 
-  uiKatrid.directive('grid', function($compile, $http) {
+  uiKatrid.directive('grid', function($compile) {
     return {
       restrict: 'E',
       replace: true,
@@ -126,7 +168,9 @@
         scope.records = [];
         scope.recordIndex = -1;
         scope._viewCache = {};
+        scope._changeCount = 0;
         scope.dataSet = [];
+        scope.parent = scope.$parent;
         scope.model = new Katrid.Services.Model(field.model);
         scope.dataSource = new Katrid.Data.DataSource(scope);
         p = scope.$parent;
@@ -145,7 +189,7 @@
           return scope.$apply(function() {
             var html;
             scope.view = res.result;
-            html = Katrid.UI.Utils.Templates.renderGrid(scope, $(scope.view.content), attrs, 'showDialog($index)');
+            html = Katrid.UI.Utils.Templates.renderGrid(scope, $(scope.view.content), attrs, 'openItem($index)');
             return element.replaceWith($compile(html)(scope));
           });
         });
@@ -154,9 +198,12 @@
           html = scope._viewCache.form.content;
           html = $(Katrid.UI.Utils.Templates.gridDialog().replace('<!-- view content -->', html));
           el = $compile(html)(scope);
+          scope.formElement = el.find('form').first();
+          scope.form = scope.formElement.controller('form');
           scope.gridDialog = el;
           el.modal('show');
           el.on('hidden.bs.modal', function() {
+            scope.dataSource.setState(Katrid.Data.DataSourceState.browsing);
             el.remove();
             scope.gridDialog = null;
             return scope.recordIndex = -1;
@@ -164,18 +211,40 @@
           return false;
         };
         scope.addItem = function() {
+          scope.dataSource.newRecord();
           return scope.showDialog();
         };
+        scope.openItem = function(index) {
+          if (scope.parent.dataSource.changing) {
+            scope.dataSource.editRecord();
+          }
+          return scope.showDialog(index);
+        };
+        scope.removeItem = function(idx) {
+          return scope.records.splice(idx, 1);
+        };
+        scope.set = (function(_this) {
+          return function(field, value) {
+            scope.form[field].$setViewValue(value);
+            scope.form[field].$render();
+            return true;
+          };
+        })(this);
         scope.save = function() {
-          var attr, data, rec;
+          var attr, data, rec, v;
           data = scope.dataSource.applyModifiedData(scope.form, scope.gridDialog, scope.record);
           if (scope.recordIndex > -1) {
             rec = scope.records[scope.recordIndex];
             for (attr in data) {
-              rec[attr] = data[attr];
+              v = data[attr];
+              rec[attr] = v;
             }
+          } else if (scope.recordIndex === -1) {
+            scope.records.push(scope.record);
           }
           scope.gridDialog.modal('toggle');
+          scope.parent.record['$' + scope.fieldName] = ++scope._changeCount;
+          scope.parent.record[scope.fieldName] = scope.records;
         };
         scope.showDialog = function(index) {
           var rec;
@@ -191,11 +260,10 @@
               });
             }
             rec = scope.dataSet[index];
+            scope.record = rec;
           } else {
             scope.recordIndex = -1;
-            rec = {};
           }
-          scope.record = rec;
           if (scope._viewCache.form) {
             setTimeout(function() {
               return renderDialog();
@@ -216,6 +284,7 @@
           var data;
           data = {};
           data[field.field] = key;
+          scope._changeCount = 0;
           scope.records = [];
           return scope.dataSource.search(data);
         };
@@ -390,9 +459,12 @@
           allowNegative: negative,
           allowZero: true
         }).bind('keyup blur', function(event) {
-          controller.$setViewValue(element.val().replace(RegExp('\\' + thousands, 'g'), '').replace(RegExp('\\' + decimal, 'g'), '.'));
-          controller.$modelValue = parseFloat(element.val().replace(RegExp('\\' + thousands, 'g'), '').replace(RegExp('\\' + decimal, 'g'), '.'));
-          return scope.$apply();
+          var newVal;
+          newVal = element.maskMoney('unmasked')[0];
+          if (newVal.toString() !== controller.$viewValue) {
+            controller.$setViewValue(newVal);
+            return scope.$apply();
+          }
         });
         return controller.$render = function() {
           if (controller.$viewValue) {
@@ -562,7 +634,6 @@
         fields = view.fields;
         cfg = {
           multiple: true,
-          minimumInputLength: 1,
           formatSelection: (function(_this) {
             return function(obj, element) {
               if (obj.field) {
@@ -803,6 +874,23 @@
             }
           });
         });
+      }
+    };
+  });
+
+  uiKatrid.filter('m2m', function() {
+    return function(input) {
+      var obj;
+      if (_.isArray(input)) {
+        return ((function() {
+          var j, len, results;
+          results = [];
+          for (j = 0, len = input.length; j < len; j++) {
+            obj = input[j];
+            results.push(obj[1]);
+          }
+          return results;
+        })()).join(', ');
       }
     };
   });

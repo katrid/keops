@@ -1,0 +1,20 @@
+<data translate="True">
+  <action id="action-view-auth-user" name="Users" type="base.windowaction" model="{{ settings.AUTH_USER_MODEL }}"/>
+  <action id="action-view-auth-group" name="Groups" type="base.windowaction" model="auth.group"/>
+  <action id="action-view-auth-rule" name="Rules" type="base.windowaction" model="base.rule"/>
+  <action id="action-view-menu" name="Menu Structure" type="base.windowaction" model="base.menu"/>
+  <action id="action-view-window-action" name="Actions" type="base.windowaction" model="base.windowaction"/>
+  <menuitem id="sys-menu" name="System">
+    <menuitem id="sys-menu-sec" name="Security">
+      <menuitem id="sys-menu-user" name="Users" action="action-view-auth-user"/>
+      <menuitem id="sys-menu-group" name="Groups" action="action-view-auth-group"/>
+      <menuitem id="sys-menu-rules" name="Rules" action="action-view-auth-rule"/>
+    </menuitem>
+    <menuitem id="sys-menu-ui" name="User Interface">
+      <menuitem id="sys-menu-ui-action" name="Actions">
+        <menuitem id="sys-menu-ui-window-action" name="Window Actions" action="action-view-window-action"/>
+      </menuitem>
+      <menuitem id="sys-menu-ui-menu" name="Menu Structure" action="action-view-menu"/>
+    </menuitem>
+  </menuitem>
+</data>
