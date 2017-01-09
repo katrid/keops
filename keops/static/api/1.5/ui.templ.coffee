@@ -146,7 +146,13 @@ class Templates
     ths = ''
     cols = ''
     for col in element.children()
-      name = $(col).attr('name')
+
+      col = $(col)
+
+      if col.attr('visible') is 'False'
+        continue
+
+      name = col.attr('name')
       fieldInfo = scope.view.fields[name]
 
       if fieldInfo.choices
@@ -158,7 +164,7 @@ class Templates
       ths += """<th class="#{cls}" name="#{name}"><label>${view.fields.#{name}.caption}</label></th>"""
       cls = """#{fieldInfo.type} field-#{name}"""
 
-      colHtml = $(col).html()
+      colHtml = col.html()
 
       if colHtml
         cols += """<td><a data-id="${row.#{name}[0]}">#{colHtml}</a></td>"""

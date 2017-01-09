@@ -66,7 +66,11 @@
       ref = element.children();
       for (i = 0, len = ref.length; i < len; i++) {
         col = ref[i];
-        name = $(col).attr('name');
+        col = $(col);
+        if (col.attr('visible') === 'False') {
+          continue;
+        }
+        name = col.attr('name');
         fieldInfo = scope.view.fields[name];
         if (fieldInfo.choices) {
           fieldInfo._listChoices = {};
@@ -79,7 +83,7 @@
         cls = fieldInfo.type + " list-column";
         ths += "<th class=\"" + cls + "\" name=\"" + name + "\"><label>${view.fields." + name + ".caption}</label></th>";
         cls = fieldInfo.type + " field-" + name;
-        colHtml = $(col).html();
+        colHtml = col.html();
         if (colHtml) {
           cols += "<td><a data-id=\"${row." + name + "[0]}\">" + colHtml + "</a></td>";
         } else if (fieldInfo.type === 'ForeignKey') {

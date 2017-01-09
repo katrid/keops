@@ -122,6 +122,7 @@ class DataSource
       .fail (res) =>
         def.reject(res)
       .done (res) =>
+        console.log(res)
         if @pageIndex > 1
           @offset = (@pageIndex - 1) * @pageLimit + 1
         else
