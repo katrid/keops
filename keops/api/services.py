@@ -154,7 +154,7 @@ class ModelService(ViewService):
             data[f.name] = self.serialize_value(instance, f)
         if 'id' not in data:
             data['id'] = instance.pk
-        data['__str__'] = str(instance)
+        data['display_name'] = str(instance)
         return data
 
     def get_fields_info(self, view_type):
