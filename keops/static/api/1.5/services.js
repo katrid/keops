@@ -162,8 +162,8 @@
         kwargs: {
           data: data
         }
-      }).fail(function() {
-        console.log('test');
+      }).fail(function(res) {
+        console.log(res);
         return Katrid.Dialogs.Alerts.error(Katrid.i18n.gettext('Error saving record changes'));
       });
     };

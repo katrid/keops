@@ -73,8 +73,8 @@ class Model extends Service
 
   write: (data, params) ->
     @post('write', params, { kwargs: { data: data } })
-    .fail ->
-      console.log('test')
+    .fail (res) ->
+      console.log(res)
       Katrid.Dialogs.Alerts.error Katrid.i18n.gettext 'Error saving record changes'
 
   onFieldChange: (field, record, scope) ->

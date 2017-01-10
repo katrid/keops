@@ -46,6 +46,7 @@ def rpc(request, service, method_name):
         except IntegrityError as e:
             res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'message': str(e)}
         except Exception as e:
+            raise
             status = 500
             res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'message': str(e)}
         else:
