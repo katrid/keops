@@ -291,6 +291,7 @@ class DataSource
     @recordIndex = index + 1
 
   onFieldChange: (res) =>
+    console.log('1fieldchange', res)
     if res.ok and res.result.fields
       @scope.$apply =>
         for f, v of res.result.fields

@@ -419,6 +419,7 @@
     };
 
     DataSource.prototype.onFieldChange = function(res) {
+      console.log('1fieldchange', res);
       if (res.ok && res.result.fields) {
         return this.scope.$apply((function(_this) {
           return function() {

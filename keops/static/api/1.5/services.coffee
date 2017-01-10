@@ -77,13 +77,8 @@ class Model extends Service
       console.log(res)
       Katrid.Dialogs.Alerts.error Katrid.i18n.gettext 'Error saving record changes'
 
-  onFieldChange: (field, record, scope) ->
-    r = @post('field_change', null, { kwargs: { field: field, record: record } })
-    if scope
-      f.done (res) ->
-        for f, v of record.fields
-          scope.set(f, v)
-    return r
+  onFieldChange: (field, record) ->
+    @post('field_change', null, { kwargs: { field: field, record: record } })
 
 
 @Katrid.Services =
