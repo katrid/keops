@@ -109,7 +109,7 @@
           scope.dataSource.fieldChangeWatchers.push(dep);
           results.push(scope.$watch('record.' + dep, function(newValue, oldValue) {
             if (newValue !== oldValue) {
-              return scope.model.onFieldChange(dep, scope.record.tipo_docto).done(scope.dataSource.onFieldChange);
+              return scope.model.onFieldChange(dep, scope.record).done(scope.dataSource.onFieldChange);
             }
           }));
         }

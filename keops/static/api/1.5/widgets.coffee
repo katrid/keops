@@ -71,7 +71,7 @@ class Widget
         scope.dataSource.fieldChangeWatchers.push(dep)
         scope.$watch 'record.' + dep, (newValue, oldValue) ->
           if newValue != oldValue
-            scope.model.onFieldChange(dep, scope.record.tipo_docto)
+            scope.model.onFieldChange(dep, scope.record)
             .done scope.dataSource.onFieldChange
 
 
