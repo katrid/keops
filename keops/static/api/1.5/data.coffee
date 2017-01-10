@@ -31,6 +31,7 @@ class DataSource
     @modifiedData = null
     @uploading = 0
     @state = null
+    @fieldChangeWatchers = []
 
   cancelChanges: ->
     #@scope.record = null
@@ -54,17 +55,21 @@ class DataSource
             @search()
           else
             s = "<span>#{Katrid.i18n.gettext 'The following fields are invalid:'}<hr></span>"
-            for fld of res.messages
-              msgs = res.messages[fld]
-              field = @scope.view.fields[fld]
-              elfield = el.find(""".form-field[name="#{field.name}"]""")
-              elfield.addClass('ng-invalid ng-touched')
-              s += "<strong>#{field.caption}</strong><ul>"
-              console.log(field)
-              for msg in msgs
-                s += "<li>#{msg}</li>"
-              s += '</ul>'
-            elfield.focus()
+            if res.message
+              s = res.message
+            else if res.messages
+              for fld of res.messages
+                msgs = res.messages[fld]
+                field = @scope.view.fields[fld]
+                elfield = el.find(""".form-field[name="#{field.name}"]""")
+                elfield.addClass('ng-invalid ng-touched')
+                s += "<strong>#{field.caption}</strong><ul>"
+                console.log(field)
+                for msg in msgs
+                  s += "<li>#{msg}</li>"
+                s += '</ul>'
+              if elfield
+                elfield.focus()
 
             Katrid.Dialogs.Alerts.error s
         .always =>

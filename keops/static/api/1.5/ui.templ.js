@@ -101,7 +101,7 @@
         } else if (fieldInfo.type === 'DecimalField') {
           cols += "<td class=\"" + cls + "\">${row." + name + "|number:2}</td>";
         } else if (fieldInfo.type === 'DateField') {
-          cols += "<td class=\"" + cls + "\">${row." + name + "|date:shortDate}</td>";
+          cols += "<td class=\"" + cls + "\">${row." + name + "|date:'shortDate'}</td>";
         } else {
           cols += "<td>${row." + name + "}</td>";
         }

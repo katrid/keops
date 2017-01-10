@@ -51,6 +51,7 @@
       this.modifiedData = null;
       this.uploading = 0;
       this.state = null;
+      this.fieldChangeWatchers = [];
     }
 
     DataSource.prototype.cancelChanges = function() {
@@ -74,20 +75,26 @@
                 return _this.search();
               } else {
                 s = "<span>" + (Katrid.i18n.gettext('The following fields are invalid:')) + "<hr></span>";
-                for (fld in res.messages) {
-                  msgs = res.messages[fld];
-                  field = _this.scope.view.fields[fld];
-                  elfield = el.find(".form-field[name=\"" + field.name + "\"]");
-                  elfield.addClass('ng-invalid ng-touched');
-                  s += "<strong>" + field.caption + "</strong><ul>";
-                  console.log(field);
-                  for (i = 0, len = msgs.length; i < len; i++) {
-                    msg = msgs[i];
-                    s += "<li>" + msg + "</li>";
+                if (res.message) {
+                  s = res.message;
+                } else if (res.messages) {
+                  for (fld in res.messages) {
+                    msgs = res.messages[fld];
+                    field = _this.scope.view.fields[fld];
+                    elfield = el.find(".form-field[name=\"" + field.name + "\"]");
+                    elfield.addClass('ng-invalid ng-touched');
+                    s += "<strong>" + field.caption + "</strong><ul>";
+                    console.log(field);
+                    for (i = 0, len = msgs.length; i < len; i++) {
+                      msg = msgs[i];
+                      s += "<li>" + msg + "</li>";
+                    }
+                    s += '</ul>';
                   }
-                  s += '</ul>';
+                  if (elfield) {
+                    elfield.focus();
+                  }
                 }
-                elfield.focus();
                 return Katrid.Dialogs.Alerts.error(s);
               }
             };

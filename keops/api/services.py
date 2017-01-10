@@ -1,16 +1,18 @@
-import json
+import datetime
 import decimal
 from itertools import chain
 from collections import defaultdict
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist, ValidationError
+from django.conf import settings
 from django.db.models import ForeignKey, ImageField
 from django.template import loader
 from django.http import HttpResponse, JsonResponse
 from django.utils.text import capfirst
+from django.utils.encoding import force_str
 from django.apps import apps
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.fields.related import ManyToOneRel, ManyToManyField
-from django.db.models import DecimalField
+from django.db.models import DecimalField, DateField
 from django.db.models import QuerySet
 from django.db.models import NOT_PROVIDED, BooleanField
 
@@ -46,6 +48,7 @@ class ModelService(ViewService):
     list_fields = None
     extra_fields = None
     search_fields = None
+    field_dependencies = None
 
     def __init__(self, request):
         super(ModelService, self).__init__(request)
@@ -99,6 +102,13 @@ class ModelService(ViewService):
         elif isinstance(field, DecimalField):
             if isinstance(value, (str, float)):
                 value = decimal.Decimal(str(value))
+        elif isinstance(field, DateField):
+            for format in settings.DATE_INPUT_FORMATS:
+                try:
+                    value = datetime.datetime.strptime(force_str(value), format).date()
+                except (ValueError, TypeError):
+                    continue
+
         setattr(instance, field_name, value)
 
     def deserialize(self, instance, data):
@@ -179,6 +189,8 @@ class ModelService(ViewService):
             'caption': capfirst(field.verbose_name),
             'max_length': field.max_length,
         }
+        if self.field_dependencies and field.name in self.field_dependencies:
+            info['depends'] = self.field_dependencies[field.name]
         if isinstance(field, ForeignKey):
             info['model'] = str(field.related_model._meta)
         elif isinstance(field, OneToManyField):

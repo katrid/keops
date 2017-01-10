@@ -265,18 +265,22 @@ uiKatrid.directive 'datepicker', ->
   require: '?ngModel'
   link: (scope, element, attrs, controller) ->
     el = element.datepicker
-      format: Katrid.i18n.gettext 'dd/mm/yyyy'
+      format: Katrid.i18n.gettext 'yyyy-mm-dd'
       forceParse: false
 
     updateModelValue = ->
-      el.val(controller.$modelValue)
+      console.log(controller.$modelValue, el.val())
+      if controller.$modelValue != el.val()
+        el.val(controller.$modelValue)
 
     scope.$watch(attrs.ngModel, updateModelValue)
 
     el = el.mask('00/00/0000')
 
     controller.$render = ->
-      console.log(controller.$modelValue)
+      if controller.$modelValue
+        dt = new Date(controller.$modelValue)
+        el.datepicker('setDate', dt)
 
     el.on 'blur', (evt) ->
       s = el.val()

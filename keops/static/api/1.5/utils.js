@@ -14,6 +14,23 @@
     };
   }
 
+  _.mixin = function(dt, fmt, delimiter) {
+    var dateItems, dayIndex, formatItems, formatLowerCase, formatedDate, month, monthIndex, yearIndex;
+    if (delimiter == null) {
+      delimiter = '/';
+    }
+    formatLowerCase = _format.toLowerCase();
+    formatItems = formatLowerCase.split(_delimiter);
+    dateItems = _date.split(_delimiter);
+    monthIndex = formatItems.indexOf("mm");
+    dayIndex = formatItems.indexOf("dd");
+    yearIndex = formatItems.indexOf("yyyy");
+    month = parseInt(dateItems[monthIndex]);
+    month -= 1;
+    formatedDate = new Date(dateItems[yearIndex], month, dateItems[dayIndex]);
+    return formatedDate;
+  };
+
 }).call(this);
 
 //# sourceMappingURL=utils.js.map

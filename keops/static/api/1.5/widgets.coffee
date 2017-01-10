@@ -65,6 +65,18 @@ class Widget
     return html
 
   link: (scope, el, attrs, $compile, field) ->
+    # Add watcher for field dependencies
+    if field.depends
+      for dep in field.depends when dep not in scope.dataSource.fieldChangeWatchers
+        scope.dataSource.fieldChangeWatchers.push(dep)
+        scope.$watch 'record.' + dep, (newValue, oldValue) ->
+          if newValue != oldValue
+            scope.model.onFieldChange(dep, {'tipo_docto': scope.record.tipo_docto})
+            .done (res) ->
+              if res.ok and res.result.fields
+                scope.$apply ->
+                  for f, v of res.result.fields
+                    scope.record[f] = v
 
 
 class InputWidget extends Widget
@@ -117,7 +129,7 @@ class DateField extends TextField
   tag: 'input datepicker'
 
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ record.#{attrs.name}|date:'short' }</span>"""
+    return """<span class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ record.#{attrs.name}|date:'shortDate' }</span>"""
 
 
 class OneToManyField extends Widget

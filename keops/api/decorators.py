@@ -16,3 +16,9 @@ def depends(fields):
         fn = service_method(fn)
         fn.depends = fields
     return wrapped
+
+
+def on_change(fields):
+    def wrapped(fn):
+        fn.fields = fields
+    return wrapped

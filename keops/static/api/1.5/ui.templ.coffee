@@ -156,7 +156,7 @@ class Templates
       if col.attr('visible') is 'False'
         continue
 
-        
+
       name = col.attr('name')
       fieldInfo = scope.view.fields[name]
 
@@ -182,7 +182,7 @@ class Templates
       else if fieldInfo.type is 'DecimalField'
         cols += """<td class="#{cls}">${row.#{name}|number:2}</td>"""
       else if fieldInfo.type is 'DateField'
-        cols += """<td class="#{cls}">${row.#{name}|date:shortDate}</td>"""
+        cols += """<td class="#{cls}">${row.#{name}|date:'shortDate'}</td>"""
       else
         cols += """<td>${row.#{name}}</td>"""
     if parentDataSource

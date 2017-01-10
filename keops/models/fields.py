@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -107,6 +108,8 @@ class VirtualField(object):
 class OneToManyField(VirtualField):
     def __init__(self, related_name, **kwargs):
         self.related_name = related_name
+        self.null = True
+        self.blank = True
         for k, v in kwargs.items():
             setattr(self, k, v)
 

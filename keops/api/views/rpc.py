@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.db import models
 from django.core import exceptions
+from django.db.utils import IntegrityError
 from django.contrib.auth.decorators import login_required
 
 from keops.api.services import ViewService, ModelService
@@ -41,6 +42,8 @@ def rpc(request, service, method_name):
             res = {'status': 'denied', 'ok': False, 'fail': True, 'result': None}
         except exceptions.ValidationError as e:
             res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'messages': e.message_dict}
+        except IntegrityError as e:
+            res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'message': str(e)}
         except:
             raise
             status = 500

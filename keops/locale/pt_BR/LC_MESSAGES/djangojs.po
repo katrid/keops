@@ -119,3 +119,6 @@ msgstr "Os seguintes campos são inválidos:"
 
 msgid "This field cannot be empty."
 msgstr "Este campo não pode estar vazio."
+
+msgid "yyyy-mm-dd"
+msgstr "dd/dd/yyyy"
