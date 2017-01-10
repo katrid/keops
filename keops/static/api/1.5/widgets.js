@@ -119,7 +119,7 @@
                     results1 = [];
                     for (f in ref1) {
                       v = ref1[f];
-                      results1.push(scope.record[f] = v);
+                      results1.push(scope.set(f, v));
                     }
                     return results1;
                   });

@@ -76,7 +76,7 @@ class Widget
               if res.ok and res.result.fields
                 scope.$apply ->
                   for f, v of res.result.fields
-                    scope.record[f] = v
+                    scope.set(f, v)
 
 
 class InputWidget extends Widget
