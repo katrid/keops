@@ -289,12 +289,13 @@ class DataSource
 
   setRecordIndex: (index) ->
     @recordIndex = index + 1
-    
-  onFieldChange: (res) ->
+
+  onFieldChange: (res) =>
     if res.ok and res.result.fields
-      scope.$apply ->
+      @scope.$apply =>
         for f, v of res.result.fields
-          scope.set(f, v)
+          console.log(f, v)
+          @scope.set(f, v)
 
 
 class Record
