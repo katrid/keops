@@ -344,7 +344,7 @@
     DataSource.prototype.newRecord = function() {
       this.setState(DataSourceState.inserting);
       this.scope.record = {};
-      this.scope.record.__str__ = Katrid.i18n.gettext('(New)');
+      this.scope.record.display_name = Katrid.i18n.gettext('(New)');
       return this.scope.model.getDefaults().done((function(_this) {
         return function(res) {
           if (res.result) {

@@ -244,7 +244,7 @@ class DataSource
   newRecord: ->
     @setState(DataSourceState.inserting)
     @scope.record = {}
-    @scope.record.__str__ = Katrid.i18n.gettext '(New)'
+    @scope.record.display_name = Katrid.i18n.gettext '(New)'
     @scope.model.getDefaults()
     .done (res) =>
       if res.result

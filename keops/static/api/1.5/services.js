@@ -158,12 +158,13 @@
     };
 
     Model.prototype.write = function(data, params) {
-      this.post('write', params, {
+      return this.post('write', params, {
         kwargs: {
           data: data
         }
-      }).fail(function() {});
-      return Katrid.Dialogs.Alerts.error(Katrid.i18n.gettext('Error saving record changes'));
+      }).fail(function() {
+        return Katrid.Dialogs.Alerts.error(Katrid.i18n.gettext('Error saving record changes'));
+      });
     };
 
     Model.prototype.onFieldChange = function(field, record) {
