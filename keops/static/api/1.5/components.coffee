@@ -209,6 +209,9 @@ uiKatrid.directive 'grid', ($compile) ->
       scope.parent.record[scope.fieldName] = scope.records
       return
 
+    scope.test = (msg) ->
+      console.log('msg', msg)
+
     scope.showDialog = (index) ->
       if index?
         # Show item dialog
