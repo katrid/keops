@@ -71,12 +71,8 @@ class Widget
         scope.dataSource.fieldChangeWatchers.push(dep)
         scope.$watch 'record.' + dep, (newValue, oldValue) ->
           if newValue != oldValue
-            scope.model.onFieldChange(dep, {'tipo_docto': scope.record.tipo_docto})
-            .done (res) ->
-              if res.ok and res.result.fields
-                scope.$apply ->
-                  for f, v of res.result.fields
-                    scope.set(f, v)
+            scope.model.onFieldChange(dep, scope.record.tipo_docto)
+            .done scope.dataSource.onFieldChange
 
 
 class InputWidget extends Widget

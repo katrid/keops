@@ -33,8 +33,8 @@
   })();
 
   DataSource = (function() {
-    function DataSource(scope) {
-      this.scope = scope;
+    function DataSource(scope1) {
+      this.scope = scope1;
       this.recordIndex = 0;
       this.recordCount = null;
       this.loading = false;
@@ -414,6 +414,21 @@
 
     DataSource.prototype.setRecordIndex = function(index) {
       return this.recordIndex = index + 1;
+    };
+
+    DataSource.prototype.onFieldChange = function(res) {
+      if (res.ok && res.result.fields) {
+        return scope.$apply(function() {
+          var f, ref, results, v;
+          ref = res.result.fields;
+          results = [];
+          for (f in ref) {
+            v = ref[f];
+            results.push(scope.set(f, v));
+          }
+          return results;
+        });
+      }
     };
 
     return DataSource;

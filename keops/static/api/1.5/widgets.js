@@ -109,22 +109,7 @@
           scope.dataSource.fieldChangeWatchers.push(dep);
           results.push(scope.$watch('record.' + dep, function(newValue, oldValue) {
             if (newValue !== oldValue) {
-              return scope.model.onFieldChange(dep, {
-                'tipo_docto': scope.record.tipo_docto
-              }).done(function(res) {
-                if (res.ok && res.result.fields) {
-                  return scope.$apply(function() {
-                    var f, ref1, results1, v;
-                    ref1 = res.result.fields;
-                    results1 = [];
-                    for (f in ref1) {
-                      v = ref1[f];
-                      results1.push(scope.set(f, v));
-                    }
-                    return results1;
-                  });
-                }
-              });
+              return scope.model.onFieldChange(dep, scope.record.tipo_docto).done(scope.dataSource.onFieldChange);
             }
           }));
         }

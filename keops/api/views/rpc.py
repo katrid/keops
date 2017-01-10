@@ -45,10 +45,9 @@ def rpc(request, service, method_name):
             res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'messages': e.message_dict}
         except IntegrityError as e:
             res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'message': str(e)}
-        except:
-            raise
+        except Exception as e:
             status = 500
-            res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None}
+            res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'message': str(e)}
         else:
             if isinstance(res, dict):
                 if 'status' not in res and 'result' not in res:

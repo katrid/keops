@@ -168,13 +168,27 @@
       });
     };
 
-    Model.prototype.onFieldChange = function(field, record) {
-      return this.post('field_change', null, {
+    Model.prototype.onFieldChange = function(field, record, scope) {
+      var r;
+      r = this.post('field_change', null, {
         kwargs: {
           field: field,
           record: record
         }
       });
+      if (scope) {
+        f.done(function(res) {
+          var f, ref, results, v;
+          ref = record.fields;
+          results = [];
+          for (f in ref) {
+            v = ref[f];
+            results.push(scope.set(f, v));
+          }
+          return results;
+        });
+      }
+      return r;
     };
 
     return Model;
