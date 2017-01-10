@@ -1,5 +1,6 @@
 import json
 from django.shortcuts import render
+from django.conf import settings
 from django.http import JsonResponse
 from django.db import models
 from django.core import exceptions
@@ -34,12 +35,12 @@ def rpc(request, service, method_name):
             else:
                 kwargs = {}
             res = meth(*args, **kwargs)
-        except models.ObjectDoesNotExist:
+        except models.ObjectDoesNotExist as e:
             status = 404
-            res = {'status': 'not found', 'ok': False, 'fail': True, 'result': None}
-        except exceptions.PermissionDenied:
+            res = {'status': 'not found', 'ok': False, 'fail': True, 'result': None, 'message': str(e)}
+        except exceptions.PermissionDenied as e:
             status = 403
-            res = {'status': 'denied', 'ok': False, 'fail': True, 'result': None}
+            res = {'status': 'denied', 'ok': False, 'fail': True, 'result': None, 'message': str(e)}
         except exceptions.ValidationError as e:
             res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'messages': e.message_dict}
         except IntegrityError as e:
