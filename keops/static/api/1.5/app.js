@@ -71,7 +71,6 @@
     $scope.set = function(field, value) {
       $scope.form[field].$setViewValue(value);
       $scope.form[field].$render();
-      return true;
     };
     $scope.setContent = function(content) {
       var el;

@@ -163,7 +163,7 @@
           data: data
         }
       }).done(function() {
-        return Katrid.Dialogs.Alerts.success(Katrid.i18n.gettext('Record saved successfully.'));
+        return Katrid.Dialogs.Alerts.success(Katrid.i18n.gettext('Registro gravado com sucesso.'));
       }).fail(function(res) {
         if (res.status === 500 && res.responseText) {
           return alert(res.responseText);
