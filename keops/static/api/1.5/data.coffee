@@ -249,7 +249,6 @@ class DataSource
     @scope.model.getDefaults()
     .done (res) =>
       if res.result
-        console.log('get defaults', res)
         @scope.$apply =>
           for attr, v of res.result
             console.log(attr, v)

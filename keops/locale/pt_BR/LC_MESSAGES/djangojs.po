@@ -122,3 +122,6 @@ msgstr "Este campo não pode estar vazio."
 
 msgid "yyyy-mm-dd"
 msgstr "dd/mm/yyyy"
+
+msgid "Record saved successfully."
+msgstr "Registro gravado com sucesso."

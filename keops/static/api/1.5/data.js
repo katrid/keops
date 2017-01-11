@@ -351,7 +351,6 @@
       return this.scope.model.getDefaults().done((function(_this) {
         return function(res) {
           if (res.result) {
-            console.log('get defaults', res);
             return _this.scope.$apply(function() {
               var attr, ref, results, v;
               ref = res.result;
