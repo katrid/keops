@@ -163,8 +163,11 @@
           data: data
         }
       }).fail(function(res) {
-        console.log(res);
-        return Katrid.Dialogs.Alerts.error(Katrid.i18n.gettext('Error saving record changes'));
+        if (res.status === 500 && res.responseText) {
+          return alert(res.responseText);
+        } else {
+          return Katrid.Dialogs.Alerts.error(Katrid.i18n.gettext('Error saving record changes'));
+        }
       });
     };
 

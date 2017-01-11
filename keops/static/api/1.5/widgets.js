@@ -108,7 +108,7 @@
           }
           scope.dataSource.fieldChangeWatchers.push(dep);
           results.push(scope.$watch('record.' + dep, function(newValue, oldValue) {
-            if (newValue !== oldValue) {
+            if (newValue !== oldValue && scope.dataSource.changing) {
               return scope.model.onFieldChange(dep, scope.record).done(scope.dataSource.onFieldChange);
             }
           }));

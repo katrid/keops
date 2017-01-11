@@ -74,8 +74,10 @@ class Model extends Service
   write: (data, params) ->
     @post('write', params, { kwargs: { data: data } })
     .fail (res) ->
-      console.log(res)
-      Katrid.Dialogs.Alerts.error Katrid.i18n.gettext 'Error saving record changes'
+      if res.status is 500 and res.responseText
+        alert res.responseText
+      else
+        Katrid.Dialogs.Alerts.error Katrid.i18n.gettext 'Error saving record changes'
 
   onFieldChange: (field, record) ->
     @post('field_change', null, { kwargs: { field: field, record: record } })

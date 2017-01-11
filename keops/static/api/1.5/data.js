@@ -72,9 +72,9 @@
               var elfield, field, fld, i, len, msg, msgs, s;
               if (res.ok) {
                 _this.scope.form.$setPristine();
-                _this.scope.record = null;
-                _this.scope.action.setViewType('list');
-                return _this.search();
+                _this.scope.form.$setUntouched();
+                _this.scope.form.$setValidity();
+                return _this.setState(DataSourceState.browsing);
               } else {
                 s = "<span>" + (Katrid.i18n.gettext('The following fields are invalid:')) + "<hr></span>";
                 if (res.message) {
@@ -316,6 +316,7 @@
     DataSource.prototype.get = function(id, timeout) {
       var _get, def;
       this._clearTimeout();
+      this.setState(DataSourceState.loading);
       this.loadingRecord = true;
       def = new $.Deferred();
       _get = (function(_this) {
@@ -328,6 +329,7 @@
             });
             return def.resolve(res);
           }).always(function() {
+            _this.setState(DataSourceState.browsing);
             return _this.scope.$apply(function() {
               return _this.loadingRecord = false;
             });
@@ -419,7 +421,6 @@
     };
 
     DataSource.prototype.onFieldChange = function(res) {
-      console.log('1fieldchange', res);
       if (res.ok && res.result.fields) {
         return this.scope.$apply((function(_this) {
           return function() {
@@ -428,8 +429,7 @@
             results = [];
             for (f in ref) {
               v = ref[f];
-              console.log(f, v);
-              results.push(_this.scope.set(f, v));
+              results.push(console.log(f, v));
             }
             return results;
           };

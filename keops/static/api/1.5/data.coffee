@@ -50,9 +50,9 @@ class DataSource
         .done (res) =>
           if res.ok
             @scope.form.$setPristine()
-            @scope.record = null
-            @scope.action.setViewType('list')
-            @search()
+            @scope.form.$setUntouched()
+            @scope.form.$setValidity()
+            @setState(DataSourceState.browsing)
           else
             s = "<span>#{Katrid.i18n.gettext 'The following fields are invalid:'}<hr></span>"
             if res.message
@@ -219,6 +219,7 @@ class DataSource
 
   get: (id, timeout) ->
     @_clearTimeout()
+    @setState(DataSourceState.loading)
     @loadingRecord = true
     def = new $.Deferred()
 
@@ -231,6 +232,7 @@ class DataSource
           @_setRecord(res.result.data[0])
         def.resolve(res)
       .always =>
+        @setState(DataSourceState.browsing)
         @scope.$apply =>
           @loadingRecord = false
 
@@ -291,12 +293,11 @@ class DataSource
     @recordIndex = index + 1
 
   onFieldChange: (res) =>
-    console.log('1fieldchange', res)
     if res.ok and res.result.fields
       @scope.$apply =>
         for f, v of res.result.fields
           console.log(f, v)
-          @scope.set(f, v)
+          #@scope.set(f, v)
 
 
 class Record

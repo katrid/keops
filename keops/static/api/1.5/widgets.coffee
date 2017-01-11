@@ -70,7 +70,8 @@ class Widget
       for dep in field.depends when dep not in scope.dataSource.fieldChangeWatchers
         scope.dataSource.fieldChangeWatchers.push(dep)
         scope.$watch 'record.' + dep, (newValue, oldValue) ->
-          if newValue != oldValue
+          # Ignore if dataSource is not in changing state
+          if newValue != oldValue and scope.dataSource.changing
             scope.model.onFieldChange(dep, scope.record)
             .done scope.dataSource.onFieldChange
 
