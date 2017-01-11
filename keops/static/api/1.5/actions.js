@@ -149,7 +149,7 @@
         action_name: viewAction,
         target: target
       }).done(function(res) {
-        var j, len, msg, ref, results;
+        var j, k, len, len1, msg, ref, ref1, results, results1;
         console.log(res);
         if (res.status === 'open') {
           return window.open(res.open);
@@ -161,6 +161,14 @@
             results.push(Katrid.Dialogs.Alerts.error(msg));
           }
           return results;
+        } else if (res.status === 'ok' && res.result.messages) {
+          ref1 = res.result.messages;
+          results1 = [];
+          for (k = 0, len1 = ref1.length; k < len1; k++) {
+            msg = ref1[k];
+            results1.push(Katrid.Dialogs.Alerts.success(msg));
+          }
+          return results1;
         }
       });
     };

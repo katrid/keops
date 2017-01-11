@@ -105,6 +105,9 @@ class WindowAction extends Action
       else if res.status is 'fail'
         for msg in res.messages
           Katrid.Dialogs.Alerts.error msg
+      else if res.status is 'ok' and res.result.messages
+        for msg in res.result.messages
+          Katrid.Dialogs.Alerts.success msg
 
 
 @Katrid.Actions =
