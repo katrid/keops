@@ -73,7 +73,6 @@
               if (res.ok) {
                 _this.scope.form.$setPristine();
                 _this.scope.form.$setUntouched();
-                _this.scope.form.$setValidity();
                 return _this.setState(DataSourceState.browsing);
               } else {
                 s = "<span>" + (Katrid.i18n.gettext('The following fields are invalid:')) + "<hr></span>";
@@ -429,7 +428,7 @@
             results = [];
             for (f in ref) {
               v = ref[f];
-              results.push(console.log(f, v));
+              results.push(_this.scope.set(f, v));
             }
             return results;
           };

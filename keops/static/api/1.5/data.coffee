@@ -51,7 +51,6 @@ class DataSource
           if res.ok
             @scope.form.$setPristine()
             @scope.form.$setUntouched()
-            @scope.form.$setValidity()
             @setState(DataSourceState.browsing)
           else
             s = "<span>#{Katrid.i18n.gettext 'The following fields are invalid:'}<hr></span>"
@@ -296,8 +295,7 @@ class DataSource
     if res.ok and res.result.fields
       @scope.$apply =>
         for f, v of res.result.fields
-          console.log(f, v)
-          #@scope.set(f, v)
+          @scope.set(f, v)
 
 
 class Record
