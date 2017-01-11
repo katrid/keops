@@ -238,9 +238,6 @@
           scope.parent.record['$' + scope.fieldName] = ++scope._changeCount;
           scope.parent.record[scope.fieldName] = scope.records;
         };
-        scope.test = function(msg) {
-          return console.log('msg', msg);
-        };
         scope.showDialog = function(index) {
           var rec;
           if (index != null) {
