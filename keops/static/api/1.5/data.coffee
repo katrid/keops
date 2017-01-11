@@ -249,15 +249,11 @@ class DataSource
     @scope.model.getDefaults()
     .done (res) =>
       if res.result
+        console.log('get defaults', res)
         @scope.$apply =>
           for attr, v of res.result
-            control = @scope.form[attr]
-            control.$setViewValue v
-            control.$render()
-            # Force dirty (bug fix for boolean (false) value
-            if v is false
-              @scope.record[attr] = v
-              control.$setDirty()
+            console.log(attr, v)
+            @scope.set(attr, v)
 
   editRecord: ->
     @setState(DataSourceState.editing)

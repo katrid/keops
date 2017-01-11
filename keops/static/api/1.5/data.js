@@ -351,21 +351,15 @@
       return this.scope.model.getDefaults().done((function(_this) {
         return function(res) {
           if (res.result) {
+            console.log('get defaults', res);
             return _this.scope.$apply(function() {
-              var attr, control, ref, results, v;
+              var attr, ref, results, v;
               ref = res.result;
               results = [];
               for (attr in ref) {
                 v = ref[attr];
-                control = _this.scope.form[attr];
-                control.$setViewValue(v);
-                control.$render();
-                if (v === false) {
-                  _this.scope.record[attr] = v;
-                  results.push(control.$setDirty());
-                } else {
-                  results.push(void 0);
-                }
+                console.log(attr, v);
+                results.push(_this.scope.set(attr, v));
               }
               return results;
             });
