@@ -357,7 +357,7 @@ uiKatrid.directive 'decimal', ($filter) ->
   require: 'ngModel',
   link: (scope, element, attrs, controller) ->
 
-    precision = attrs.precision or 2
+    precision = parseInt(attrs.precision) or 2
 
     thousands = attrs.uiMoneyThousands or "."
     decimal = attrs.uiMoneyDecimal or ","

@@ -445,7 +445,7 @@
       require: 'ngModel',
       link: function(scope, element, attrs, controller) {
         var decimal, el, negative, precision, symbol, thousands;
-        precision = attrs.precision || 2;
+        precision = parseInt(attrs.precision) || 2;
         thousands = attrs.uiMoneyThousands || ".";
         decimal = attrs.uiMoneyDecimal || ",";
         symbol = attrs.uiMoneySymbol;
