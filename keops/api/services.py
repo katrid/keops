@@ -149,7 +149,7 @@ class ModelService(ViewService):
             return getattr(instance, field.name)
         return getattr(instance, field.attname)
 
-    def serialize(self, instance, fields=None, exclude=None):
+    def serialize(self, instance, fields=None, exclude=None, view_type=None):
         opts = instance._meta
         data = {}
         deferred_fields = instance.get_deferred_fields()
