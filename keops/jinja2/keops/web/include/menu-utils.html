@@ -1,13 +1,13 @@
-{% macro menu_item(menu) %}
+{% macro menu_item(menu, groups) %}
   <li class="menu-item">
     <a href="{{ menu.get_absolute_url() }}">
       {{ menu.name }}
     </a>
-  {% set children_menu = menu.children.all() %}
+  {% set children_menu = menu.children.filter(groups__in=groups) %}
   {% if children_menu %}
   <ul class="nav">
     {% for sub_menu in children_menu %}
-      {{ menu_item(sub_menu) }}
+      {{ menu_item(sub_menu, groups) }}
     {% endfor %}
   </ul>
   {% endif %}
