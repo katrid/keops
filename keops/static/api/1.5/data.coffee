@@ -36,6 +36,8 @@ class DataSource
   cancelChanges: ->
     #@scope.record = null
     #@scope.action.setViewType('list')
+    if @state is DataSourceState.inserting
+      @scope.action.setViewType('list')
     @setState(DataSourceState.browsing)
 
   saveChanges: ->
@@ -287,10 +289,10 @@ class DataSource
     @recordIndex = index + 1
 
   onFieldChange: (res) =>
-    if res.ok and res.result.fields
+    if res.ok and res.result and res.result.fields
       @scope.$apply =>
         for f, v of res.result.fields
-          @scope.set(f, v)
+          @scope.$set(f, v)
 
 
 class Record

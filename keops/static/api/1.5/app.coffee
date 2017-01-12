@@ -59,9 +59,10 @@ ngApp.controller 'ActionController', ($scope, $compile, action, $location) ->
   $scope.$on '$routeUpdate', ->
     $scope.action.routeUpdate($location.$$search)
 
-  $scope.set = (field, value) ->
-    $scope.form[field].$setViewValue value
-    $scope.form[field].$render()
+  $scope.$set = (field, value) ->
+    control = $scope.form[field]
+    control.$setViewValue value
+    $scope.record[field] = value
     return
 
   $scope.setContent = (content) ->

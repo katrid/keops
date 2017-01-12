@@ -49,6 +49,7 @@ class ModelService(ViewService):
     extra_fields = None
     search_fields = None
     field_dependencies = None
+    select_related = None
 
     def __init__(self, request):
         super(ModelService, self).__init__(request)
@@ -227,6 +228,9 @@ class ModelService(ViewService):
     def _search(self, count=None, page=None, *args, **kwargs):
         params = kwargs.get('params', {}) or {}
         qs = self.model.objects.filter(**params)
+
+        if self.select_related:
+            qs = qs.select_related(*tuple(self.select_related))
 
         # Check rules
         if not self.request.user.is_superuser:

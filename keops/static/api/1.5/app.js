@@ -68,9 +68,11 @@
     $scope.$on('$routeUpdate', function() {
       return $scope.action.routeUpdate($location.$$search);
     });
-    $scope.set = function(field, value) {
-      $scope.form[field].$setViewValue(value);
-      $scope.form[field].$render();
+    $scope.$set = function(field, value) {
+      var control;
+      control = $scope.form[field];
+      control.$setViewValue(value);
+      $scope.record[field] = value;
     };
     $scope.setContent = function(content) {
       var el;

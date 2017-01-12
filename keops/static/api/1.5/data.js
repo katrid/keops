@@ -57,6 +57,9 @@
     }
 
     DataSource.prototype.cancelChanges = function() {
+      if (this.state === DataSourceState.inserting) {
+        this.scope.action.setViewType('list');
+      }
       return this.setState(DataSourceState.browsing);
     };
 
@@ -413,7 +416,7 @@
     };
 
     DataSource.prototype.onFieldChange = function(res) {
-      if (res.ok && res.result.fields) {
+      if (res.ok && res.result && res.result.fields) {
         return this.scope.$apply((function(_this) {
           return function() {
             var f, ref, results, v;
@@ -421,7 +424,7 @@
             results = [];
             for (f in ref) {
               v = ref[f];
-              results.push(_this.scope.set(f, v));
+              results.push(_this.scope.$set(f, v));
             }
             return results;
           };

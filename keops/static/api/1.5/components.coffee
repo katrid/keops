@@ -191,7 +191,7 @@ uiKatrid.directive 'grid', ($compile) ->
     scope.removeItem = (idx) ->
       scope.records.splice(idx, 1)
 
-    scope.set = (field, value) =>
+    scope.$set = (field, value) =>
       scope.form[field].$setViewValue value
       scope.form[field].$render()
       return true

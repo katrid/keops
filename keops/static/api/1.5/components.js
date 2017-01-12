@@ -215,7 +215,7 @@
         scope.removeItem = function(idx) {
           return scope.records.splice(idx, 1);
         };
-        scope.set = (function(_this) {
+        scope.$set = (function(_this) {
           return function(field, value) {
             scope.form[field].$setViewValue(value);
             scope.form[field].$render();

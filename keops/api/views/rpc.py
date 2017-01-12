@@ -66,7 +66,7 @@ def rpc(request, service, method_name):
                     'status': 'ok',
                     'ok': True,
                     'result': {
-                        'data': [svc.serialize(obj) for obj in res],
+                        'data': [svc.serialize(obj, view_type='search') for obj in res],
                         'count': getattr(res, '_count', None),
                     }
                 }
