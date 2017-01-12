@@ -42,8 +42,6 @@ def rpc(request, service, method_name):
             status = 403
             res = {'status': 'denied', 'ok': False, 'fail': True, 'result': None, 'message': str(e)}
         except exceptions.ValidationError as e:
-            if settings.DEBUG:
-                raise
             res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'messages': e.message_dict}
         except IntegrityError as e:
             res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'message': str(e)}
