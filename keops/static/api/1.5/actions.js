@@ -69,7 +69,7 @@
           filter.q = search.q;
         }
         if (search.view_type === 'list' && search.page !== this.scope.dataSource.pageIndex) {
-          this.scope.dataSource.pageIndex = search.page;
+          this.scope.dataSource.pageIndex = parseInt(search.page);
           this.scope.dataSource.search(filter, search.page);
         } else if (search.view_type === 'list' && (search.q != null)) {
           this.scope.dataSource.search(filter, search.page);

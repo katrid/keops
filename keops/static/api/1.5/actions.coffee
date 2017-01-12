@@ -44,7 +44,7 @@ class WindowAction extends Action
         filter.q = search.q
 
       if search.view_type is 'list' and search.page isnt @scope.dataSource.pageIndex
-        @scope.dataSource.pageIndex = search.page
+        @scope.dataSource.pageIndex = parseInt(search.page)
         @scope.dataSource.search(filter, search.page)
       else if search.view_type is 'list' and search.q?
         @scope.dataSource.search(filter, search.page)
