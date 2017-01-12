@@ -36,8 +36,6 @@ class DataSource
   cancelChanges: ->
     #@scope.record = null
     #@scope.action.setViewType('list')
-    if @state is DataSourceState.inserting
-      @scope.action.setViewType('list')
     @setState(DataSourceState.browsing)
 
   saveChanges: ->
@@ -53,6 +51,8 @@ class DataSource
           if res.ok
             @scope.form.$setPristine()
             @scope.form.$setUntouched()
+            for child in @children
+              delete child.modifiedData
             @setState(DataSourceState.browsing)
           else
             s = "<span>#{Katrid.i18n.gettext 'The following fields are invalid:'}<hr></span>"
@@ -171,23 +171,32 @@ class DataSource
 
   applyModifiedData: (form, element, record) ->
     data = @getModifiedData(form, element, record)
+    _id = _.hash(record)
     if data
       ds = @modifiedData
       if not ds?
         ds = {}
-      obj = ds[record]
+      obj = ds[_id]
       if not obj
         obj = {}
-        ds[record] = obj
-      for attr of data
-        obj[attr] = data[attr]
-        record[attr] = data[attr]
+        ds[_id] = obj
+      for attr, v of data
+        obj[attr] = v
+        record[attr] = v
 
       @modifiedData = ds
       @masterSource.scope.form.$setDirty()
+    console.log(@modifiedData)
     return data
 
   getModifiedData: (form, element, record) ->
+    if record.$deleted
+      if record.id
+        return {
+          id: record.id
+          $deleted: true
+        }
+      return
     if form.$dirty
       data = {}
       for el in $(element).find('.form-field.ng-dirty')
@@ -195,9 +204,8 @@ class DataSource
         data[nm] = record[nm]
       for child in @children
         subData = data[child.fieldName] or []
-        for attr of child.modifiedData
-          obj = child.modifiedData[attr]
-          if obj.__state is RecordState.destroyed
+        for attr, obj of child.modifiedData
+          if obj.$deleted
             obj =
               action: 'DESTROY'
               id: obj.id
@@ -253,8 +261,13 @@ class DataSource
       if res.result
         @scope.$apply =>
           for attr, v of res.result
-            console.log(attr, v)
-            @scope.set(attr, v)
+            control = @scope.form[attr]
+            control.$setViewValue v
+            control.$render()
+            # Force dirty (bug fix for boolean (false) value
+            if v is false
+              @scope.record[attr] = v
+              control.$setDirty()
 
   editRecord: ->
     @setState(DataSourceState.editing)
@@ -289,7 +302,7 @@ class DataSource
     @recordIndex = index + 1
 
   onFieldChange: (res) =>
-    if res.ok and res.result and res.result.fields
+    if res.ok and res.result.fields
       @scope.$apply =>
         for f, v of res.result.fields
           @scope.$set(f, v)

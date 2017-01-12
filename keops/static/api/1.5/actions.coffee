@@ -32,6 +32,7 @@ class WindowAction extends Action
       if not @scope.records?
         @scope.records = []
       if @viewType != search.view_type
+        @scope.record = null
         @viewType = search.view_type
         @execute()
 

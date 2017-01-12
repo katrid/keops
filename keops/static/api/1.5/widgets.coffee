@@ -22,8 +22,9 @@ class Widget
       attrName = attrs.$attr[attr]
       if attrName.startsWith('field-')
         attrName = attrName.substr(6, attrName.length - 6)
-      console.log(attrName, v)
       r[attrName] = v
+    if attrs.readonly?
+      r['readonly'] = ''
     if @classes
       r['class'] = @classes.join(' ')
     return r

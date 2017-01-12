@@ -39,8 +39,10 @@
         if (attrName.startsWith('field-')) {
           attrName = attrName.substr(6, attrName.length - 6);
         }
-        console.log(attrName, v);
         r[attrName] = v;
+      }
+      if (attrs.readonly != null) {
+        r['readonly'] = '';
       }
       if (this.classes) {
         r['class'] = this.classes.join(' ');

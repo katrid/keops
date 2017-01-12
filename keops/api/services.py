@@ -12,7 +12,7 @@ from django.utils.encoding import force_str
 from django.apps import apps
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.fields.related import ManyToOneRel, ManyToManyField
-from django.db.models import DecimalField, DateField
+from django.db.models import DecimalField, DateField, CharField
 from django.db.models import QuerySet
 from django.db.models import NOT_PROVIDED, BooleanField
 
@@ -74,8 +74,9 @@ class ModelService(ViewService):
         remote_field = field.remote_field.attname
         for v in value:
             obj = None
-            vals = v['values']
+            vals = v.get('values')
             if v['action'] == 'DESTROY':
+                rel_model.objects.filter(pk=v['id'], **{remote_field: parent_id}).delete()
                 continue
             elif v['action'] == 'CREATE':
                 obj = rel_model()
@@ -102,13 +103,15 @@ class ModelService(ViewService):
                 value = value[0]
         elif isinstance(field, DecimalField):
             if isinstance(value, (str, float)):
-                value = decimal.Decimal(str(value))
+                value = round(decimal.Decimal(str(value)), field.decimal_places)
         elif isinstance(field, DateField):
             for format in settings.DATE_INPUT_FORMATS:
                 try:
                     value = datetime.datetime.strptime(force_str(value), format).date()
                 except (ValueError, TypeError):
                     continue
+        elif isinstance(field, CharField):
+            value = str(value)
 
         setattr(instance, field_name, value)
 

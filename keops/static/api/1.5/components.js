@@ -202,24 +202,34 @@
           });
           return false;
         };
+        scope._incChanges = function() {
+          scope.parent.record['$' + scope.fieldName] = ++scope._changeCount;
+          return scope.parent.record[scope.fieldName] = scope.records;
+        };
         scope.addItem = function() {
           scope.dataSource.newRecord();
           return scope.showDialog();
         };
         scope.openItem = function(index) {
+          scope.showDialog(index);
           if (scope.parent.dataSource.changing) {
-            scope.dataSource.editRecord();
+            return scope.dataSource.editRecord();
           }
-          return scope.showDialog(index);
         };
         scope.removeItem = function(idx) {
-          return scope.records.splice(idx, 1);
+          var rec;
+          rec = scope.records[idx];
+          scope.records.splice(idx, 1);
+          scope._incChanges();
+          rec.$deleted = true;
+          return scope.dataSource.applyModifiedData(null, null, rec);
         };
         scope.$set = (function(_this) {
           return function(field, value) {
-            scope.form[field].$setViewValue(value);
-            scope.form[field].$render();
-            return true;
+            var control;
+            control = scope.form[field];
+            control.$setViewValue(value);
+            control.$render();
           };
         })(this);
         scope.save = function() {
@@ -235,8 +245,7 @@
             scope.records.push(scope.record);
           }
           scope.gridDialog.modal('toggle');
-          scope.parent.record['$' + scope.fieldName] = ++scope._changeCount;
-          scope.parent.record[scope.fieldName] = scope.records;
+          scope._incChanges();
         };
         scope.showDialog = function(index) {
           var rec;
@@ -246,7 +255,10 @@
               scope.dataSource.get(scope.records[index].id, 0).done(function(res) {
                 if (res.ok) {
                   return scope.$apply(function() {
-                    return scope.dataSet[index] = scope.record;
+                    scope.dataSet[index] = scope.record;
+                    if (scope.parent.dataSource.changing) {
+                      return scope.dataSource.editRecord();
+                    }
                   });
                 }
               });
@@ -270,7 +282,6 @@
               }
             });
           }
-          return false;
         };
         masterChanged = function(key) {
           var data;

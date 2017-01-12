@@ -57,9 +57,6 @@
     }
 
     DataSource.prototype.cancelChanges = function() {
-      if (this.state === DataSourceState.inserting) {
-        this.scope.action.setViewType('list');
-      }
       return this.setState(DataSourceState.browsing);
     };
 
@@ -72,10 +69,15 @@
           this.uploading++;
           this.scope.model.write([data]).done((function(_this) {
             return function(res) {
-              var elfield, field, fld, i, len, msg, msgs, s;
+              var child, elfield, field, fld, i, j, len, len1, msg, msgs, ref, s;
               if (res.ok) {
                 _this.scope.form.$setPristine();
                 _this.scope.form.$setUntouched();
+                ref = _this.children;
+                for (i = 0, len = ref.length; i < len; i++) {
+                  child = ref[i];
+                  delete child.modifiedData;
+                }
                 return _this.setState(DataSourceState.browsing);
               } else {
                 s = "<span>" + (Katrid.i18n.gettext('The following fields are invalid:')) + "<hr></span>";
@@ -89,8 +91,8 @@
                     elfield.addClass('ng-invalid ng-touched');
                     s += "<strong>" + field.caption + "</strong><ul>";
                     console.log(field);
-                    for (i = 0, len = msgs.length; i < len; i++) {
-                      msg = msgs[i];
+                    for (j = 0, len1 = msgs.length; j < len1; j++) {
+                      msg = msgs[j];
                       s += "<li>" + msg + "</li>";
                     }
                     s += '</ul>';
@@ -246,30 +248,42 @@
     };
 
     DataSource.prototype.applyModifiedData = function(form, element, record) {
-      var attr, data, ds, obj;
+      var _id, attr, data, ds, obj, v;
       data = this.getModifiedData(form, element, record);
+      _id = _.hash(record);
       if (data) {
         ds = this.modifiedData;
         if (ds == null) {
           ds = {};
         }
-        obj = ds[record];
+        obj = ds[_id];
         if (!obj) {
           obj = {};
-          ds[record] = obj;
+          ds[_id] = obj;
         }
         for (attr in data) {
-          obj[attr] = data[attr];
-          record[attr] = data[attr];
+          v = data[attr];
+          obj[attr] = v;
+          record[attr] = v;
         }
         this.modifiedData = ds;
         this.masterSource.scope.form.$setDirty();
       }
+      console.log(this.modifiedData);
       return data;
     };
 
     DataSource.prototype.getModifiedData = function(form, element, record) {
-      var attr, child, data, el, i, j, len, len1, nm, obj, ref, ref1, subData;
+      var attr, child, data, el, i, j, len, len1, nm, obj, ref, ref1, ref2, subData;
+      if (record.$deleted) {
+        if (record.id) {
+          return {
+            id: record.id,
+            $deleted: true
+          };
+        }
+        return;
+      }
       if (form.$dirty) {
         data = {};
         ref = $(element).find('.form-field.ng-dirty');
@@ -282,9 +296,10 @@
         for (j = 0, len1 = ref1.length; j < len1; j++) {
           child = ref1[j];
           subData = data[child.fieldName] || [];
-          for (attr in child.modifiedData) {
-            obj = child.modifiedData[attr];
-            if (obj.__state === RecordState.destroyed) {
+          ref2 = child.modifiedData;
+          for (attr in ref2) {
+            obj = ref2[attr];
+            if (obj.$deleted) {
               obj = {
                 action: 'DESTROY',
                 id: obj.id
@@ -355,13 +370,20 @@
         return function(res) {
           if (res.result) {
             return _this.scope.$apply(function() {
-              var attr, ref, results, v;
+              var attr, control, ref, results, v;
               ref = res.result;
               results = [];
               for (attr in ref) {
                 v = ref[attr];
-                console.log(attr, v);
-                results.push(_this.scope.set(attr, v));
+                control = _this.scope.form[attr];
+                control.$setViewValue(v);
+                control.$render();
+                if (v === false) {
+                  _this.scope.record[attr] = v;
+                  results.push(control.$setDirty());
+                } else {
+                  results.push(void 0);
+                }
               }
               return results;
             });
@@ -416,7 +438,7 @@
     };
 
     DataSource.prototype.onFieldChange = function(res) {
-      if (res.ok && res.result && res.result.fields) {
+      if (res.ok && res.result.fields) {
         return this.scope.$apply((function(_this) {
           return function() {
             var f, ref, results, v;

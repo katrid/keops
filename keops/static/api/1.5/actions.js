@@ -57,6 +57,7 @@
           this.scope.records = [];
         }
         if (this.viewType !== search.view_type) {
+          this.scope.record = null;
           this.viewType = search.view_type;
           this.execute();
         }

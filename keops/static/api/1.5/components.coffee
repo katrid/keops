@@ -179,22 +179,31 @@ uiKatrid.directive 'grid', ($compile) ->
         scope.recordIndex = -1
       return false
 
+    scope._incChanges = ->
+      scope.parent.record['$' + scope.fieldName] = ++scope._changeCount
+      scope.parent.record[scope.fieldName] = scope.records
+
     scope.addItem = ->
       scope.dataSource.newRecord()
       scope.showDialog()
 
     scope.openItem = (index) ->
+      scope.showDialog(index)
       if scope.parent.dataSource.changing
         scope.dataSource.editRecord()
-      scope.showDialog(index)
 
     scope.removeItem = (idx) ->
+      rec = scope.records[idx]
       scope.records.splice(idx, 1)
+      scope._incChanges()
+      rec.$deleted = true
+      scope.dataSource.applyModifiedData(null, null, rec)
 
     scope.$set = (field, value) =>
-      scope.form[field].$setViewValue value
-      scope.form[field].$render()
-      return true
+      control = scope.form[field]
+      control.$setViewValue value
+      control.$render()
+      return
 
     scope.save = ->
       data = scope.dataSource.applyModifiedData(scope.form, scope.gridDialog, scope.record)
@@ -205,8 +214,7 @@ uiKatrid.directive 'grid', ($compile) ->
       else if scope.recordIndex is -1
         scope.records.push(scope.record)
       scope.gridDialog.modal('toggle')
-      scope.parent.record['$' + scope.fieldName] = ++scope._changeCount
-      scope.parent.record[scope.fieldName] = scope.records
+      scope._incChanges()
       return
 
     scope.showDialog = (index) ->
@@ -220,6 +228,8 @@ uiKatrid.directive 'grid', ($compile) ->
             if res.ok
               scope.$apply ->
                 scope.dataSet[index] = scope.record
+                if scope.parent.dataSource.changing
+                  scope.dataSource.editRecord()
         rec = scope.dataSet[index]
         scope.record = rec
       else
@@ -235,7 +245,7 @@ uiKatrid.directive 'grid', ($compile) ->
             scope._viewCache.form = res.result
             renderDialog()
 
-      return false
+      return
 
     masterChanged = (key) ->
       # Ajax load nested data
