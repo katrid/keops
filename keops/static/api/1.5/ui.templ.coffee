@@ -123,11 +123,11 @@ class Templates
     <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\">
       #{Katrid.i18n.gettext 'Action'} <span class=\"caret\"></span></button>
     <ul class=\"dropdown-menu animated flipInX\">
-      <li><a href='javascript:void(0)' ng-click=\"action.deleteSelection()\"><i class=\"fa fa-fw fa-trash\"></i> #{Katrid.i18n.gettext 'Delete'}</a></li>
+      <li><a href='javascript:void(0)' ng-click=\"action.deleteSelection()\"><i class="fa fa-fw fa-trash"></i> #{Katrid.i18n.gettext 'Delete'}</a></li>
     </ul>
   </div>
 
-  <button class="btn btn-default" ng-click="dataSource.refresh()">Atualizar</button>
+  <button class="btn btn-default" ng-click="dataSource.refresh()"><i class="fa fa-refresh"></i> Atualizar</button>
 
   <div class=\"pull-right\">
             <div class="pagination-area">
