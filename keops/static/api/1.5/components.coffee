@@ -58,7 +58,13 @@ uiKatrid.directive 'field', ($compile) ->
 
       widget = new Katrid.UI.Widgets[widget]
       field = scope.view.fields[attrs.name]
-      templ = """<section class="section-field-#{attrs.name} form-group">""" +
+
+      templAttrs = []
+      if attrs.ngShow
+        templAttrs.push(' ng-show="' + attrs.ngShow + '"')
+      templAttrs = templAttrs.join(' ')
+
+      templ = """<section class="section-field-#{attrs.name} form-group" #{templAttrs}>""" +
         widget.template(scope, element, attrs, field) +
         '</section>'
       templ = $compile(templ)(scope)
