@@ -21,10 +21,10 @@ def index(request, current_menu=None):
         current_menu = menu.first()
     else:
         if request.user.is_superuser:
-            current_menu = Menu.objects
+            m = Menu.objects
         else:
-            current_menu = Menu.objects.filter(groups__in=groups)
-        current_menu = current_menu.get(pk=current_menu)
+            m = Menu.objects.filter(groups__in=groups)
+        current_menu = m.get(pk=current_menu)
 
     if not current_menu:
         return HttpResponseForbidden('You do not have menu permissions!')
