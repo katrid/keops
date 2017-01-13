@@ -58,7 +58,7 @@ def rpc(request, service, method_name):
                     'status': 'ok',
                     'ok': True,
                     'result': {
-                        'data': [svc.serialize(res)],
+                        'data': [svc.serialize(res, view_type='form')],
                     }
                 }
             elif isinstance(res, models.QuerySet) and isinstance(svc, ModelService):
