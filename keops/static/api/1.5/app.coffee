@@ -62,8 +62,7 @@ ngApp.controller 'ActionController', ($scope, $compile, action, $location) ->
   $scope.$set = (field, value) ->
     control = $scope.form[field]
     control.$setViewValue value
-    #control.$render()
-    $scope.record[field] = value
+    control.$render()
     return
 
   $scope.setContent = (content) ->

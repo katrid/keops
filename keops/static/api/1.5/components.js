@@ -607,6 +607,9 @@
             }
           }
         });
+        scope.$watch(attrs.ngModel, function(newValue, oldValue) {
+          return sel.select2('val', newValue);
+        });
         return controller.$render = function() {
           var obj, v;
           if (multiple) {

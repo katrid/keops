@@ -72,7 +72,7 @@
       var control;
       control = $scope.form[field];
       control.$setViewValue(value);
-      $scope.record[field] = value;
+      control.$render();
     };
     $scope.setContent = function(content) {
       var el;

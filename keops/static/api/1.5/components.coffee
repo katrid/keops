@@ -462,6 +462,9 @@ Katrid.uiKatrid.directive 'foreignkey', ->
         else
           controller.$setViewValue null
 
+    scope.$watch attrs.ngModel, (newValue, oldValue) ->
+      sel.select2('val', newValue)
+
     controller.$render = ->
       if multiple
         if controller.$viewValue

@@ -312,9 +312,9 @@ class DataSource
 
   onFieldChange: (res) =>
     if res.ok and res.result.fields
-      @scope.$apply =>
-        for f, v of res.result.fields
-          @scope.$set(f, v)
+      #@scope.$apply =>
+      for f, v of res.result.fields
+        @scope.$set(f, v)
 
 
 class Record

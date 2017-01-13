@@ -449,19 +449,15 @@
     };
 
     DataSource.prototype.onFieldChange = function(res) {
+      var f, ref, results, v;
       if (res.ok && res.result.fields) {
-        return this.scope.$apply((function(_this) {
-          return function() {
-            var f, ref, results, v;
-            ref = res.result.fields;
-            results = [];
-            for (f in ref) {
-              v = ref[f];
-              results.push(_this.scope.$set(f, v));
-            }
-            return results;
-          };
-        })(this));
+        ref = res.result.fields;
+        results = [];
+        for (f in ref) {
+          v = ref[f];
+          results.push(this.scope.$set(f, v));
+        }
+        return results;
       }
     };
 
