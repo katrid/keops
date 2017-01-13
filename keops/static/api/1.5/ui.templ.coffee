@@ -52,7 +52,11 @@ class Templates
     actions = ''
     if scope.view.view_actions
       for act in scope.view.view_actions
-        actions += """<li><a href="javascript:void(0)" ng-click="action.doViewAction('#{act.name}', record.id)">#{act.title}</a></li>"""
+        if act.confirm
+          confirmation = ", '" + act.confirm + "'"
+        else
+          confirmation = ''
+        actions += """<li><a href="javascript:void(0)" ng-click="action.doViewAction('#{act.name}', record.id#{confirmation})">#{act.title}</a></li>"""
     return """
 <div ng-form="form"><div class=\"data-heading panel panel-default\">
     <div class=\"panel-body\">

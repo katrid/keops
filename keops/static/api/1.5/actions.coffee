@@ -98,18 +98,19 @@ class WindowAction extends Action
     data = @_prepareParams(params)
     @scope.dataSource.search(data)
 
-  doViewAction: (viewAction, target) ->
-    @scope.model.doViewAction({ action_name: viewAction, target: target })
-    .done (res) ->
-      console.log(res)
-      if res.status is 'open'
-        window.open(res.open)
-      else if res.status is 'fail'
-        for msg in res.messages
-          Katrid.Dialogs.Alerts.error msg
-      else if res.status is 'ok' and res.result.messages
-        for msg in res.result.messages
-          Katrid.Dialogs.Alerts.success msg
+  doViewAction: (viewAction, target, confirmation) ->
+    if not confirmation or (confirmation and confirm(confirmation))
+      @scope.model.doViewAction({ action_name: viewAction, target: target })
+      .done (res) ->
+        console.log(res)
+        if res.status is 'open'
+          window.open(res.open)
+        else if res.status is 'fail'
+          for msg in res.messages
+            Katrid.Dialogs.Alerts.error msg
+        else if res.status is 'ok' and res.result.messages
+          for msg in res.result.messages
+            Katrid.Dialogs.Alerts.success msg
 
 
 @Katrid.Actions =

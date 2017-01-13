@@ -146,33 +146,35 @@
       return this.scope.dataSource.search(data);
     };
 
-    WindowAction.prototype.doViewAction = function(viewAction, target) {
-      return this.scope.model.doViewAction({
-        action_name: viewAction,
-        target: target
-      }).done(function(res) {
-        var j, k, len, len1, msg, ref, ref1, results, results1;
-        console.log(res);
-        if (res.status === 'open') {
-          return window.open(res.open);
-        } else if (res.status === 'fail') {
-          ref = res.messages;
-          results = [];
-          for (j = 0, len = ref.length; j < len; j++) {
-            msg = ref[j];
-            results.push(Katrid.Dialogs.Alerts.error(msg));
+    WindowAction.prototype.doViewAction = function(viewAction, target, confirmation) {
+      if (!confirmation || (confirmation && confirm(confirmation))) {
+        return this.scope.model.doViewAction({
+          action_name: viewAction,
+          target: target
+        }).done(function(res) {
+          var j, k, len, len1, msg, ref, ref1, results, results1;
+          console.log(res);
+          if (res.status === 'open') {
+            return window.open(res.open);
+          } else if (res.status === 'fail') {
+            ref = res.messages;
+            results = [];
+            for (j = 0, len = ref.length; j < len; j++) {
+              msg = ref[j];
+              results.push(Katrid.Dialogs.Alerts.error(msg));
+            }
+            return results;
+          } else if (res.status === 'ok' && res.result.messages) {
+            ref1 = res.result.messages;
+            results1 = [];
+            for (k = 0, len1 = ref1.length; k < len1; k++) {
+              msg = ref1[k];
+              results1.push(Katrid.Dialogs.Alerts.success(msg));
+            }
+            return results1;
           }
-          return results;
-        } else if (res.status === 'ok' && res.result.messages) {
-          ref1 = res.result.messages;
-          results1 = [];
-          for (k = 0, len1 = ref1.length; k < len1; k++) {
-            msg = ref1[k];
-            results1.push(Katrid.Dialogs.Alerts.success(msg));
-          }
-          return results1;
-        }
-      });
+        });
+      }
     };
 
     return WindowAction;
