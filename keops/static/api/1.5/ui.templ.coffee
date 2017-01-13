@@ -127,6 +127,8 @@ class Templates
     </ul>
   </div>
 
+  <button class="btn btn-default" ng-click="dataSource.refresh()">Atualizar</button>
+
   <div class=\"pull-right\">
             <div class="pagination-area">
               <span class="paginator">${dataSource.offset|number} - ${dataSource.offsetLimit|number}</span> / <span class="total-pages">${dataSource.recordCount|number}</span>

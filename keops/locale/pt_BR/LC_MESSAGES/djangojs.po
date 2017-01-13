@@ -125,3 +125,6 @@ msgstr "dd/mm/yyyy"
 
 msgid "Record saved successfully."
 msgstr "Registro gravado com sucesso."
+
+msgid "Refresh"
+msgstr "Atualizar"

@@ -92,8 +92,10 @@ class DataSource
         true
 
   refresh: (data) ->
-    console.log(data)
-    @get(data[0])
+    if data
+      @get(data[0])
+    else
+      @search(@_params, @_page)
 
   validate: ->
     if @scope.form.$invalid
@@ -116,6 +118,8 @@ class DataSource
     @scope.records.indexOf(rec)
 
   search: (params, page) ->
+    @_params = params
+    @_page = page
     @_clearTimeout()
     @pendingRequest = true
     @loading = true

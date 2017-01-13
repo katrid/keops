@@ -145,8 +145,11 @@
     };
 
     DataSource.prototype.refresh = function(data) {
-      console.log(data);
-      return this.get(data[0]);
+      if (data) {
+        return this.get(data[0]);
+      } else {
+        return this.search(this._params, this._page);
+      }
     };
 
     DataSource.prototype.validate = function() {
@@ -180,6 +183,8 @@
 
     DataSource.prototype.search = function(params, page) {
       var def;
+      this._params = params;
+      this._page = page;
       this._clearTimeout();
       this.pendingRequest = true;
       this.loading = true;
