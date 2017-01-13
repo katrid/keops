@@ -7,6 +7,16 @@ from . import models
 class MenuService(services.ModelService):
     model = models.Menu
 
+    def deserialize(self, instance, data):
+        super(MenuService, self).deserialize(instance, data)
+        groups = self.m2m.get('groups')
+        if groups:
+            for g in groups:
+                p = instance.parent
+                while p:
+                    p.groups.add(g)
+                    p = p.parent
+
 
 class WindowActionService(services.ModelService):
     model = models.WindowAction
