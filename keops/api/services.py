@@ -9,6 +9,7 @@ from django.template import loader
 from django.http import HttpResponse, JsonResponse
 from django.utils.text import capfirst
 from django.utils.encoding import force_str
+from django.db.models import Q
 from django.apps import apps
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.fields.related import ManyToOneRel, ManyToManyField
@@ -230,7 +231,10 @@ class ModelService(ViewService):
 
     def _search(self, count=None, page=None, *args, **kwargs):
         params = kwargs.get('params', {}) or {}
-        qs = self.model.objects.filter(**params)
+        if isinstance(params, Q):
+            qs = self.model.objects.filter(params)
+        else:
+            qs = self.model.objects.filter(**params)
 
         if self.select_related:
             qs = qs.select_related(*tuple(self.select_related))
@@ -357,9 +361,10 @@ class ModelService(ViewService):
             q = self.request.GET.get('q', None)
             params = None
             if q:
-                params = {}
+                params = Q()
                 if service.search_fields:
-                    params = {s: q for s in service.search_fields}
+                    for s in service.search_fields:
+                        params |= Q(**{s: q})
                 else:
                     params = {service.title_field + '__icontains': q}
             d = service.search_names(params=params)
