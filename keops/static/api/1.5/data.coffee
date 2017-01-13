@@ -54,6 +54,7 @@ class DataSource
             for child in @children
               delete child.modifiedData
             @setState(DataSourceState.browsing)
+            @refresh(res.result)
           else
             s = "<span>#{Katrid.i18n.gettext 'The following fields are invalid:'}<hr></span>"
             if res.message
@@ -89,6 +90,10 @@ class DataSource
     for rec in @scope.records
       if rec.id is id
         true
+
+  refresh: (data) ->
+    console.log(data)
+    @get(data[0])
 
   validate: ->
     if @scope.form.$invalid

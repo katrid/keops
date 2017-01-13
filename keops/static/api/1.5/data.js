@@ -78,7 +78,8 @@
                   child = ref[i];
                   delete child.modifiedData;
                 }
-                return _this.setState(DataSourceState.browsing);
+                _this.setState(DataSourceState.browsing);
+                return _this.refresh(res.result);
               } else {
                 s = "<span>" + (Katrid.i18n.gettext('The following fields are invalid:')) + "<hr></span>";
                 if (res.message) {
@@ -141,6 +142,11 @@
         }
       }
       return results;
+    };
+
+    DataSource.prototype.refresh = function(data) {
+      console.log(data);
+      return this.get(data[0]);
     };
 
     DataSource.prototype.validate = function() {

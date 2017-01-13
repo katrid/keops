@@ -31,6 +31,8 @@ def index(request, current_menu=None):
 
     return render(request, '/keops/web/index.html', {
         '_': _,
+        'request': request,
+        'user': request.user,
         'groups': groups,
         'menu': menu,
         'settings': settings,

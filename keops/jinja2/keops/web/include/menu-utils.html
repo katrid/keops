@@ -3,7 +3,11 @@
     <a href="{{ menu.get_absolute_url() }}">
       {{ menu.name }}
     </a>
-  {% set children_menu = menu.children.filter(groups__in=groups) %}
+  {% if groups == None %}{# is a super user #}
+    {% set children_menu = menu.children.all() %}
+  {% else %}
+    {% set children_menu = menu.children.filter(groups__in=groups) %}
+  {% endif %}
   {% if children_menu %}
   <ul class="nav">
     {% for sub_menu in children_menu %}
