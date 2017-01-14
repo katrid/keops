@@ -149,6 +149,7 @@ class ModelService(ViewService):
                 elif isinstance(field, ManyToManyField):
                     return [(v.id, str(v)) for v in v.all()]
                 elif field.choices:
+                    print(field.name, field.choices)
                     return str(v)
 
         except FieldDoesNotExist:
