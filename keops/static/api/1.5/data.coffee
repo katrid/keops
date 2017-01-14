@@ -60,9 +60,11 @@ class DataSource
             if res.message
               s = res.message
             else if res.messages
+              console.log(res.messages)
               for fld of res.messages
                 msgs = res.messages[fld]
                 field = @scope.view.fields[fld]
+                console.log(field, fld, @scope.view.fields)
                 elfield = el.find(""".form-field[name="#{field.name}"]""")
                 elfield.addClass('ng-invalid ng-touched')
                 s += "<strong>#{field.caption}</strong><ul>"
