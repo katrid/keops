@@ -44,6 +44,7 @@ def rpc(request, service, method_name):
         except exceptions.ValidationError as e:
             res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'messages': e.message_dict}
         except IntegrityError as e:
+            raise
             res = {'status': 'fail', 'ok': False, 'fail': True, 'result': None, 'message': str(e)}
         except Exception as e:
             raise

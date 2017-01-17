@@ -21,9 +21,9 @@ def get_user():
 
 
 class LogModel(models.Model):
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, default=get_user)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, default=get_user, related_name='+')
     created_on = models.DateTimeField(auto_now_add=True)
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL)
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
     modified_on = models.DateTimeField(auto_now=True)
 
     class Meta:
