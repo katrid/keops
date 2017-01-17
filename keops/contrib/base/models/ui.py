@@ -20,7 +20,7 @@ class Menu(models.Model):
     def get_absolute_url(self):
         if self.action:
             return self.action.get_absolute_url()
-        return self.url or 'javascript:void(0)'
+        return self.url or (self.parent_id is None and '/web/menu/%s/' % self.id) or 'javascript:void(0)'
 
     def __str__(self):
         return self._get_full_name()
