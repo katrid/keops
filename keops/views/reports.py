@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 from django.contrib.auth.decorators import login_required
 
 from keops.models import reports as report_models
+from keops.contrib.base.models import Menu
 
 
 @login_required
@@ -50,6 +51,13 @@ def dashboard(request):
             user_report = report_models.UserReport.objects.get(pk=request.GET['load'])
             user_params = json.loads(user_report.user_params)
 
+    groups = None
+    if request.user.is_superuser:
+        menu = Menu.objects.filter(parent_id=None)
+    else:
+        groups = [obj.pk for obj in request.user.groups.all()]
+        menu = Menu.objects.filter(parent_id=None, groups__in=groups)
+
     return render(request, 'keops/reports/dashboard.html', {
         '_': _,
         'user_reports': report_models.UserReport.objects.filter(report__name=request.GET.get('file')),
@@ -58,6 +66,7 @@ def dashboard(request):
         'reports': reports,
         'fields': fields,
         'report': rep,
+        'menu': menu,
         'user_report': user_report,
         'user_params': user_params,
     })
