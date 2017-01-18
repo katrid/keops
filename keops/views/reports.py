@@ -23,7 +23,7 @@ def dashboard(request):
     rep = None
     for f in reps:
         if f.endswith('.xml'):
-            xml = et.fromstring(open(os.path.join(settings.BASE_DIR, 'reports', f)).read())
+            xml = et.fromstring(open(os.path.join(settings.BASE_DIR, 'reports', f), encoding='utf-8').read())
             reports.append({'filename': f, 'name': xml.attrib.get('name', f)})
 
     user_params = None
