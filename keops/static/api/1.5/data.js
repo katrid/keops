@@ -354,6 +354,7 @@
           return _this.scope.model.getById(id).fail(function(res) {
             return def.reject(res);
           }).done(function(res) {
+            console.log('GET', res.result.data[0]);
             _this.scope.$apply(function() {
               return _this._setRecord(res.result.data[0]);
             });

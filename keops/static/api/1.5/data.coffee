@@ -248,6 +248,7 @@ class DataSource
       .fail (res) =>
         def.reject(res)
       .done (res) =>
+        console.log('GET', res.result.data[0])
         @scope.$apply =>
           @_setRecord(res.result.data[0])
         def.resolve(res)

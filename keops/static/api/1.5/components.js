@@ -323,21 +323,24 @@
       link: function(scope, element, attrs, controller) {
         var el, updateModelValue;
         el = element.datepicker({
+          format: Katrid.i18n.gettext('yyyy-mm-dd'),
           forceParse: false
         });
         updateModelValue = function() {
-          console.log(controller.$modelValue, el.val());
+          var dt;
           if (controller.$modelValue !== el.val()) {
-            return el.val(controller.$modelValue);
+            dt = new Date(controller.$modelValue);
+            console.log('dt', dt);
+            return el.datepicker('setDate', dt);
           }
         };
         scope.$watch(attrs.ngModel, updateModelValue);
         el = el.mask('00/00/0000');
         controller.$render = function() {
           var dt;
-          console.log(controller.$modelValue, controller.$viewValue);
           if (controller.$modelValue) {
-            dt = new Date(controller.$modelValue);
+            dt = moment(controller.$modelValue, "YYYY-MM-DD").toDate();
+            console.log('dt1', dt, controller.$modelValue);
             return el.datepicker('setDate', dt);
           }
         };
