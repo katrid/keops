@@ -323,7 +323,6 @@
       link: function(scope, element, attrs, controller) {
         var el, updateModelValue;
         el = element.datepicker({
-          format: Katrid.i18n.gettext('yyyy-mm-dd'),
           forceParse: false
         });
         updateModelValue = function() {

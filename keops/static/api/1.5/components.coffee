@@ -281,7 +281,7 @@ uiKatrid.directive 'datepicker', ->
   require: '?ngModel'
   link: (scope, element, attrs, controller) ->
     el = element.datepicker
-      format: Katrid.i18n.gettext 'yyyy-mm-dd'
+      #format: Katrid.i18n.gettext 'yyyy-mm-dd'
       forceParse: false
 
     updateModelValue = ->
