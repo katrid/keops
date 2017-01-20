@@ -294,6 +294,7 @@ uiKatrid.directive 'datepicker', ->
     el = el.mask('00/00/0000')
 
     controller.$render = ->
+      console.log(controller.$modelValue, controller.$viewValue)
       if controller.$modelValue
         dt = new Date(controller.$modelValue)
         el.datepicker('setDate', dt)
