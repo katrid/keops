@@ -149,7 +149,6 @@ class ModelService(ViewService):
                 elif isinstance(field, ManyToManyField):
                     return [(v.id, str(v)) for v in v.all()]
                 elif isinstance(field, DateField):
-                    print(v)
                     return str(v)
                 elif field.choices:
                     return str(v)

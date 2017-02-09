@@ -85,11 +85,9 @@
                 if (res.message) {
                   s = res.message;
                 } else if (res.messages) {
-                  console.log(res.messages);
                   for (fld in res.messages) {
                     msgs = res.messages[fld];
                     field = _this.scope.view.fields[fld];
-                    console.log(field, fld, _this.scope.view.fields);
                     elfield = el.find(".form-field[name=\"" + field.name + "\"]");
                     elfield.addClass('ng-invalid ng-touched');
                     s += "<strong>" + field.caption + "</strong><ul>";
@@ -354,7 +352,6 @@
           return _this.scope.model.getById(id).fail(function(res) {
             return def.reject(res);
           }).done(function(res) {
-            console.log('GET', res.result.data[0]);
             _this.scope.$apply(function() {
               return _this._setRecord(res.result.data[0]);
             });
@@ -385,6 +382,7 @@
           if (res.result) {
             return _this.scope.$apply(function() {
               var attr, control, ref, results, v;
+              console.log(res.result);
               ref = res.result;
               results = [];
               for (attr in ref) {
@@ -452,15 +450,19 @@
     };
 
     DataSource.prototype.onFieldChange = function(res) {
-      var f, ref, results, v;
       if (res.ok && res.result.fields) {
-        ref = res.result.fields;
-        results = [];
-        for (f in ref) {
-          v = ref[f];
-          results.push(this.scope.$set(f, v));
-        }
-        return results;
+        return this.scope.$apply((function(_this) {
+          return function() {
+            var f, ref, results, v;
+            ref = res.result.fields;
+            results = [];
+            for (f in ref) {
+              v = ref[f];
+              results.push(_this.scope.$set(f, v));
+            }
+            return results;
+          };
+        })(this));
       }
     };
 

@@ -60,11 +60,9 @@ class DataSource
             if res.message
               s = res.message
             else if res.messages
-              console.log(res.messages)
               for fld of res.messages
                 msgs = res.messages[fld]
                 field = @scope.view.fields[fld]
-                console.log(field, fld, @scope.view.fields)
                 elfield = el.find(""".form-field[name="#{field.name}"]""")
                 elfield.addClass('ng-invalid ng-touched')
                 s += "<strong>#{field.caption}</strong><ul>"
@@ -248,7 +246,6 @@ class DataSource
       .fail (res) =>
         def.reject(res)
       .done (res) =>
-        console.log('GET', res.result.data[0])
         @scope.$apply =>
           @_setRecord(res.result.data[0])
         def.resolve(res)
@@ -272,6 +269,7 @@ class DataSource
     .done (res) =>
       if res.result
         @scope.$apply =>
+          console.log(res.result)
           for attr, v of res.result
             control = @scope.form[attr]
             control.$setViewValue v
@@ -315,9 +313,9 @@ class DataSource
 
   onFieldChange: (res) =>
     if res.ok and res.result.fields
-      #@scope.$apply =>
-      for f, v of res.result.fields
-        @scope.$set(f, v)
+      @scope.$apply =>
+        for f, v of res.result.fields
+          @scope.$set(f, v)
 
 
 class Record

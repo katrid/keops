@@ -9,9 +9,9 @@ ngApp.config ($interpolateProvider) ->
 ngApp.factory 'actions', ->
   get: (service, id) ->
     if id
-      $.get("/web/action/#{service}/#{id}/" )
+      return $.get("/web/action/#{service}/#{id}/" )
     else
-      $.get("/web/action/#{service}/")
+      return $.get("/web/action/#{service}/")
 
 
 ngApp.config ($routeProvider) ->
