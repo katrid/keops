@@ -10,7 +10,7 @@ from keops.api import site
 
 
 @login_required
-def index(request, current_menu=None):
+def index(request, current_menu=None, context=None):
     groups = None
     if request.user.is_superuser:
         menu = Menu.objects.filter(parent_id=None)
@@ -29,7 +29,7 @@ def index(request, current_menu=None):
     if not current_menu:
         return HttpResponseForbidden('You do not have menu permissions!')
 
-    return render(request, '/keops/web/index.html', {
+    ctx = {
         '_': _,
         'request': request,
         'user': request.user,
@@ -37,7 +37,12 @@ def index(request, current_menu=None):
         'menu': menu,
         'settings': settings,
         'current_menu': current_menu,
-    })
+    }
+
+    if context:
+        ctx.update(context)
+
+    return render(request, '/keops/web/index.html', ctx)
 
 
 @login_required
