@@ -113,8 +113,17 @@ class WindowAction extends Action
             Katrid.Dialogs.Alerts.success msg
 
 
+class ReportAction extends Action
+  @actionType: 'sys.action.report'
+  routeUpdate: (search) ->
+    console.log(@info.content)
+    @scope.setContent(@scope, @info.content)
+
+
 @Katrid.Actions =
   Action: Action
   WindowAction: WindowAction
+  ReportAction: ReportAction
 
 @Katrid.Actions[WindowAction.actionType] = WindowAction
+@Katrid.Actions[ReportAction.actionType] = WindowAction

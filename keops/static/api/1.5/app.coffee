@@ -75,7 +75,8 @@ ngApp.controller 'ActionController', ($scope, $compile, action, $location) ->
 
   init = (action) ->
     if action
-      $scope.model = new Katrid.Services.Model(action.model[1])
+      if action.model
+        $scope.model = new Katrid.Services.Model(action.model[1])
       $scope.action = act = new Katrid.Actions[action.action_type](action, $scope)
       act.routeUpdate($location.$$search)
 

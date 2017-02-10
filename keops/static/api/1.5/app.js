@@ -84,7 +84,9 @@
     init = function(action) {
       var act;
       if (action) {
-        $scope.model = new Katrid.Services.Model(action.model[1]);
+        if (action.model) {
+          $scope.model = new Katrid.Services.Model(action.model[1]);
+        }
         $scope.action = act = new Katrid.Actions[action.action_type](action, $scope);
         return act.routeUpdate($location.$$search);
       }

@@ -44,6 +44,10 @@ class ReportActionService(services.ModelService):
     model = models.ReportAction
 
 
+class ActionService(services.ModelService):
+    model = models.Action
+
+
 site.register_service(UserService)
 site.register_service(GroupService)
 site.register_service(MenuService)
@@ -51,3 +55,4 @@ site.register_service(WindowActionService)
 site.register_service(RuleService)
 site.register_service(ReportService)
 site.register_service(ReportActionService)
+site.register_service(ActionService)

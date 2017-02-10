@@ -1,5 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.template import loader
+from django.utils.translation import gettext as _
+from django.http import JsonResponse
 
 from keops import models
 from keops.api import site
@@ -9,7 +11,7 @@ from keops.models import reports
 class Action(models.Model):
     ACTIONS = {}
     name = models.CharField(max_length=256, null=False)
-    action_type = models.CharField(max_length=16, null=False)
+    action_type = models.CharField(max_length=16, null=False, editable=False)
     usage = models.TextField()
     help = models.TextField()
 
@@ -45,8 +47,8 @@ class WindowAction(Action):
 
     def dispatch_action(self, request):
         service = str(self.model.model_class()._meta)
-        svc = site.services[service]
-        view_type = svc.GET.get('view_type', 'list')
+        svc = site.services[service](request)
+        view_type = request.GET.get('view_type', 'list')
         return svc.view_action(view_type)
 
 
@@ -57,10 +59,19 @@ class ReportAction(Action):
         self.action_type = 'report'
         super(ReportAction, self).save(*args, **kwargs)
 
-    def dispatch_action(self, service):
-        templ = loader.select_template('keops/web/admin/actions/report.html', 'jinja2')
-        return templ.render({
-            'request'
+    def dispatch_action(self, request):
+        ctx = {
+            'request': request,
+            '_': _,
+        }
+        return JsonResponse({
+            'action_type': 'ReportAction',
+            'content': loader.render_to_string(
+                'keops/web/admin/actions/report.html',
+                context=ctx,
+                using='jinja2',
+                request=request
+            ),
         })
 
 
