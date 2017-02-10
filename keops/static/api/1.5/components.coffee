@@ -22,6 +22,8 @@ uiKatrid.directive 'field', ($compile) ->
     if element.parent('list').length is 0
       element.removeAttr('name')
       widget = attrs.widget
+      if widget
+        console.log(widget)
       if not widget
         tp = field.type
         if tp is 'ForeignKey'

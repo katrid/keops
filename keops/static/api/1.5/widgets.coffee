@@ -178,6 +178,14 @@ class FileField extends InputWidget
     return super(scope, el, attrs, field, type)
 
 
+class PasswordField extends InputWidget
+  template: (scope, el, attrs, field, type='password') ->
+    return super(scope, el, attrs, field, type)
+
+  spanTemplate: (scope, el, attrs, field) ->
+    return """<span class="form-field-readonly" ng-show="!dataSource.changing">**********</span>"""
+
+
 @Katrid.UI.Widgets =
   Widget: Widget
   InputWidget: InputWidget
@@ -191,3 +199,4 @@ class FileField extends InputWidget
   OneToManyField: OneToManyField
   ManyToManyField: ManyToManyField
   FileField: FileField
+  PasswordField: PasswordField

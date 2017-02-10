@@ -19,6 +19,9 @@
         if (element.parent('list').length === 0) {
           element.removeAttr('name');
           widget = attrs.widget;
+          if (widget) {
+            console.log(widget);
+          }
           if (!widget) {
             tp = field.type;
             if (tp === 'ForeignKey') {
