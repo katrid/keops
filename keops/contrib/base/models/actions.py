@@ -1,6 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 
 from keops import models
+from keops.models import reports
 
 
 class Action(models.Model):
@@ -46,7 +47,7 @@ class WindowAction(Action):
 
 
 class ReportAction(Action):
-    report = models.ForeignKey('keops.report', null=False)
+    report = models.ForeignKey(reports.Report, null=False)
 
     def save(self, *args, **kwargs):
         self.action_type = 'report'

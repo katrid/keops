@@ -3,7 +3,9 @@
   <action id="action-view-auth-group" name="Groups" type="base.windowaction" model="auth.group"/>
   <action id="action-view-auth-rule" name="Rules" type="base.windowaction" model="base.rule"/>
   <action id="action-view-menu" name="Menu Structure" type="base.windowaction" model="base.menu"/>
-  <action id="action-view-window-action" name="Actions" type="base.windowaction" model="base.windowaction"/>
+  <action id="action-view-window-action" name="Window Actions" type="base.windowaction" model="base.windowaction"/>
+  <action id="action-view-report-action" name="Report Actions" type="base.windowaction" model="base.reportaction"/>
+  <action id="action-view-report" name="Reports" type="base.windowaction" model="keops.report"/>
   <menuitem id="sys-menu" name="System">
     <menuitem id="sys-menu-sec" name="Security">
       <menuitem id="sys-menu-user" name="Users" action="action-view-auth-user"/>
@@ -13,8 +15,10 @@
     <menuitem id="sys-menu-ui" name="User Interface">
       <menuitem id="sys-menu-ui-action" name="Actions">
         <menuitem id="sys-menu-ui-window-action" name="Window Actions" action="action-view-window-action"/>
+        <menuitem id="sys-menu-ui-report-action" name="Report Actions" action="action-view-report-action"/>
       </menuitem>
       <menuitem id="sys-menu-ui-menu" name="Menu Structure" action="action-view-menu"/>
+      <menuitem id="sys-menu-ui-report" name="Report" action="action-view-report"/>
     </menuitem>
   </menuitem>
 </data>
