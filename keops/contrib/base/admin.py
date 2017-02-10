@@ -36,8 +36,18 @@ class RuleService(services.ModelService):
     model = models.Rule
 
 
+class ReportService(services.ModelService):
+    model = models.reports.Report
+
+
+class ReportActionService(services.ModelService):
+    model = models.ReportAction
+
+
 site.register_service(UserService)
 site.register_service(GroupService)
 site.register_service(MenuService)
 site.register_service(WindowActionService)
 site.register_service(RuleService)
+site.register_service(ReportService)
+site.register_service(ReportActionService)

@@ -8,6 +8,9 @@ class Report(models.Model):
         db_table = 'keops_report'
         managed = False
 
+    def __str__(self):
+        return self.name
+
 
 class UserReport(models.Model):
     name = models.CharField(max_length=256)
@@ -19,3 +22,6 @@ class UserReport(models.Model):
     class Meta:
         db_table = 'keops_user_report'
         managed = False
+
+    def __str__(self):
+        return self.name
