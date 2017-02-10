@@ -13,7 +13,7 @@ from django.db.models import Q
 from django.apps import apps
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.fields.related import ManyToOneRel, ManyToManyField
-from django.db.models import DecimalField, DateField, CharField
+from django.db.models import DecimalField, DateField, CharField, FileField
 from django.db.models import QuerySet
 from django.db.models import NOT_PROVIDED, BooleanField
 
@@ -144,6 +144,8 @@ class ModelService(ViewService):
             if v:
                 if isinstance(field, ImageField):
                     return v.name
+                elif isinstance(field, FileField):
+                    return None
                 elif isinstance(field, ForeignKey):
                     return [v.pk, str(v)]
                 elif isinstance(field, ManyToManyField):

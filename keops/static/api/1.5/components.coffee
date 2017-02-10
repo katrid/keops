@@ -53,6 +53,9 @@ uiKatrid.directive 'field', ($compile) ->
           cols = 12
         else if tp is 'ManyToManyField'
           widget = tp
+        else if tp is 'FileField'
+          console.log('file field')
+          widget = tp
         else
           widget = 'TextField'
 
@@ -281,18 +284,29 @@ uiKatrid.directive 'datepicker', ->
   require: '?ngModel'
   link: (scope, element, attrs, controller) ->
     el = element
-    el = element.datepicker
-      #format: Katrid.i18n.gettext 'yyyy-mm-dd'
-      #forceParse: false
-      onSelect: (date) ->
-        console.log('select date')
 
-    #controller.$formatters.push (value) ->
-    #  if value
-    #    dt = moment(value, "YYYY-MM-DD").toDate()
-    #    console.log('datepicker', value, dt)
-    #    return dt
-    #  return
+
+    $ ->
+      element.datepicker
+          showOn: "both",
+          changeYear: true,
+          changeMonth: true,
+          dateFormat: 'yy-mm-dd',
+          maxDate: new Date(),
+          yearRange: '1920:2012',
+          onSelect: (dateText, inst) ->
+              scope.$apply (scope) ->
+                controller.assign(scope, dateText)
+
+    controller.$formatters.push (value) ->
+      console.log('datepicker', value)
+      if value and  _.isDate(value)
+        dt = moment(value).format('YYYY-MM-DD')
+        return dt
+      return
+
+    controller.$parsers.push (value) ->
+      console.log(value)
 
 #    updateModelValue = ->
 #      if controller.$modelValue != el.val()

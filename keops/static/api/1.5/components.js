@@ -51,6 +51,9 @@
               cols = 12;
             } else if (tp === 'ManyToManyField') {
               widget = tp;
+            } else if (tp === 'FileField') {
+              console.log('file field');
+              widget = tp;
             } else {
               widget = 'TextField';
             }
@@ -323,10 +326,31 @@
       link: function(scope, element, attrs, controller) {
         var el;
         el = element;
-        el = element.datepicker({
-          onSelect: function(date) {
-            return console.log('select date');
+        $(function() {
+          return element.datepicker({
+            showOn: "both",
+            changeYear: true,
+            changeMonth: true,
+            dateFormat: 'yy-mm-dd',
+            maxDate: new Date(),
+            yearRange: '1920:2012',
+            onSelect: function(dateText, inst) {
+              return scope.$apply(function(scope) {
+                return controller.assign(scope, dateText);
+              });
+            }
+          });
+        });
+        controller.$formatters.push(function(value) {
+          var dt;
+          console.log('datepicker', value);
+          if (value && _.isDate(value)) {
+            dt = moment(value).format('YYYY-MM-DD');
+            return dt;
           }
+        });
+        controller.$parsers.push(function(value) {
+          return console.log(value);
         });
         return el.on('blur', function(evt) {
           var dt, s;

@@ -173,6 +173,11 @@ class CheckBox extends InputWidget
     return ''
 
 
+class FileField extends InputWidget
+  template: (scope, el, attrs, field, type='file') ->
+    return super(scope, el, attrs, field, type)
+
+
 @Katrid.UI.Widgets =
   Widget: Widget
   InputWidget: InputWidget
@@ -185,3 +190,4 @@ class CheckBox extends InputWidget
   CheckBox: CheckBox
   OneToManyField: OneToManyField
   ManyToManyField: ManyToManyField
+  FileField: FileField
