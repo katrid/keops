@@ -9,7 +9,7 @@ class Menu(models.Model):
     name = models.CharField(max_length=128, null=False)
     active = models.BooleanField(default=True, verbose_name=_('active'))
     sequence = models.IntegerField(default=100)
-    groups = models.ManyToManyField('auth.Group')
+    groups = models.ManyToManyField('auth.Group', blank=True)
     icon = models.CharField(max_length=256)
     url = models.CharField(max_length=512)
     action = models.ForeignKey(Action)
