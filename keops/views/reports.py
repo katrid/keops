@@ -102,17 +102,23 @@ def report(request):
                 data_band.remove(txt)
             for txt in list(page_header):
                 page_header.remove(txt)
-            for field in params['fields']:
+            for i, field in enumerate(params['fields']):
                 w = 80
                 ftype = fields[field].get('type', 'str')
                 fmt_field = ''
                 fmt_header = ''
                 if ftype == 'str':
-                    w = 160
+                    if i == 0:
+                        w = 260
+                    else:
+                        w = 160
                 elif ftype == 'decimal':
                     w = 100
                     fmt_field = '''Format="Currency" Format.UseLocale="true" HorzAlign="Right" WordWrap="false"'''
                     fmt_header = '''HorzAlign="Right"'''
+                elif ftype == 'datetime':
+                    w = 100
+                    fmt_field = '''Format="Date" Format.Format="dd/MM/yyyy" WordWrap="false"'''
                 data_band.append(et.fromstring(field_templ.format(field, cx, w, fmt_field)))
                 page_header.append(et.fromstring(header_templ.format(field, fields[field].get('label', field), cx, w, fmt_header)))
                 pos_fields[field] = (cx, w)
@@ -212,7 +218,7 @@ def report(request):
                 download = '/reports/temp/%s' % destfile
                 ret = {'open': download}
                 import fastreport
-                fastreport.show_report(destfrx, outname, format, 'Dsn=gsf;uid=sped2;pwd=sped2', '', '', {})
+                fastreport.show_report(destfrx, outname, format, 'Dsn=gsf;uid=sped2;pwd=sped2')
                 #os.unlink(destfrx)
                 return JsonResponse(ret)
 
