@@ -66,7 +66,6 @@ class DataSource
                 elfield = el.find(""".form-field[name="#{field.name}"]""")
                 elfield.addClass('ng-invalid ng-touched')
                 s += "<strong>#{field.caption}</strong><ul>"
-                console.log(field)
                 for msg in msgs
                   s += "<li>#{msg}</li>"
                 s += '</ul>'
@@ -211,6 +210,7 @@ class DataSource
       for el in $(element).find('.form-field.ng-dirty')
         nm = el.name
         data[nm] = record[nm]
+
       for child in @children
         subData = data[child.fieldName] or []
         for attr, obj of child.modifiedData

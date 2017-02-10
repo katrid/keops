@@ -91,7 +91,6 @@
                     elfield = el.find(".form-field[name=\"" + field.name + "\"]");
                     elfield.addClass('ng-invalid ng-touched');
                     s += "<strong>" + field.caption + "</strong><ul>";
-                    console.log(field);
                     for (j = 0, len1 = msgs.length; j < len1; j++) {
                       msg = msgs[j];
                       s += "<li>" + msg + "</li>";

@@ -729,7 +729,20 @@ uiKatrid.directive 'tabContentTransclude', ->
 
   }
 
+
 uiKatrid.filter 'm2m', ->
   return (input) ->
     if _.isArray input
       return (obj[1] for obj in input).join(', ')
+
+
+uiKatrid.directive 'fileReader', ->
+  restrict: 'A'
+  require: 'ngModel'
+  link: (scope, element, attrs, controller) ->
+    console.log('link file read')
+    element.bind 'change', ->
+      reader = new FileReader()
+      reader.onload = (event) ->
+        controller.$setViewValue event.target.result
+      reader.readAsDataURL(event.target.files[0])

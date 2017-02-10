@@ -2,6 +2,8 @@ import datetime
 import decimal
 from itertools import chain
 from collections import defaultdict
+import base64
+import tempfile
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist, ValidationError
 from django.conf import settings
 from django.db.models import ForeignKey, ImageField
@@ -102,6 +104,19 @@ class ModelService(ViewService):
             field_name = field.attname
             if isinstance(value, list):
                 value = value[0]
+        elif isinstance(field, FileField) and value:
+            data = value.split('data:', 1)
+            if len(data) > 1:
+                file_content = data[1].split(';base64,')[1]
+                if callable(field.upload_to):
+                    fname = field.upload_to(instance, None)
+                else:
+                    fname = NotImplemented
+                with open(fname, 'wb') as f:
+                    f.write(base64.decodebytes(file_content.encode('utf-8')))
+                value = fname
+            else:
+                raise ValidationError('Invalid file field value.')
         elif isinstance(field, DecimalField):
             if isinstance(value, (str, float)):
                 value = round(decimal.Decimal(str(value)), field.decimal_places)

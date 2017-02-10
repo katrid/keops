@@ -332,6 +332,8 @@
       return FileField.__super__.constructor.apply(this, arguments);
     }
 
+    FileField.prototype.tag = 'input file-reader';
+
     FileField.prototype.template = function(scope, el, attrs, field, type) {
       if (type == null) {
         type = 'file';
@@ -358,7 +360,7 @@
     };
 
     PasswordField.prototype.spanTemplate = function(scope, el, attrs, field) {
-      return "<span class=\"form-field-readonly\" ng-show=\"!dataSource.changing\">**********</span>";
+      return "<span class=\"form-field-readonly\" ng-show=\"!dataSource.changing\">*******************</span>";
     };
 
     return PasswordField;

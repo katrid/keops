@@ -928,6 +928,24 @@
     };
   });
 
+  uiKatrid.directive('fileReader', function() {
+    return {
+      restrict: 'A',
+      require: 'ngModel',
+      link: function(scope, element, attrs, controller) {
+        console.log('link file read');
+        return element.bind('change', function() {
+          var reader;
+          reader = new FileReader();
+          reader.onload = function(event) {
+            return controller.$setViewValue(event.target.result);
+          };
+          return reader.readAsDataURL(event.target.files[0]);
+        });
+      }
+    };
+  });
+
 }).call(this);
 
 //# sourceMappingURL=components.js.map

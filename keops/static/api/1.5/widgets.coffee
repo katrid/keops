@@ -174,6 +174,8 @@ class CheckBox extends InputWidget
 
 
 class FileField extends InputWidget
+  tag: 'input file-reader'
+
   template: (scope, el, attrs, field, type='file') ->
     return super(scope, el, attrs, field, type)
 
@@ -183,7 +185,7 @@ class PasswordField extends InputWidget
     return super(scope, el, attrs, field, type)
 
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly" ng-show="!dataSource.changing">**********</span>"""
+    return """<span class="form-field-readonly" ng-show="!dataSource.changing">*******************</span>"""
 
 
 @Katrid.UI.Widgets =
