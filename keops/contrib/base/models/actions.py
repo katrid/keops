@@ -45,4 +45,13 @@ class WindowAction(Action):
         return service.view_action(view_type)
 
 
+class ReportAction(Action):
+    report = models.ForeignKey('keops.report', null=False)
+
+    def save(self, *args, **kwargs):
+        self.action_type = 'report'
+        super(ReportAction, self).save(*args, **kwargs)
+
+
 Action.ACTIONS['window'] = WindowAction
+Action.ACTIONS['report'] = ReportAction
