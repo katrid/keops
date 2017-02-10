@@ -327,34 +327,26 @@
       restrict: 'A',
       require: '?ngModel',
       link: function(scope, element, attrs, controller) {
-        var el;
-        el = element;
-        $(function() {
-          return element.datepicker({
-            showOn: "both",
-            changeYear: true,
-            changeMonth: true,
-            dateFormat: 'yy-mm-dd',
-            maxDate: new Date(),
-            yearRange: '1920:2012',
-            onSelect: function(dateText, inst) {
-              return scope.$apply(function(scope) {
-                return controller.assign(scope, dateText);
-              });
-            }
-          });
+        var el, updateModelValue;
+        el = element.datepicker({
+          format: Katrid.i18n.gettext('yyyy-mm-dd'),
+          forceParse: false
         });
-        controller.$formatters.push(function(value) {
-          var dt;
-          console.log('datepicker', value);
-          if (value && _.isDate(value)) {
-            dt = moment(value).format('YYYY-MM-DD');
-            return dt;
+        updateModelValue = function() {
+          console.log(controller.$modelValue, el.val());
+          if (controller.$modelValue !== el.val()) {
+            return el.val(controller.$modelValue);
           }
-        });
-        controller.$parsers.push(function(value) {
-          return console.log(value);
-        });
+        };
+        scope.$watch(attrs.ngModel, updateModelValue);
+        el = el.mask('00/00/0000');
+        controller.$render = function() {
+          var dt;
+          if (controller.$modelValue) {
+            dt = new Date(controller.$modelValue);
+            return el.datepicker('setDate', dt);
+          }
+        };
         return el.on('blur', function(evt) {
           var dt, s;
           s = el.val();
