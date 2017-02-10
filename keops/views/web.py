@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 
 from keops.contrib.base.models.ui import Menu
-
 from keops.api import site
 
 
@@ -52,6 +51,6 @@ def action(request, service, action_id):
         action = get_object_or_404(Action, pk=action_id)
         act_cls = Action.ACTIONS[action.action_type]
         action_id = get_object_or_404(act_cls, pk=action_id)
-        service = str(action_id.model.model_class()._meta)
+        return action_id.dispatch_action(request)
     svc = site.services[service]
     return svc(request).dispatch_action(action_id)

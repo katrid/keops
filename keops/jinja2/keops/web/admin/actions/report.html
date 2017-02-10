@@ -1,14 +1,10 @@
-{% extends "/keops/web/index.html" %}
-{% block app_content %}
-
-  <div ng-controller="BasicController">
-
+<div>
     <form id="report-form" action="/web/reports/report/" method="get">
       <div class="col-sm-12">
         <table class="col-sm-12" style="margin-top: 20px;">
           <tr>
             <td colspan="2" style="padding-top: 8px;">
-              <label>${Katrid.i18n.gettext('My reports')}</label>
+              <label>{{ _('My reports') }}</label>
               <input type="hidden" name="file" value="{{ request.GET.file }}">
               <select name="load" class="form-control" onchange="this.form.submit()">
                   <option></option>
@@ -27,7 +23,7 @@
           <tr>
             <td class="col-sm-4">
               <select class="form-control" ng-model="newParam">
-                <option>--- FILTROS ---</option>
+                <option>--- {{ _('FILTERS') }} ---</option>
                 {% for field in fields %}
                   <option value="{{ field.name }}">{{ field.label }}</option>
                 {% endfor %}
@@ -37,20 +33,14 @@
               </select>
             </td>
             <td class="col-sm-8">
-              <button class="btn btn-default" type="button" ng-click="Katrid.Reports.Reports.currentReport.addParam(newParam)"><i class="fa fa-plus fa-fw"></i> ${Katrid.i18n.gettext('Add Parameter')}
+              <button class="btn btn-default" type="button" ng-click="Katrid.Reports.Reports.currentReport.addParam(newParam)"><i class="fa fa-plus fa-fw"></i> {{ _('Add Parameter') }}
               </button>
             </td>
           </tr>
         </table>
     </form>
 
-
-  </div>
-
-{% endblock %}
-{% block page_loaded %}
   <script>
-    $(document).ready(function () {
       var cont = $('#report-params');
       var scope = angular.element(cont).scope();
       {% if report %}
@@ -61,6 +51,5 @@
       report = new Katrid.Reports.Report(report, scope);
       var el = report.render(cont, scope);
       {% endif %}
-    });
   </script>
-{% endblock %}
+</div>

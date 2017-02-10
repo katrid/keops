@@ -1,6 +1,8 @@
 from django.contrib.contenttypes.models import ContentType
+from django.template import loader
 
 from keops import models
+from keops.api import site
 from keops.models import reports
 
 
@@ -41,9 +43,11 @@ class WindowAction(Action):
         self.action_type = 'window'
         super(WindowAction, self).save(*args, **kwargs)
 
-    def dispatch_action(self, service):
-        view_type = service.request.GET.get('view_type', 'list')
-        return service.view_action(view_type)
+    def dispatch_action(self, request):
+        service = str(self.model.model_class()._meta)
+        svc = site.services[service]
+        view_type = svc.GET.get('view_type', 'list')
+        return svc.view_action(view_type)
 
 
 class ReportAction(Action):
@@ -52,6 +56,12 @@ class ReportAction(Action):
     def save(self, *args, **kwargs):
         self.action_type = 'report'
         super(ReportAction, self).save(*args, **kwargs)
+
+    def dispatch_action(self, service):
+        templ = loader.select_template('keops/web/admin/actions/report.html', 'jinja2')
+        return templ.render({
+            'request'
+        })
 
 
 Action.ACTIONS['window'] = WindowAction
