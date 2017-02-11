@@ -160,14 +160,15 @@ def report(request, report_file=None):
                 data_band.remove(txt)
             for txt in list(page_header):
                 page_header.remove(txt)
-            for i, field in enumerate(params['fields']):
+            param_fields = params['fields']
+            for i, field in enumerate(param_fields):
                 w = 80
                 ftype = fields[field].get('type', 'str')
                 fmt_field = ''
                 fmt_header = ''
                 if ftype == 'str':
                     if i == 0:
-                        w = 260
+                        w = 260 if len(param_fields) == 1 else 500
                     else:
                         w = 160
                 elif ftype == 'decimal':
