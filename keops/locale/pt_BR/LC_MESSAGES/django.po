@@ -29,3 +29,9 @@ msgstr "Segurança"
 
 msgid "Find resources here..."
 msgstr "Encontre recursos aqui..."
+
+msgid "My reports"
+msgstr "Meus relatórios"
+
+msgid "Add Parameter"
+msgstr "Adicionar Parâmetro"
