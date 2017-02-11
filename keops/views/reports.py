@@ -8,9 +8,67 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.utils.translation import gettext as _
 from django.contrib.auth.decorators import login_required
+from django.template import loader
 
 from keops.models import reports as report_models
 from keops.contrib.base.models import Menu
+
+
+def _report(request, report_file=None):
+    if request.method == 'POST':
+        return report(request)
+    fields = []
+    user_params = None
+    user_report = None
+    filename = report_file or request.GET['file']
+    if filename:
+        rep = {}
+        xml = get_report_file(filename)
+        rep.update(xml.attrib)
+        for el in xml:
+            if el.tag == 'fields':
+                rep['fields'] = fields
+                for field in el:
+                    attrs = {k.replace('-', '_'): v for k, v in dict(field.attrib).items()}
+                    param = attrs.get('param')
+                    if param == 'true':
+                        attrs['param'] = True
+                    if 'sql_choices' in attrs:
+                        attrs['sql_choices'] = True
+                    fields.append(attrs)
+        rep['file'] = filename
+        rep = json.dumps(rep)
+        user_report = request.GET.get('load')
+        if user_report:
+            user_report = report_models.UserReport.objects.get(pk=request.GET['load'])
+            user_params = json.loads(user_report.user_params)
+
+    groups = None
+    if request.user.is_superuser:
+        menu = Menu.objects.filter(parent_id=None)
+    else:
+        groups = [obj.pk for obj in request.user.groups.all()]
+        menu = Menu.objects.filter(parent_id=None, groups__in=groups)
+
+    ctx = {
+        '_': _,
+        'user_reports': report_models.UserReport.objects.filter(report__name=request.GET.get('file')),
+        'current_menu': None,
+        'settings': settings,
+        'fields': fields,
+        'report': rep,
+        'report_file': filename,
+        'menu': menu,
+        'user_report': user_report,
+        'user_params': user_params,
+    }
+    return loader.render_to_string(
+        'keops/web/admin/actions/report.html',
+        context=ctx,
+        request=request,
+        using='jinja2',
+    )
+
 
 
 @login_required
@@ -73,7 +131,7 @@ def dashboard(request):
 
 
 @login_required
-def report(request):
+def report(request, report_file=None):
 
     def clone(file, params, dest_file, templ):
         group_template = '''
@@ -228,12 +286,12 @@ def get_report_file(filename):
 
 
 @login_required
-def choices(request):
+def choices(request, report_file=None):
     if 'sql_choices' in request.GET:
         import pyodbc
         conn_str = 'Dsn=gsf;uid=sped2;pwd=sped2'
         conn = pyodbc.connect(conn_str)
-        xml = get_report_file(request.GET['file'])
+        xml = get_report_file(request.GET.get('file', report_file))
         for el in xml.findall("./fields/field/[@name='%s']" % request.GET['sql_choices']):
             sql_choices = el.attrib['sql-choices']
             cur = conn.cursor()

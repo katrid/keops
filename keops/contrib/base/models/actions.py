@@ -60,19 +60,11 @@ class ReportAction(Action):
         super(ReportAction, self).save(*args, **kwargs)
 
     def dispatch_action(self, request):
-        ctx = {
-            'request': request,
-            '_': _,
-            'report_file': request.GET.get('file', self.report.name),
-        }
+        from keops.views.reports import _report
+        rep = _report(request, self.report.name)
         return JsonResponse({
             'action_type': 'ReportAction',
-            'content': loader.render_to_string(
-                'keops/web/admin/actions/report.html',
-                context=ctx,
-                using='jinja2',
-                request=request
-            ),
+            'content': rep,
         })
 
 
