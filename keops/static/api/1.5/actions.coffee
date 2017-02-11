@@ -116,8 +116,7 @@ class WindowAction extends Action
 class ReportAction extends Action
   @actionType: 'sys.action.report'
   routeUpdate: (search) ->
-    console.log(@info.content)
-    @scope.setContent(@scope, @info.content)
+    @scope.setContent(@info.content)
 
 
 @Katrid.Actions =

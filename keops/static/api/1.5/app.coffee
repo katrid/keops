@@ -67,7 +67,7 @@ ngApp.controller 'ActionController', ($scope, $compile, action, $location) ->
 
   $scope.setContent = (content) ->
     $scope.content = $(content)
-    el = angular.element('#katrid-action-view').html($compile(content)($scope))
+    el = angular.element('#katrid-action-view').html($compile($scope.content)($scope))
 
     # Get the first form controller
     $scope.formElement = el.find('form').first()

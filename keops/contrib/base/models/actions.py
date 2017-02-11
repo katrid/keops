@@ -63,6 +63,7 @@ class ReportAction(Action):
         ctx = {
             'request': request,
             '_': _,
+            'report_file': request.GET.get('file', self.report.name),
         }
         return JsonResponse({
             'action_type': 'ReportAction',

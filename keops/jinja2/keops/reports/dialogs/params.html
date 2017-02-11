@@ -1,6 +1,6 @@
 <div id="report-params">
 
-  <input type="hidden" id="id-report-file" value="{{ request.GET.file }}">
+  <input type="hidden" id="id-report-file" value="{{ report_file or "" }}">
 
   <div id="params-fields" class="col-sm-12 form-group">
     <div class="checkbox"><label><input type="checkbox" ng-model="paramsAdvancedOptions"> ${Katrid.i18n.gettext('Advanced options')}</label></div>

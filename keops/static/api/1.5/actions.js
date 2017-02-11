@@ -191,8 +191,7 @@
     ReportAction.actionType = 'sys.action.report';
 
     ReportAction.prototype.routeUpdate = function(search) {
-      console.log(this.info.content);
-      return this.scope.setContent(this.scope, this.info.content);
+      return this.scope.setContent(this.info.content);
     };
 
     return ReportAction;
