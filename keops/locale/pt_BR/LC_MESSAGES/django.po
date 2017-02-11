@@ -35,3 +35,27 @@ msgstr "Meus relatórios"
 
 msgid "Add Parameter"
 msgstr "Adicionar Parâmetro"
+
+msgid "Advanced options"
+msgstr "Opções avançadas"
+
+msgid "Load"
+msgstr "Carregar"
+
+msgid "Preview"
+msgstr "Visualizar"
+
+msgid "Printable Fields"
+msgstr "Campos Imprimíveis"
+
+msgid "Totalizing Fields"
+msgstr "Campos Totalizadores"
+
+msgid "Sorting"
+msgstr "Ordenar"
+
+msgid "Grouping"
+msgstr "Agrupar"
+
+msgid "Export"
+msgstr "Exportar"

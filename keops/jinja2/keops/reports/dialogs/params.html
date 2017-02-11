@@ -2,26 +2,26 @@
   <input type="hidden" id="id-report-file" value="{{ report_file or "" }}">
 
   <div id="params-fields" class="col-sm-12 form-group">
-    <div class="checkbox"><label><input type="checkbox" ng-model="paramsAdvancedOptions"> ${Katrid.i18n.gettext('Advanced options')}</label></div>
+    <div class="checkbox"><label><input type="checkbox" ng-model="paramsAdvancedOptions"> {{ _('Advanced options') }}</label></div>
     <div ng-show="paramsAdvancedOptions">
       <div class="form-group">
-        <label>${Katrid.i18n.gettext('Printable Fields')}</label>
+        <label>{{ _('Printable Fields') }}</label>
         <select id="report-id-fields" multiple></select>
       </div>
       <div class="form-group">
-        <label>${Katrid.i18n.gettext('Totalizing Fields')}</label>
+        <label>{{ _('Totalizing Fields') }}</label>
         <select id="report-id-totals" multiple></select>
       </div>
     </div>
   </div>
 
   <div id="params-sorting" class="col-sm-12 form-group">
-    <label class="control-label">${Katrid.i18n.gettext('Sorting')}</label>
+    <label class="control-label">{{ _('Sorting') }}</label>
     <select multiple id="report-id-sorting"></select>
   </div>
 
   <div id="params-grouping" class="col-sm-12 form-group">
-    <label class="control-label">${Katrid.i18n.gettext('Grouping')}</label>
+    <label class="control-label">{{ _('Grouping') }}</label>
     <select multiple id="report-id-grouping"></select>
   </div>
 
@@ -29,10 +29,10 @@
   <hr>
   <div id="params-toolbar" class="form-group">
     <div class="col-sm-12">
-      <button class="btn btn-primary" type="button" ng-click="Katrid.Reports.Reports.preview()"><span class="fa fa-print fa-fw"></span> ${Katrid.i18n.gettext('Preview')}</button>
+      <button class="btn btn-primary" type="button" ng-click="Katrid.Reports.Reports.preview()"><span class="fa fa-print fa-fw"></span> {{ _('Preview') }}</button>
       <div class="btn-group">
         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
-                aria-expanded="false">${Katrid.i18n.gettext('Export')} <span class="caret"></span></button>
+                aria-expanded="false">{{ _('Export') }} <span class="caret"></span></button>
         <ul class="dropdown-menu">
           <li><a ng-click="Katrid.Reports.Reports.preview()">PDF</a></li>
           <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('docx')">Microsoft Word</a></li>
@@ -46,8 +46,8 @@
         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
                 aria-expanded="false"><i class="fa fa-gear fa-fw"></i></button>
         <ul class="dropdown-menu">
-          <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.saveDialog()">${Katrid.i18n.gettext('Save')}</a></li>
-          <li><a href="#">${Katrid.i18n.gettext('Load')}</a></li>
+          <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.saveDialog()">{{ _('Save') }}</a></li>
+          <li><a href="#">{{ _('Load') }}</a></li>
         </ul>
       </div>
     </div>
