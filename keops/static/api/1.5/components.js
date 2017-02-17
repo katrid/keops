@@ -503,15 +503,19 @@
       restrict: 'A',
       require: 'ngModel',
       link: function(scope, el, attrs, controller) {
-        var config, f, multiple, newItem, sel;
-        f = scope.view.fields['model'];
+        var config, multiple, newItem, sel, serviceName;
         sel = el;
         el.addClass('form-field');
+        if (attrs.serviceName) {
+          serviceName = attrs.serviceName;
+        } else {
+          serviceName = scope.model.name;
+        }
         newItem = function() {};
         config = {
           allowClear: true,
           ajax: {
-            url: '/api/rpc/' + scope.model.name + '/get_field_choices/?args=' + attrs.name,
+            url: '/api/rpc/' + serviceName + '/get_field_choices/?args=' + attrs.name,
             data: function(term, page) {
               return {
                 q: term

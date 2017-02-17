@@ -42,7 +42,6 @@ ngApp.controller 'BasicController', ($scope, $compile, $location) ->
   $scope.Katrid = Katrid
 
 
-
 ngApp.controller 'ActionController', ($scope, $compile, action, $location) ->
   $scope.Katrid = Katrid
   $scope.data = null

@@ -409,17 +409,22 @@ Katrid.uiKatrid.directive 'foreignkey', ->
   require: 'ngModel'
   link: (scope, el, attrs, controller) ->
 
-    f = scope.view.fields['model']
+    #f = scope.view.fields['model']
     sel = el
 
     el.addClass 'form-field'
+
+    if attrs.serviceName
+      serviceName = attrs.serviceName
+    else
+      serviceName = scope.model.name
 
     newItem = () ->
 
     config =
       allowClear: true
       ajax:
-        url: '/api/rpc/' + scope.model.name + '/get_field_choices/?args=' + attrs.name
+        url: '/api/rpc/' + serviceName + '/get_field_choices/?args=' + attrs.name
 
         data: (term, page) ->
           q: term

@@ -119,10 +119,18 @@ class ReportAction extends Action
     @scope.setContent(@info.content)
 
 
+class ViewAction extends Action
+  @actionType = 'sys.action.view'
+  routeUpdate: (search) ->
+    @scope.setContent(@info.content)
+
+
 @Katrid.Actions =
   Action: Action
   WindowAction: WindowAction
   ReportAction: ReportAction
+  ViewAction: ViewAction
 
 @Katrid.Actions[WindowAction.actionType] = WindowAction
-@Katrid.Actions[ReportAction.actionType] = WindowAction
+@Katrid.Actions[ReportAction.actionType] = ReportAction
+@Katrid.Actions[ViewAction.actionType] = ViewAction
