@@ -280,7 +280,6 @@ uiKatrid.directive 'ngEnter', ->
         event.preventDefault()
 
 
-
 uiKatrid.directive 'datepicker', ->
   restrict: 'A'
   require: '?ngModel'
@@ -288,21 +287,23 @@ uiKatrid.directive 'datepicker', ->
     el = element.datepicker
       format: Katrid.i18n.gettext 'yyyy-mm-dd'
       forceParse: false
-
-    updateModelValue = ->
-      console.log(controller.$modelValue, el.val())
-      if controller.$modelValue != el.val()
-        el.val(controller.$modelValue)
-
-    scope.$watch(attrs.ngModel, updateModelValue)
+    .on 'changeDate', (e) ->
+      dp = el.data('datepicker')
+      el.val(dp.getFormattedDate())
 
     el = el.mask('00/00/0000')
 
-    controller.$render = ->
-      if controller.$modelValue
-        dt = new Date(controller.$modelValue)
-        el.datepicker('setDate', dt)
+    controller.$formatters.push (value) ->
+      console.log(value)
+      el.datepicker('setDate', new Date(value))
+      dp = el.data('datepicker')
+      return dp.getFormattedDate()
 
+    #controller.$render = ->
+    #  if controller.$modelValue
+    #    dt = new Date(controller.$modelValue)
+    #    el.val(controller.$modelValue)
+#
     el.on 'blur', (evt) ->
       s = el.val()
       if (s.length is 5) or (s.length is 6)

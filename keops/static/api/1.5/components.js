@@ -327,26 +327,23 @@
       restrict: 'A',
       require: '?ngModel',
       link: function(scope, element, attrs, controller) {
-        var el, updateModelValue;
+        var el;
         el = element.datepicker({
           format: Katrid.i18n.gettext('yyyy-mm-dd'),
           forceParse: false
+        }).on('changeDate', function(e) {
+          var dp;
+          dp = el.data('datepicker');
+          return el.val(dp.getFormattedDate());
         });
-        updateModelValue = function() {
-          console.log(controller.$modelValue, el.val());
-          if (controller.$modelValue !== el.val()) {
-            return el.val(controller.$modelValue);
-          }
-        };
-        scope.$watch(attrs.ngModel, updateModelValue);
         el = el.mask('00/00/0000');
-        controller.$render = function() {
-          var dt;
-          if (controller.$modelValue) {
-            dt = new Date(controller.$modelValue);
-            return el.datepicker('setDate', dt);
-          }
-        };
+        controller.$formatters.push(function(value) {
+          var dp;
+          console.log(value);
+          el.datepicker('setDate', new Date(value));
+          dp = el.data('datepicker');
+          return dp.getFormattedDate();
+        });
         return el.on('blur', function(evt) {
           var dt, s;
           s = el.val();
