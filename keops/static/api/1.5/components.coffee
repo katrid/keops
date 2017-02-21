@@ -330,9 +330,10 @@ uiKatrid.directive 'datepicker', ['$filter', ($filter) ->
           if s.length is 3
             s = s.substr(0, 2)
           val = new Date(dt.getFullYear(), s, dt.getDay())
-      el.datepicker('setDate', val)
-      el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
-      controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
+      if val
+        el.datepicker('setDate', val)
+        el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
+        controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
 ]
 
 uiKatrid.directive 'ajaxChoices', ($location) ->

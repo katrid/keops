@@ -389,9 +389,11 @@
                 val = new Date(dt.getFullYear(), s, dt.getDay());
               }
             }
-            el.datepicker('setDate', val);
-            el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'));
-            return controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'));
+            if (val) {
+              el.datepicker('setDate', val);
+              el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'));
+              return controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'));
+            }
           });
         }
       };
