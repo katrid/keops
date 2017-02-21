@@ -57,7 +57,8 @@
     }
 
     DataSource.prototype.cancelChanges = function() {
-      return this.setState(DataSourceState.browsing);
+      this.scope.record = null;
+      return this.scope.action.setViewType('list');
     };
 
     DataSource.prototype.saveChanges = function() {

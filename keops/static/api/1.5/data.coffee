@@ -34,9 +34,9 @@ class DataSource
     @fieldChangeWatchers = []
 
   cancelChanges: ->
-    #@scope.record = null
-    #@scope.action.setViewType('list')
-    @setState(DataSourceState.browsing)
+    @scope.record = null
+    @scope.action.setViewType('list')
+    #@setState(DataSourceState.browsing)
 
   saveChanges: ->
     # Submit fields with dirty state only

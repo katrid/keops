@@ -280,43 +280,60 @@ uiKatrid.directive 'ngEnter', ->
         event.preventDefault()
 
 
-uiKatrid.directive 'datepicker', ->
+uiKatrid.directive 'datepicker', ['$filter', ($filter) ->
   restrict: 'A'
   require: '?ngModel'
   link: (scope, element, attrs, controller) ->
     el = element.datepicker
       format: Katrid.i18n.gettext 'yyyy-mm-dd'
+      language: 'pt-BR'
       forceParse: false
+      autoClose: true
+      showOnFocus: false
     .on 'changeDate', (e) ->
       dp = el.data('datepicker')
-      el.val(dp.getFormattedDate())
+      if dp.picker.is(':visible')
+        console.log('change date', dp.viewDate)
+        el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
 
     el = el.mask('00/00/0000')
 
     controller.$formatters.push (value) ->
-      console.log(value)
-      el.datepicker('setDate', new Date(value))
-      dp = el.data('datepicker')
-      return dp.getFormattedDate()
+      dt = new Date(value)
+      el.datepicker('setDate', dt)
+      return $filter('date')(value, 'shortDate')
 
-    #controller.$render = ->
-    #  if controller.$modelValue
-    #    dt = new Date(controller.$modelValue)
-    #    el.val(controller.$modelValue)
-#
     el.on 'blur', (evt) ->
+      dp = el.data('datepicker')
+      if '/' in Katrid.i18n.formats.SHORT_DATE_FORMAT
+        sep = '/'
+      else
+        sep = '-'
+      fmt = Katrid.i18n.formats.SHORT_DATE_FORMAT.toLowerCase().split(sep)
+      dt = new Date()
       s = el.val()
-      if (s.length is 5) or (s.length is 6)
-        if s.length is 6
-          s = s.substr(0, 5)
-        dt = new Date()
-        el.datepicker('setDate', s + '/' + dt.getFullYear().toString())
-      if (s.length is 2) or (s.length is 3)
-        if s.length is 3
-          s = s.substr(0, 2)
-        dt = new Date()
-        el.datepicker('setDate', new Date(dt.getFullYear(), dt.getMonth(), s))
-
+      if fmt[0] is 'd' and fmt[1] is 'm'
+        if (s.length is 5) or (s.length is 6)
+          if s.length is 6
+            s = s.substr(0, 5)
+          val = s + sep + dt.getFullYear().toString()
+        if (s.length is 2) or (s.length is 3)
+          if s.length is 3
+            s = s.substr(0, 2)
+          val = new Date(dt.getFullYear(), dt.getMonth(), s)
+      else if fmt[0] is 'm' and fmt[1] is 'd'
+        if (s.length is 5) or (s.length is 6)
+          if s.length is 6
+            s = s.substr(0, 5)
+          val = s + sep + dt.getFullYear().toString()
+        if (s.length is 2) or (s.length is 3)
+          if s.length is 3
+            s = s.substr(0, 2)
+          val = new Date(dt.getFullYear(), s, dt.getDay())
+      el.datepicker('setDate', val)
+      el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
+      controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
+]
 
 uiKatrid.directive 'ajaxChoices', ($location) ->
   restrict: 'A'

@@ -127,7 +127,7 @@ class DateField extends TextField
   tag: 'input datepicker'
 
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ record.#{attrs.name} }</span>"""
+    return """<span class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ record.#{attrs.name}|date:'shortDate' }</span>"""
 
 
 class OneToManyField extends Widget
