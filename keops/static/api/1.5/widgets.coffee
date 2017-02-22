@@ -129,6 +129,10 @@ class DateField extends TextField
   spanTemplate: (scope, el, attrs, field) ->
     return """<span class="form-field-readonly" ng-show="!dataSource.changing">&nbsp;${ record.#{attrs.name}|date:'shortDate' }</span>"""
 
+  widgetTemplate: (scope, el, attrs, field) ->
+    html = super(scope, el, attrs, field)
+    return """<div class="input-group date" ng-show="dataSource.changing">#{html}<div class="input-group-addon"><span class="glyphicon glyphicon-th"></span></div></div>"""
+
 
 class OneToManyField extends Widget
   tag: 'grid'

@@ -3970,7 +3970,7 @@ label.radio > i:after {
 .data-heading ol.breadcrumb {
   padding: 0;
   margin: 0;
-  font-size: 14px;
+  font-size: small;
 }
 .data-heading .help-block {
   margin-top: 0;
@@ -4377,9 +4377,6 @@ h3.popover-title {
   right: -3px;
   padding: 3px;
 }
-.data-panel div.checkbox label {
-  display: block;
-}
 .alert-primary {
   background-color: #aac4db;
   border-color: #aac4db;
@@ -4771,7 +4768,7 @@ body {
 }
 #header {
   position: relative;
-  z-index: 9902;
+  z-index: 992;
 }
 #footer.page-footer {
   background-color: #d9dbda;
@@ -4794,7 +4791,7 @@ body {
 #left-menu {
   padding-top: 50px;
   top: 0;
-  z-index: 9901;
+  z-index: 991;
 }
 body.container {
   position: absolute;

@@ -13,7 +13,6 @@
       formats: {},
       catalog: {},
       initialize: function(plural, catalog, formats) {
-        console.log('initialize');
         Katrid.i18n.plural = plural;
         Katrid.i18n.catalog = catalog;
         Katrid.i18n.formats = formats;

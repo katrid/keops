@@ -284,14 +284,16 @@ uiKatrid.directive 'datepicker', ['$filter', ($filter) ->
   restrict: 'A'
   require: '?ngModel'
   link: (scope, element, attrs, controller) ->
-    el = element.datepicker
+    el = element
+    calendar = element.parent('div').datepicker
       format: Katrid.i18n.gettext 'yyyy-mm-dd'
+      keyboardNavigation: false
       language: 'pt-BR'
       forceParse: false
       autoClose: true
       showOnFocus: false
     .on 'changeDate', (e) ->
-      dp = el.data('datepicker')
+      dp = calendar.data('datepicker')
       if dp.picker.is(':visible')
         console.log('change date', dp.viewDate)
         el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
@@ -300,11 +302,13 @@ uiKatrid.directive 'datepicker', ['$filter', ($filter) ->
 
     controller.$formatters.push (value) ->
       dt = new Date(value)
-      el.datepicker('setDate', dt)
+      calendar.datepicker('setDate', dt)
       return $filter('date')(value, 'shortDate')
 
     el.on 'blur', (evt) ->
-      dp = el.data('datepicker')
+      dp = calendar.data('datepicker')
+      if dp.picker.is(':visible')
+        dp.hide()
       if '/' in Katrid.i18n.formats.SHORT_DATE_FORMAT
         sep = '/'
       else
@@ -331,7 +335,7 @@ uiKatrid.directive 'datepicker', ['$filter', ($filter) ->
             s = s.substr(0, 2)
           val = new Date(dt.getFullYear(), s, dt.getDay())
       if val
-        el.datepicker('setDate', val)
+        calendar.datepicker('setDate', val)
         el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
         controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
 ]

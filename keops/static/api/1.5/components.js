@@ -329,16 +329,18 @@
         restrict: 'A',
         require: '?ngModel',
         link: function(scope, element, attrs, controller) {
-          var el;
-          el = element.datepicker({
+          var calendar, el;
+          el = element;
+          calendar = element.parent('div').datepicker({
             format: Katrid.i18n.gettext('yyyy-mm-dd'),
+            keyboardNavigation: false,
             language: 'pt-BR',
             forceParse: false,
             autoClose: true,
             showOnFocus: false
           }).on('changeDate', function(e) {
             var dp;
-            dp = el.data('datepicker');
+            dp = calendar.data('datepicker');
             if (dp.picker.is(':visible')) {
               console.log('change date', dp.viewDate);
               return el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'));
@@ -348,12 +350,15 @@
           controller.$formatters.push(function(value) {
             var dt;
             dt = new Date(value);
-            el.datepicker('setDate', dt);
+            calendar.datepicker('setDate', dt);
             return $filter('date')(value, 'shortDate');
           });
           return el.on('blur', function(evt) {
             var dp, dt, fmt, s, sep, val;
-            dp = el.data('datepicker');
+            dp = calendar.data('datepicker');
+            if (dp.picker.is(':visible')) {
+              dp.hide();
+            }
             if (indexOf.call(Katrid.i18n.formats.SHORT_DATE_FORMAT, '/') >= 0) {
               sep = '/';
             } else {
@@ -390,7 +395,7 @@
               }
             }
             if (val) {
-              el.datepicker('setDate', val);
+              calendar.datepicker('setDate', val);
               el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'));
               return controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'));
             }

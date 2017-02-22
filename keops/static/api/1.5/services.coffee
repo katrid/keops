@@ -74,7 +74,7 @@ class Model extends Service
   write: (data, params) ->
     @post('write', params, { kwargs: { data: data } })
     .done ->
-      Katrid.Dialogs.Alerts.success Katrid.i18n.gettext 'Registro gravado com sucesso.'
+      Katrid.Dialogs.Alerts.success Katrid.i18n.gettext 'Record saved successfully.'
     .fail (res) ->
       if res.status is 500 and res.responseText
         alert res.responseText

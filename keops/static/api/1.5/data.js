@@ -203,7 +203,6 @@
           }).fail(function(res) {
             return def.reject(res);
           }).done(function(res) {
-            console.log(res);
             if (_this.pageIndex > 1) {
               _this.offset = (_this.pageIndex - 1) * _this.pageLimit + 1;
             } else {

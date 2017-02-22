@@ -2999,7 +2999,6 @@ select[multiple].input-lg {
   background-image: none;
   border: 1px solid transparent;
   white-space: nowrap;
-  transition: all 0.3s ease 0s;
   padding: 5px 10px;
   font-size: 13px;
   line-height: 1.42857143;
@@ -3851,7 +3850,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   vertical-align: middle;
 }
 .input-group-addon {
-  padding: 7px 10px;
+  padding: 6px 10px;
   font-size: 13px;
   font-weight: normal;
   line-height: 1;

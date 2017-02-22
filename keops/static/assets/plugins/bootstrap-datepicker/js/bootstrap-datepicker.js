@@ -1464,7 +1464,6 @@
 				case 38: // up
 				case 39: // right
 				case 40: // down
-					return;
 					if (!this.o.keyboardNavigation || this.o.daysOfWeekDisabled.length === 7)
 						break;
 					dir = e.keyCode === 37 || e.keyCode === 38 ? -1 : 1;
@@ -1748,7 +1747,7 @@
 		weekStart: 0,
 		disableTouchKeyboard: false,
 		enableOnReadonly: true,
-		showOnFocus: true,
+		showOnFocus: false,
 		zIndexOffset: 10,
 		container: 'body',
 		immediateUpdates: false,

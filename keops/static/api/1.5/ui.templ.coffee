@@ -165,7 +165,6 @@ class Templates
 
       name = col.attr('name')
       fieldInfo = scope.view.fields[name]
-      console.log(fieldInfo, name, scope.view.fields)
 
       if fieldInfo.choices
         fieldInfo._listChoices = {}

@@ -242,6 +242,12 @@
       return "<span class=\"form-field-readonly\" ng-show=\"!dataSource.changing\">&nbsp;${ record." + attrs.name + "|date:'shortDate' }</span>";
     };
 
+    DateField.prototype.widgetTemplate = function(scope, el, attrs, field) {
+      var html;
+      html = DateField.__super__.widgetTemplate.call(this, scope, el, attrs, field);
+      return "<div class=\"input-group date\" ng-show=\"dataSource.changing\">" + html + "<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div></div>";
+    };
+
     return DateField;
 
   })(TextField);
