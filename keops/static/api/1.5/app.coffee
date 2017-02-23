@@ -65,6 +65,7 @@ ngApp.controller 'ActionController', ($scope, $compile, action, $location) ->
     return
 
   $scope.setContent = (content) ->
+    $('html, body').animate({ scrollTop: 0 }, 'fast')
     $scope.content = $(content)
     el = angular.element('#katrid-action-view').html($compile($scope.content)($scope))
 

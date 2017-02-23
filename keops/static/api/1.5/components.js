@@ -770,7 +770,8 @@
             };
           })(this)
         };
-        $(el).select2(cfg);
+        el.select2(cfg);
+        el.data('select2').blur();
         el.on('change', (function(_this) {
           return function() {
             return controller.$setViewValue(el.select2('data'));

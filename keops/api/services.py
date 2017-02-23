@@ -133,9 +133,18 @@ class ModelService(ViewService):
 
     def deserialize(self, instance, data):
         data.pop('id', None)
+        file_fields = {}
         for k, v in data.items():
             field = instance.__class__._meta.get_field(k)
-            self.deserialize_value(instance, field, v)
+            if isinstance(field, FileField):
+                file_fields[field] = v
+            else:
+                self.deserialize_value(instance, field, v)
+
+        # Processing File Fields
+        for k, v in file_fields.items():
+            self.deserialize_value(instance, k, v)
+
         instance.full_clean()
         if instance.pk:
             flds = data.keys() - [f.name for f in self.post_data[id(instance)].keys()] - self.m2m.keys()

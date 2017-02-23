@@ -111,7 +111,7 @@ class Templates
         </ol>
         </div>
         <div class="search-view col-md-6">
-          <input search-box type="hidden" ng-model="searchParams" ng-change="action.setSearchParams(searchParams)">
+          <input search-box ng-model="searchParams" ng-change="action.setSearchParams(searchParams)" value="1">
         </div>
         <!--<p class=\"help-block\">${ action.info.usage }&nbsp;</p>-->
       </div>

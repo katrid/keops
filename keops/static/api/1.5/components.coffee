@@ -561,7 +561,8 @@ uiKatrid.directive 'searchBox', ->
           results: ({ id: fields[f], text: options.term } for f of fields)
         return
 
-    $(el).select2(cfg)
+    el.select2(cfg)
+    el.data('select2').blur()
     el.on 'change', =>
       controller.$setViewValue(el.select2('data'))
 
