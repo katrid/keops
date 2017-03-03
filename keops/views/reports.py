@@ -52,7 +52,7 @@ def _report(request, report_file=None):
 
     ctx = {
         '_': _,
-        'user_reports': report_models.UserReport.objects.filter(report__name=request.GET.get('file')),
+        'user_reports': report_models.UserReport.objects.filter(report__name=report_file or request.GET.get('file')),
         'current_menu': None,
         'settings': settings,
         'fields': fields,
