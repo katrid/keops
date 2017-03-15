@@ -54,6 +54,7 @@ def read_object(obj, **attrs):
 def read_menu(obj, parent=None, **attrs):
     lst = []
     action_id = obj.attrib.get('action')
+    url = obj.attrib.get('url')
     if action_id:
         sys_obj = Object
         try:
@@ -68,6 +69,8 @@ def read_menu(obj, parent=None, **attrs):
         'action_id': action_id,
         'name': s,
     }
+    if url:
+        fields['url'] =  url
     if obj.attrib.get('sequence'):
         fields['sequence'] = obj.attrib['sequence']
     menu = {

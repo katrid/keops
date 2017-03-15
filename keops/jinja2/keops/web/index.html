@@ -92,9 +92,15 @@
       <nav class="sidebar-nav">
         <ul id="left-side-menu" class="nav" aria-expanded="false">
         {% if current_menu %}
-          {% for menu in current_menu.children.filter(groups__in=groups) %}
-            {{ menu_utils.menu_item(menu, groups) }}
-          {% endfor %}
+          {% if groups %}
+            {% for menu in current_menu.children.filter(groups__in=groups) %}
+              {{ menu_utils.menu_item(menu, groups) }}
+            {% endfor %}
+          {% else %}
+            {% for menu in current_menu.children.all() %}
+              {{ menu_utils.menu_item(menu, groups) }}
+            {% endfor %}
+          {% endif %}
         {% endif %}
         </ul>
       </nav>
