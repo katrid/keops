@@ -50,6 +50,12 @@
       }
     };
 
+    WindowAction.prototype.copy = function() {
+      this.setViewType('form');
+      this.scope.dataSource.copy(this.scope.record.id);
+      return false;
+    };
+
     WindowAction.prototype.routeUpdate = function(search) {
       var filter;
       if (search.view_type != null) {

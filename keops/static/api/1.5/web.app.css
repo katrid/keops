@@ -1,3 +1,6 @@
+.btn-voice-command.active {
+  color: red !important;
+}
 td.DecimalField,
 th.DecimalField {
   text-align: right;

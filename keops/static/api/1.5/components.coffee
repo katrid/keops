@@ -46,6 +46,9 @@ uiKatrid.directive 'field', ($compile) ->
         else if tp is 'IntegerField'
           widget = 'TextField'
           cols = 3
+        else if tp is 'SmallIntegerField'
+          widget = 'TextField'
+          cols = 3
         else if tp is 'CharField'
           widget = 'TextField'
           if field.max_length and field.max_length < 30

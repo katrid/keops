@@ -48,6 +48,9 @@ class Model extends Service
   getDefaults: ->
     @post('get_defaults')
 
+  copy: (id) ->
+    @post('copy', null, { args: [id] })
+
   _prepareFields: (view) ->
     for f, v of view.fields
       # Add field display choices object

@@ -102,6 +102,12 @@
       return this.post('get_defaults');
     };
 
+    Model.prototype.copy = function(id) {
+      return this.post('copy', null, {
+        args: [id]
+      });
+    };
+
     Model.prototype._prepareFields = function(view) {
       var f, ref, results, v;
       ref = view.fields;

@@ -45,6 +45,9 @@
             } else if (tp === 'IntegerField') {
               widget = 'TextField';
               cols = 3;
+            } else if (tp === 'SmallIntegerField') {
+              widget = 'TextField';
+              cols = 3;
             } else if (tp === 'CharField') {
               widget = 'TextField';
               if (field.max_length && field.max_length < 30) {

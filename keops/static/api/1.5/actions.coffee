@@ -27,6 +27,11 @@ class WindowAction extends Action
         @scope.dataSource.search({})
       @setViewType('list')
 
+  copy: ->
+    @setViewType('form')
+    @scope.dataSource.copy(@scope.record.id)
+    return false
+
   routeUpdate: (search) ->
     if search.view_type?
       if not @scope.records?

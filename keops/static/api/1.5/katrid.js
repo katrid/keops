@@ -7,7 +7,15 @@
   this.Katrid = {
     Settings: {
       server: '',
-      servicesProtocol: 'http'
+      servicesProtocol: 'http',
+      UI: {
+        defaultView: 'list',
+        goToDefaultViewAfterCancelInsert: true,
+        goToDefaultViewAfterCancelEdit: false
+      },
+      Speech: {
+        enabled: false
+      }
     },
     i18n: {
       formats: {},

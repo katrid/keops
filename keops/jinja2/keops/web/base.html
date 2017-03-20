@@ -135,39 +135,6 @@
 </script>
 <script>
   $(document).ready(function () {
-    // start metisMenu
-    $('#left-side-menu').metisMenu({toggle: false});
-
-    // navbar search
-    var items = [];
-    $('.menu-item>a').each(function (idx, el) {
-      el = $(el);
-      items.push({href: el.attr('href'), name: el.text().trim()});
-    });
-    var el = $('#navbar-search').autocomplete(
-        {
-          source: function (request, response) {
-            var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
-            response($.grep(items, function (value) {
-              return matcher.test(value.name);
-            }));
-          },
-          select: function (ev, ui) {
-            if (ui.item) window.location.href = ui.item.href;
-            el.val(ui.item.name);
-          }
-        });
-    el.data('ui-autocomplete')._renderItem = function (ul, item) {
-      console.log('<a href="' + item.href + '">' + item.name + '</a>');
-      return $('<li></li>')
-          .data('item.autocomplete', item)
-          .append('<div>' + item.name + '</div>')
-          .appendTo(ul);
-    };
-  });
-</script>
-<script>
-  $(document).ready(function () {
     var url = window.location.href.split('/');
     url = url[url.length - 1];
 
