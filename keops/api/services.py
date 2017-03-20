@@ -404,6 +404,23 @@ class ModelService(ViewService):
     def do_view_action(self, action_name, target):
         return self.dispatch_view_action(action_name, target)
 
+    @service_method
+    def copy(self, id):
+        def copy(cls, id):
+            obj = cls.get(id)
+            new_item = {}
+            fields = []
+            for f in cls._meta.fields:
+                if f.copy:
+                    fields.append(f.name)
+                    if self.title_field == f.name:
+                        new_item[f.name] = gettext('%s (copy)') % getattr(obj, f.name)
+                    else:
+                        new_item[f.name] = getattr(obj, f.name)
+            fields.append('display_name')
+            new_item = self.model(**new_item)
+            return new_item.serialize(fields=fields)
+
     def dispatch_view_action(self, action_name, target):
         raise NotImplemented()
 
