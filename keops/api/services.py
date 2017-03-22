@@ -261,8 +261,9 @@ class ModelService(ViewService):
 
     def _search(self, count=None, page=None, *args, **kwargs):
         params = kwargs.get('params', {}) or {}
+        qs = self.model.objects.all()
         if isinstance(params, Q):
-            qs = self.model.objects.filter(params)
+            qs = qs(params)
         elif params:
             if not isinstance(params, (list, tuple)):
                 params = [params]
@@ -274,11 +275,9 @@ class ModelService(ViewService):
                             q = Q(**p)
                         else:
                             q |= Q(**p)
-                    qs = self.model.objects.filter(q)
+                    qs = qs.filter(q)
                 else:
-                    qs = self.model.objects.filter(**param)
-        else:
-            qs = self.model.objects.all()
+                    qs = qs.filter(**param)
 
         if self.select_related:
             qs = qs.select_related(*tuple(self.select_related))
