@@ -268,9 +268,9 @@ class ModelService(ViewService):
             if not isinstance(params, (list, tuple)):
                 params = [params]
             for param in params:
-                if isinstance(param, dict) and 'OR' in params:
+                if isinstance(param, dict) and 'OR' in param:
                     q = None
-                    for p in params['OR']:
+                    for p in param['OR']:
                         if q is None:
                             q = Q(**p)
                         else:
