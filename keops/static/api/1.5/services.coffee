@@ -69,6 +69,7 @@ class Model extends Service
         @_prepareFields(obj)
 
   getFieldChoices: (field, term) ->
+    console.log('get field choices', field, term)
     @get('get_field_choices', { args: field, q: term })
 
   doViewAction: (data) ->

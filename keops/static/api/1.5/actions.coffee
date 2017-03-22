@@ -100,8 +100,8 @@ class WindowAction extends Action
     return r
 
   setSearchParams: (params) ->
-    data = @_prepareParams(params)
-    @scope.dataSource.search(data)
+    #data = @_prepareParams(params)
+    @scope.dataSource.search(params)
 
   doViewAction: (viewAction, target, confirmation) ->
     if not confirmation or (confirmation and confirm(confirmation))

@@ -263,8 +263,22 @@ class ModelService(ViewService):
         params = kwargs.get('params', {}) or {}
         if isinstance(params, Q):
             qs = self.model.objects.filter(params)
+        elif params:
+            if not isinstance(params, (list, tuple)):
+                params = [params]
+            for param in params:
+                if isinstance(param, dict) and 'OR' in params:
+                    q = None
+                    for p in params['OR']:
+                        if q is None:
+                            q = Q(**p)
+                        else:
+                            q |= Q(**p)
+                    qs = self.model.objects.filter(q)
+                else:
+                    qs = self.model.objects.filter(**param)
         else:
-            qs = self.model.objects.filter(**params)
+            qs = self.model.objects.all()
 
         if self.select_related:
             qs = qs.select_related(*tuple(self.select_related))
@@ -311,7 +325,7 @@ class ModelService(ViewService):
 
     @service_method
     def search_names(self, *args, **kwargs):
-        qs = self._search(*args, **kwargs)
+        qs = self._search(*args, **kwargs)[:PAGE_SIZE]
         return self.get_names(qs)
 
     @service_method

@@ -151,6 +151,7 @@
     };
 
     Model.prototype.getFieldChoices = function(field, term) {
+      console.log('get field choices', field, term);
       return this.get('get_field_choices', {
         args: field,
         q: term

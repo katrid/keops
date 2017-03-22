@@ -691,6 +691,19 @@
     };
   });
 
+  uiKatrid.directive('searchView', function($compile) {
+    return {
+      restrict: 'E',
+      replace: true,
+      link: function(scope, el, attrs, controller) {
+        var widget;
+        scope.search = {};
+        widget = new Katrid.UI.Views.SearchView(scope, {});
+        widget.link(scope, el, attrs, controller, $compile);
+      }
+    };
+  });
+
   uiKatrid.directive('searchBox', function() {
     return {
       restrict: 'A',

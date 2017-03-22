@@ -147,9 +147,7 @@
     };
 
     WindowAction.prototype.setSearchParams = function(params) {
-      var data;
-      data = this._prepareParams(params);
-      return this.scope.dataSource.search(data);
+      return this.scope.dataSource.search(params);
     };
 
     WindowAction.prototype.doViewAction = function(viewAction, target, confirmation) {
