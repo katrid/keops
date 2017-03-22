@@ -128,3 +128,15 @@ msgstr "Registro gravado com sucesso."
 
 msgid "Refresh"
 msgstr "Atualizar"
+
+msgid "or"
+msgstr "ou"
+
+msgid "Filters"
+msgstr "Filtros"
+
+msgid "Group By"
+msgstr "Agrupar Por"
+
+msgid "Favorites"
+msgstr "Favoritos"
