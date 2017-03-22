@@ -263,7 +263,7 @@ class ModelService(ViewService):
         params = kwargs.get('params', {}) or {}
         qs = self.model.objects.all()
         if isinstance(params, Q):
-            qs = qs(params)
+            qs = qs.filter(params)
         elif params:
             if not isinstance(params, (list, tuple)):
                 params = [params]
