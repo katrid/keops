@@ -145,11 +145,37 @@
       return this.href == url;
     }).addClass('active').parent().parent().addClass('in').parent().addClass('active');
 
+
+    var loadingTimeout;
+    var loadingMsg = $('#loading-msg').hide();
+    $(document).ajaxStart(function() {
+        loadingTimeout = setTimeout(function() {
+           loadingMsg.show();
+        }, 700);
+    })
+    .ajaxStop(function() {
+        clearTimeout(loadingTimeout);
+        loadingMsg.hide();
+    });
+
   });
+
 </script>
 <!-- end menu -->
 
 {% block page_loaded %}{% endblock %}
+
+<link href="/static/libs/loaders/loaders.min.css" rel="stylesheet">
+<script src="/static/libs/loaders/loaders.css.js"></script>
+
+<div id="loading-msg">
+  <div class="loader-inner ball-clip-rotate"></div>
+  <span>{{ _('Loading...') }}</span>
+</div>
+
+<script>
+  $('.loader.inner').loaders();
+</script>
 
 </body>
 </html>
