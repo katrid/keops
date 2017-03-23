@@ -273,3 +273,6 @@ input[type=text].form-field.ng-touched.ng-invalid {
 ul.ui-autocomplete {
   z-index: 99999;
 }
+.form-control.readonly {
+  background-color: #f6f6f6;
+}

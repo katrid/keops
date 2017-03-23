@@ -91,6 +91,8 @@
   })
 </script>
 
+{% block init_scripts %}{% endblock %}
+
 <script src="/static/libs/underscore-min.js"></script>
 
 <script src="/static/api/1.5/services.js"></script>
@@ -169,13 +171,8 @@
 <script src="/static/libs/loaders/loaders.css.js"></script>
 
 <div id="loading-msg">
-  <div class="loader-inner ball-clip-rotate"></div>
   <span>{{ _('Loading...') }}</span>
 </div>
-
-<script>
-  $('.loader.inner').loaders();
-</script>
 
 </body>
 </html>

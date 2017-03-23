@@ -2,7 +2,7 @@
 (function() {
   var ngApp;
 
-  ngApp = angular.module('katridApp', ['ngRoute', 'ngCookies', 'ngSanitize', 'ui-katrid']);
+  ngApp = angular.module('katridApp', ['ngRoute', 'ngCookies', 'ngSanitize', 'ui-katrid'].concat(Katrid.Bootstrap.additionalModules));
 
   ngApp.config(function($interpolateProvider) {
     $interpolateProvider.startSymbol('${');

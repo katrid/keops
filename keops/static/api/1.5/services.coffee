@@ -14,6 +14,7 @@ class Service
       $.get(rpcName, params)
 
   post: (name, params, data) ->
+    console.log('post', name, params, data)
     if Katrid.Settings.servicesProtocol is 'ws'
       Katrid.socketio.emit('api', { channel: 'rpc', service: @name, method: name, data: data, args: params })
     else

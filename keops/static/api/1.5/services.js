@@ -29,6 +29,7 @@
 
     Service.prototype.post = function(name, params, data) {
       var rpcName;
+      console.log('post', name, params, data);
       if (Katrid.Settings.servicesProtocol === 'ws') {
         return Katrid.socketio.emit('api', {
           channel: 'rpc',

@@ -17,6 +17,9 @@
         enabled: false
       }
     },
+    Bootstrap: {
+      additionalModules: []
+    },
     i18n: {
       formats: {},
       catalog: {},
