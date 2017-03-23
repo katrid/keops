@@ -170,6 +170,9 @@
   border-right: none;
   background-color: transparent;
 }
+.data-panel tr.group-header td.group-header {
+  visibility: visible;
+}
 .btn-voice-command.active {
   color: red !important;
 }
