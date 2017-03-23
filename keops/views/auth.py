@@ -23,6 +23,7 @@ def login(request):
         'messages': messages.get_messages(request),
         'settings': settings,
         'request': request,
+        '_': _,
     })
 
 
