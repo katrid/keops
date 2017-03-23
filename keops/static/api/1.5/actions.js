@@ -196,7 +196,7 @@
           return this.scope.dataSource.collapseGroup(index, row);
         }
       } else {
-        this.scope.dataSource.setRecordIndex($index);
+        this.scope.dataSource.setRecordIndex(index);
         return this.location.search({
           view_type: 'form',
           id: row.id

@@ -131,7 +131,7 @@ class WindowAction extends Action
       else
         @scope.dataSource.collapseGroup(index, row)
     else
-      @scope.dataSource.setRecordIndex($index)
+      @scope.dataSource.setRecordIndex(index)
       @location.search({view_type: 'form', id: row.id})
 
 
