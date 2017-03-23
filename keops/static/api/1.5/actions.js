@@ -150,6 +150,11 @@
       return this.scope.dataSource.search(params);
     };
 
+    WindowAction.prototype.applyGroups = function(groups) {
+      console.log('set grupo', groups);
+      return this.scope.dataSource.groupBy(groups[0]);
+    };
+
     WindowAction.prototype.doViewAction = function(viewAction, target, confirmation) {
       if (!confirmation || (confirmation && confirm(confirmation))) {
         return this.scope.model.doViewAction({
@@ -177,6 +182,24 @@
             }
             return results1;
           }
+        });
+      }
+    };
+
+    WindowAction.prototype.listRowClick = function(index, row) {
+      if (row._group) {
+        row._group.expanded = !row._group.expanded;
+        row._group.collapsed = !row._group.expanded;
+        if (row._group.expanded) {
+          return this.scope.dataSource.expandGroup(index, row);
+        } else {
+          return this.scope.dataSource.collapseGroup(index, row);
+        }
+      } else {
+        this.scope.dataSource.setRecordIndex($index);
+        return this.location.search({
+          view_type: 'form',
+          id: row.id
         });
       }
     };

@@ -4,6 +4,7 @@ from itertools import chain
 from collections import defaultdict
 import base64
 import tempfile
+from django.utils.translation import gettext
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist, ValidationError
 from django.conf import settings
 from django.db.models import ForeignKey, ImageField
@@ -11,7 +12,7 @@ from django.template import loader
 from django.http import HttpResponse, JsonResponse
 from django.utils.text import capfirst
 from django.utils.encoding import force_str
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.apps import apps
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.fields.related import ManyToOneRel, ManyToManyField
@@ -51,6 +52,7 @@ class ModelService(ViewService):
     list_fields = None
     extra_fields = None
     search_fields = None
+    group_fields = None
     field_dependencies = None
     select_related = None
 
@@ -259,7 +261,7 @@ class ModelService(ViewService):
                 r[f.name] = False
         return r or None
 
-    def _search(self, count=None, page=None, *args, **kwargs):
+    def filter(self, count=None, page=None, *args, **kwargs):
         params = kwargs.get('params', {}) or {}
         qs = self.model.objects.all()
         if isinstance(params, Q):
@@ -297,7 +299,10 @@ class ModelService(ViewService):
                         qs = qs.filter(**domain)
                     except Exception as e:
                         print('Error applying rule', e)
+        return qs
 
+    def _search(self, count=None, page=None, *args, **kwargs):
+        qs = self.filter(count=count, page=page, *args, **kwargs)
         _count = None
         if count:
             _count = qs.count()
@@ -372,6 +377,12 @@ class ModelService(ViewService):
         elif self.title_field:
             yield self.model._meta.get_field(self.title_field)
 
+    @property
+    def groupable_fields(self):
+        if self.group_fields:
+            for f in self.group_fields:
+                yield self.model._meta.get_field(f.split('__')[0])
+
     def get_view_actions(self, view_type):
         return []
 
@@ -412,6 +423,20 @@ class ModelService(ViewService):
                     params = {service.title_field + '__icontains': q}
             d = service.search_names(params=params)
             return d
+
+    @service_method
+    def group_by(self, grouping, *args, **kwargs):
+        qs = self.filter(*args, **kwargs)
+        field = self.model._meta.get_field(grouping[0])
+        if isinstance(field, ForeignKey):
+            # Load manually
+            keys = {k[field.name]: k['count'] for k in qs}
+            labels = field.remote_field.model.objects.filter(pk__in=keys.keys())
+            qs = [{field.name: [obj.pk, str(obj)], 'count': keys[obj.pk]} for obj in labels]
+        else:
+            qs = qs.values(*grouping).annotate(count=Count(grouping[0])).order_by()
+            # get fk string
+        return qs
 
     @service_method
     def do_view_action(self, action_name, target):

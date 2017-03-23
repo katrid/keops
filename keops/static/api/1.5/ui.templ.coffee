@@ -1,5 +1,4 @@
 
-
 class Templates
   getViewRenderer: (viewType) ->
     return @["render_" + viewType]
@@ -133,9 +132,11 @@ class Templates
 
 </div>
 <div class="col-sm-6">
-  <div class="btn-group animated fadeIn" ng-show="search.viewMoreButtons">
+  <div class="btn-group animated fadeIn search-view-more-area" ng-show="search.viewMoreButtons">
     <button class="btn btn-default"><span class="fa fa-filter"></span> #{Katrid.i18n.gettext('Filters')} <span class="caret"></span></button>
     <button class="btn btn-default"><span class="fa fa-bars"></span> #{Katrid.i18n.gettext('Group By')} <span class="caret"></span></button>
+    <ul class="dropdown-menu animated flipInX search-view-groups-menu">
+    </ul>
     <button class="btn btn-default"><span class="fa fa-star"></span> #{Katrid.i18n.gettext('Favorites')} <span class="caret"></span></button>
   </div>
 
@@ -161,8 +162,13 @@ class Templates
 <div class=\"dataTables_wrapper form-inline dt-bootstrap no-footer\">#{html}</div></div></div></div>"""
 
   renderList: (scope, element, attrs, rowClick, parentDataSource) ->
-    ths = ''
-    cols = ''
+    ths = '<th ng-show="dataSource.groups.length"></th>'
+    cols = """<td ng-show="dataSource.groups.length" class="group-header">
+<div ng-show="row._group">
+<span class="fa fa-fw fa-caret-right"
+  ng-class="{'fa-caret-down': row._group.expanded, 'fa-caret-right': row._group.collapsed}"></span>
+  ${row._group.__str__} (${row._group.count})</div></td>"""
+
     for col in element.children()
       col = $(col)
       name = col.attr('name')
@@ -207,11 +213,11 @@ class Templates
       ths += """<th class="list-column-delete" ng-show="parent.dataSource.changing">"""
       cols += """<td class="list-column-delete" ng-show="parent.dataSource.changing" ng-click="removeItem($index);$event.stopPropagation();"><i class="fa fa-trash"></i></td>"""
     if not rowClick?
-      rowClick = 'dataSource.setRecordIndex($index);action.location.search({view_type: \'form\', id: row.id});'
+      rowClick = 'action.listRowClick($index, row)'
     s = """<table ng-show="!dataSource.loading" class="table table-striped table-bordered table-hover display responsive nowrap dataTable no-footer dtr-column">
 <thead><tr>#{ths}</tr></thead>
 <tbody>
-<tr ng-repeat="row in records" ng-click="#{rowClick}">#{cols}</tr>
+<tr ng-repeat="row in records" ng-click="#{rowClick}" ng-class="{'group-header': row._hasGroup}">#{cols}</tr>
 </tbody>
 </table>
 <div ng-show="dataSource.loading" class="col-sm-12 margin-bottom-16 margin-top-16">#{Katrid.i18n.gettext 'Loading...'}</div>

@@ -2,4 +2,11 @@
   {% for f in service.searchable_fields %}
   <field name="{{ f.name }}" />
   {% endfor %}
+  {% if service.groupable_fields %}
+    <group>
+    {% for f in service.groupable_fields %}
+        <filter label="{{ f.verbose_name }}" context='{"grouping": ["{{ f.name }}"]}'/>
+    {% endfor %}
+    </group>
+  {% endif %}
 </search>

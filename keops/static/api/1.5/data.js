@@ -57,8 +57,21 @@
     }
 
     DataSource.prototype.cancelChanges = function() {
-      this.scope.record = null;
-      return this.scope.action.setViewType('list');
+      if (this.state === DataSourceState.inserting && Katrid.Settings.UI.goToDefaultViewAfterCancelInsert) {
+        this.scope.record = null;
+        this.scope.action.setViewType('list');
+      } else {
+        if (this.state === DataSourceState.editing) {
+          this.refresh([this.scope.record.id]).then((function(_this) {
+            return function() {
+              return _this.setState(DataSourceState.browsing);
+            };
+          })(this));
+        } else {
+          this.scope.record = null;
+          this.setState(DataSourceState.browsing);
+        }
+      }
     };
 
     DataSource.prototype.saveChanges = function() {
@@ -116,6 +129,19 @@
           Katrid.Dialogs.Alerts.warn(Katrid.i18n.gettext('No pending changes'));
         }
       }
+    };
+
+    DataSource.prototype.copy = function(id) {
+      return this.scope.model.copy(id).done((function(_this) {
+        return function(res) {
+          console.log(res);
+          _this.setState(DataSourceState.inserting);
+          _this.scope.record = {};
+          return _this.scope.$apply(function() {
+            return _this.setFields(res.result);
+          });
+        };
+      })(this));
     };
 
     DataSource.prototype.findById = function(id) {
@@ -229,6 +255,43 @@
         };
       })(this), this.requestInterval);
       return def.promise();
+    };
+
+    DataSource.prototype.groupBy = function(group) {
+      if (!group) {
+        this.groups = [];
+        return;
+      }
+      this.groups = [group];
+      return this.scope.model.groupBy(group.context).then((function(_this) {
+        return function(res) {
+          var grouping, i, len, r, ref, row, s;
+          _this.scope.records = [];
+          grouping = group.context.grouping[0];
+          ref = res.result;
+          for (i = 0, len = ref.length; i < len; i++) {
+            r = ref[i];
+            s = r[grouping];
+            if ($.isArray(s)) {
+              r._paramValue = s[0];
+              s = s[1];
+            } else {
+              r._paramValue = s;
+            }
+            r.__str__ = s;
+            r.expanded = false;
+            r.collapsed = true;
+            r._searchGroup = group;
+            r._paramName = grouping;
+            row = {
+              _group: r,
+              _hasGroup: true
+            };
+            _this.scope.records.push(row);
+          }
+          return _this.scope.$apply();
+        };
+      })(this));
     };
 
     DataSource.prototype.goto = function(index) {
@@ -351,6 +414,7 @@
           return _this.scope.model.getById(id).fail(function(res) {
             return def.reject(res);
           }).done(function(res) {
+            console.log(res);
             _this.scope.$apply(function() {
               return _this._setRecord(res.result.data[0]);
             });
@@ -380,27 +444,33 @@
         return function(res) {
           if (res.result) {
             return _this.scope.$apply(function() {
-              var attr, control, ref, results, v;
-              console.log(res.result);
-              ref = res.result;
-              results = [];
-              for (attr in ref) {
-                v = ref[attr];
-                control = _this.scope.form[attr];
-                control.$setViewValue(v);
-                control.$render();
-                if (v === false) {
-                  _this.scope.record[attr] = v;
-                  results.push(control.$setDirty());
-                } else {
-                  results.push(void 0);
-                }
-              }
-              return results;
+              return _this.setFields(res.result);
             });
           }
         };
       })(this));
+    };
+
+    DataSource.prototype.setFields = function(values) {
+      var attr, control, results, v;
+      results = [];
+      for (attr in values) {
+        v = values[attr];
+        control = this.scope.form[attr];
+        if (control) {
+          control.$setViewValue(v);
+          control.$render();
+          if (v === false) {
+            this.scope.record[attr] = v;
+            results.push(control.$setDirty());
+          } else {
+            results.push(void 0);
+          }
+        } else {
+          results.push(this.scope.record[attr] = v);
+        }
+      }
+      return results;
     };
 
     DataSource.prototype.editRecord = function() {
@@ -463,6 +533,32 @@
           };
         })(this));
       }
+    };
+
+    DataSource.prototype.expandGroup = function(index, row) {
+      var params, rg;
+      rg = row._group;
+      params = {
+        params: {}
+      };
+      params.params[rg._paramName] = rg._paramValue;
+      return this.scope.model.search(params).then((function(_this) {
+        return function(res) {
+          if (res.ok && res.result.data) {
+            return _this.scope.$apply(function() {
+              rg._children = res.result.data;
+              return _this.scope.records.splice.apply(_this.scope.records, [index + 1, 0].concat(res.result.data));
+            });
+          }
+        };
+      })(this));
+    };
+
+    DataSource.prototype.collapseGroup = function(index, row) {
+      var group;
+      group = row._group;
+      this.scope.records.splice(index + 1, group._children.length);
+      return delete group._children;
     };
 
     return DataSource;

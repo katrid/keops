@@ -85,6 +85,9 @@ class Model extends Service
       else
         Katrid.Dialogs.Alerts.error Katrid.i18n.gettext 'Error saving record changes'
 
+  groupBy: (grouping) ->
+    @post('group_by', null, { kwargs: grouping })
+
   onFieldChange: (field, record) ->
     @post('field_change', null, { kwargs: { field: field, record: record } })
 

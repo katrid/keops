@@ -34,9 +34,17 @@ class DataSource
     @fieldChangeWatchers = []
 
   cancelChanges: ->
-    @scope.record = null
-    @scope.action.setViewType('list')
-    #@setState(DataSourceState.browsing)
+    if @state is DataSourceState.inserting and Katrid.Settings.UI.goToDefaultViewAfterCancelInsert
+      @scope.record = null
+      @scope.action.setViewType('list')
+    else
+      if @state is DataSourceState.editing
+        @refresh([@scope.record.id]).then =>
+          @setState(DataSourceState.browsing)
+      else
+        @scope.record = null
+        @setState(DataSourceState.browsing)
+    return
 
   saveChanges: ->
     # Submit fields with dirty state only
@@ -80,6 +88,15 @@ class DataSource
         Katrid.Dialogs.Alerts.warn Katrid.i18n.gettext 'No pending changes'
     return
 
+  copy: (id) ->
+    @scope.model.copy(id)
+    .done (res) =>
+      console.log(res)
+      @setState(DataSourceState.inserting)
+      @scope.record = {}
+      @scope.$apply =>
+        @setFields(res.result)
+
   findById: (id) ->
     for rec in @scope.records
       if rec.id is id
@@ -92,9 +109,9 @@ class DataSource
 
   refresh: (data) ->
     if data
-      @get(data[0])
+      return @get(data[0])
     else
-      @search(@_params, @_page)
+      return @search(@_params, @_page)
 
   validate: ->
     if @scope.form.$invalid
@@ -156,6 +173,31 @@ class DataSource
     , @requestInterval
 
     return def.promise()
+
+  groupBy: (group) ->
+    if not group
+      @groups = []
+      return
+    @groups = [group]
+    @scope.model.groupBy(group.context)
+    .then (res) =>
+      @scope.records = []
+      grouping = group.context.grouping[0]
+      for r in res.result
+        s = r[grouping]
+        if $.isArray(s)
+          r._paramValue = s[0]
+          s = s[1]
+        else
+          r._paramValue = s
+        r.__str__ = s
+        r.expanded = false
+        r.collapsed = true
+        r._searchGroup = group
+        r._paramName = grouping
+        row = {_group: r, _hasGroup: true}
+        @scope.records.push(row)
+      @scope.$apply()
 
   goto: (index) ->
     @scope.moveBy(index - @recordIndex)
@@ -245,6 +287,7 @@ class DataSource
       .fail (res) =>
         def.reject(res)
       .done (res) =>
+        console.log(res)
         @scope.$apply =>
           @_setRecord(res.result.data[0])
         def.resolve(res)
@@ -268,15 +311,20 @@ class DataSource
     .done (res) =>
       if res.result
         @scope.$apply =>
-          console.log(res.result)
-          for attr, v of res.result
-            control = @scope.form[attr]
-            control.$setViewValue v
-            control.$render()
-            # Force dirty (bug fix for boolean (false) value
-            if v is false
-              @scope.record[attr] = v
-              control.$setDirty()
+          @setFields(res.result)
+
+  setFields: (values) ->
+    for attr, v of values
+      control = @scope.form[attr]
+      if control
+        control.$setViewValue v
+        control.$render()
+        # Force dirty (bug fix for boolean (false) value
+        if v is false
+          @scope.record[attr] = v
+          control.$setDirty()
+      else
+        @scope.record[attr] = v
 
   editRecord: ->
     @setState(DataSourceState.editing)
@@ -315,6 +363,23 @@ class DataSource
       @scope.$apply =>
         for f, v of res.result.fields
           @scope.$set(f, v)
+
+  expandGroup: (index, row) ->
+    rg = row._group
+    params =
+      params: {}
+    params.params[rg._paramName] = rg._paramValue
+    @scope.model.search(params)
+    .then (res) =>
+      if res.ok and res.result.data
+        @scope.$apply =>
+          rg._children = res.result.data
+          @scope.records.splice.apply(@scope.records, [index + 1, 0].concat(res.result.data))
+
+  collapseGroup: (index, row) ->
+    group = row._group
+    @scope.records.splice(index + 1, group._children.length)
+    delete group._children
 
 
 class Record

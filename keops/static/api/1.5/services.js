@@ -180,6 +180,12 @@
       });
     };
 
+    Model.prototype.groupBy = function(grouping) {
+      return this.post('group_by', null, {
+        kwargs: grouping
+      });
+    };
+
     Model.prototype.onFieldChange = function(field, record) {
       return this.post('field_change', null, {
         kwargs: {

@@ -140,3 +140,6 @@ msgstr "Agrupar Por"
 
 msgid "Favorites"
 msgstr "Favoritos"
+
+msgid "Group by:"
+msgstr "Agrupar por:"

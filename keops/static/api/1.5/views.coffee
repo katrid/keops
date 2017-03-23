@@ -60,6 +60,7 @@ class SearchMenu
 class SearchQuery
   constructor: (@searchView) ->
     @items = []
+    @groups = []
 
   add: (item) ->
     if item in @items
@@ -68,13 +69,16 @@ class SearchQuery
     else
       @items.push(item)
       @searchView.renderFacets()
+    if item instanceof SearchGroup
+      @groups.push(item)
     @searchView.change()
 
   remove: (item) ->
-    console.log('remove item', item)
     @items.splice(@items.indexOf(item), 1)
     item.facet.element.remove()
     delete item.facet
+    if item instanceof SearchGroup
+      @groups.splice(@groups.indexOf(item), 1)
     @searchView.change()
 
   getParams: ->
@@ -98,9 +102,7 @@ class FacetView
     return (s.searchString for s in @values).join(sep)
 
   template: ->
-    s = ''
-    if @item.ref
-      s = """<span class="facet-label">#{@item.label}</span>"""
+    s = """<span class="facet-label">#{@item.getFacetLabel()}</span>"""
     """<div class="facet-view">
 #{s}
 <span class="facet-value">#{@templateValue()}</span>
@@ -122,13 +124,10 @@ class FacetView
 
 class SearchItem
   constructor: (@name, @item, @parent, @ref, @menu) ->
-    if @ref.type is 'ForeignKey'
-      @expandable = true
-      @children = []
-    else
-      @expandable = false
+    @label = @item.attr('label') or (@ref and @ref['caption']) or @name
 
-    @label = @item.attr('caption') or (@ref and @ref['caption']) or @name
+  templateLabel: ->
+    """ Pesquisar <i>#{@label}</i> por: <strong>${search.text}</strong>"""
 
   template: ->
     s = ''
@@ -137,9 +136,7 @@ class SearchItem
     if @value
       s = """<a class="search-menu-item indent" href="#">#{@value[1]}</a>"""
     else
-      lbl = @label
-      if lbl
-        s += "<a href=\"#\" class=\"search-menu-item\"> Pesquisar <i>#{lbl}</i> por: <strong>${search.text}</strong></a>"
+      s += "<a href=\"#\" class=\"search-menu-item\">#{@templateLabel()}</a>"
     return """<li>#{s}</li>"""
 
   link: (scope, $compile, parent) ->
@@ -173,6 +170,10 @@ class SearchItem
     .click (evt) ->
       evt.preventDefault()
     return false
+
+  getFacetLabel: ->
+    console.log('get facet label')
+    return @label
 
   getDisplayValue: ->
     if @value
@@ -208,16 +209,42 @@ class SearchItem
 
 
 class SearchField extends SearchItem
+  constructor: (name, item, parent, ref, menu) ->
+    if ref.type is 'ForeignKey'
+      @expandable = true
+      @children = []
+    else
+      @expandable = false
+    super name, item, parent, ref, menu
 
 
 class SearchFilter extends SearchItem
 
 
-class SearchView
+class SearchGroup extends SearchItem
+  constructor: (name, item, parent, ref, menu) ->
+    super name, item, parent, ref, menu
+    ctx = item.attr('context')
+    console.log(item)
+    if typeof ctx is 'string'
+      @context = JSON.parse(ctx)
+    else
+      @context =
+        grouping: [name]
 
+  getFacetLabel: ->
+    '<span class="fa fa-bars"></span>'
+
+  templateLabel: ->
+    Katrid.i18n.gettext('Group by:') + ' ' + @label
+
+  getDisplayValue: ->
+    return @label
+
+
+class SearchView
   constructor: (@scope, options) ->
     @query = new SearchQuery(@)
-    console.log(@)
     @items = []
 
   createMenu: (scope, el, parent) ->
@@ -246,7 +273,7 @@ class SearchView
 
     @$compile = $compile
     @view = scope.views.search
-    searchView = $(@view.content)
+    @viewContent = $(@view.content)
     @element = html
     @searchView = html.find('.search-view')
     html.find('.search-view-more').click (evt) =>
@@ -260,17 +287,22 @@ class SearchView
     @menu.input.on 'keydown', (evt) ->
 
     # add items to menu
-    for item in searchView.children()
+    for item in @viewContent.children()
       @loadItem $(item)
     return
 
-  loadItem: (item, value, parent) ->
-    console.log('item', value, parent)
+  loadItem: (item, value, parent, cls) ->
     tag = item.prop('tagName')
-    if tag is 'FIELD'
-      cls = SearchField
-    else if tag is 'FILTER'
-      cls = SearchFilter
+    if not cls?
+      if tag is 'FIELD'
+        cls = SearchField
+      else if tag is 'FILTER'
+        cls = SearchFilter
+      else if tag is 'GROUP'
+        console.log('group', item)
+        for grouping in item.children()
+          @loadItem($(grouping), null, null, SearchGroup)
+        return
 
     name = item.attr('name')
     item = new cls(name, item, @menu.element, @view.fields[name], @menu)
@@ -302,7 +334,10 @@ class SearchView
     @query.remove(obj)
 
   change: ->
-    @scope.action.setSearchParams(@query.getParams())
+    if @query.groups.length or @scope.dataSource.groups.length
+      @scope.action.applyGroups(@query.groups)
+    if @query.groups.length is 0
+      @scope.action.setSearchParams(@query.getParams())
 
 
 Katrid.UI.Views =
