@@ -165,13 +165,9 @@
   font-weight: 600;
 }
 .data-panel tr.group-header td {
-  visibility: hidden;
   border-left: none;
   border-right: none;
   background-color: transparent;
-}
-.data-panel tr.group-header td.group-header {
-  visibility: visible;
 }
 .btn-voice-command.active {
   color: red !important;
