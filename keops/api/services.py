@@ -430,6 +430,7 @@ class ModelService(ViewService):
         field = self.model._meta.get_field(grouping[0])
         if isinstance(field, ForeignKey):
             # Load manually
+            qs = qs.values(*grouping).annotate(count=Count(grouping[0])).order_by()
             keys = {k[field.name]: k['count'] for k in qs}
             labels = field.remote_field.model.objects.filter(pk__in=keys.keys())
             qs = [{field.name: [obj.pk, str(obj)], 'count': keys[obj.pk]} for obj in labels]
