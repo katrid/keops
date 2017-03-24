@@ -160,6 +160,9 @@
   border-top: 4px solid;
   -moz-transform: scale(0.9999);
 }
+.input-group.date .input-group-addon {
+  padding-top: 6px;
+}
 .data-panel tr.group-header {
   background-image: linear-gradient(to bottom, #fdfdfd, #e5e5e5);
   font-weight: 600;
