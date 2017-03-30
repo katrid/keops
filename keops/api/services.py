@@ -123,9 +123,11 @@ class ModelService(ViewService):
             if isinstance(value, (str, float)):
                 value = round(decimal.Decimal(str(value)), field.decimal_places)
         elif isinstance(field, DateField):
-            for format in settings.DATE_INPUT_FORMATS:
+            # Try ISO date format before
+            for format in chain(['%Y-%m-%d'], settings.DATE_INPUT_FORMATS):
                 try:
                     value = datetime.datetime.strptime(force_str(value), format).date()
+                    break
                 except (ValueError, TypeError):
                     continue
         elif isinstance(field, CharField):

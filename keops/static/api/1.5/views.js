@@ -535,7 +535,7 @@
     };
 
     SearchView.prototype.change = function() {
-      if (this.query.groups.length || this.scope.dataSource.groups.length) {
+      if (this.query.groups.length || (this.scope.dataSource.groups && this.scope.dataSource.groups.length)) {
         this.scope.action.applyGroups(this.query.groups);
       }
       if (this.query.groups.length === 0) {

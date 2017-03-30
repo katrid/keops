@@ -332,12 +332,14 @@
         restrict: 'A',
         require: '?ngModel',
         link: function(scope, element, attrs, controller) {
-          var calendar, el;
+          var calendar, dateFmt, el, shortDate;
           el = element;
+          dateFmt = Katrid.i18n.gettext('yyyy-mm-dd');
+          shortDate = dateFmt.replace(/[m]/g, 'M');
           calendar = element.parent('div').datepicker({
-            format: Katrid.i18n.gettext('yyyy-mm-dd'),
+            format: dateFmt,
             keyboardNavigation: false,
-            language: 'pt-BR',
+            language: Katrid.i18n.languageCode,
             forceParse: false,
             autoClose: true,
             showOnFocus: false
@@ -345,16 +347,24 @@
             var dp;
             dp = calendar.data('datepicker');
             if (dp.picker.is(':visible')) {
-              console.log('change date', dp.viewDate);
-              return el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'));
+              el.val($filter('date')(dp._utc_to_local(dp.viewDate), shortDate));
+              return dp.hide();
             }
           });
-          el = el.mask('00/00/0000');
+          if (Katrid.Settings.UI.dateInputMask === true) {
+            el = el.mask(dateFmt.replace(/[A-z]/g, 0));
+          } else if (Katrid.Settings.UI.dateInputMask) {
+            el = el.mask(Katrid.Settings.UI.dateInputMask);
+          }
           controller.$formatters.push(function(value) {
             var dt;
             dt = new Date(value);
             calendar.datepicker('setDate', dt);
-            return $filter('date')(value, 'shortDate');
+            return $filter('date')(value, shortDate);
+          });
+          controller.$parsers.push(function(value) {
+            console.log('parsers', value, controller);
+            return moment.utc(value, shortDate.toUpperCase()).format('YYYY-MM-DD');
           });
           return el.on('blur', function(evt) {
             var dp, dt, fmt, s, sep, val;
@@ -399,8 +409,8 @@
             }
             if (val) {
               calendar.datepicker('setDate', val);
-              el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'));
-              return controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'));
+              el.val($filter('date')(dp._utc_to_local(dp.viewDate), shortDate));
+              return controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), shortDate));
             }
           });
         }

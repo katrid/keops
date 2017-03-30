@@ -288,25 +288,35 @@ uiKatrid.directive 'datepicker', ['$filter', ($filter) ->
   require: '?ngModel'
   link: (scope, element, attrs, controller) ->
     el = element
+    dateFmt = Katrid.i18n.gettext 'yyyy-mm-dd'
+    shortDate = dateFmt.replace(/[m]/g, 'M')
     calendar = element.parent('div').datepicker
-      format: Katrid.i18n.gettext 'yyyy-mm-dd'
+      format: dateFmt
       keyboardNavigation: false
-      language: 'pt-BR'
+      language: Katrid.i18n.languageCode
       forceParse: false
       autoClose: true
       showOnFocus: false
     .on 'changeDate', (e) ->
       dp = calendar.data('datepicker')
       if dp.picker.is(':visible')
-        console.log('change date', dp.viewDate)
-        el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
+        el.val($filter('date')(dp._utc_to_local(dp.viewDate), shortDate))
+        dp.hide()
 
-    el = el.mask('00/00/0000')
+    # Mask date format
+    if Katrid.Settings.UI.dateInputMask is true
+      el = el.mask(dateFmt.replace(/[A-z]/g, 0))
+    else if Katrid.Settings.UI.dateInputMask
+      el = el.mask(Katrid.Settings.UI.dateInputMask)
 
     controller.$formatters.push (value) ->
       dt = new Date(value)
       calendar.datepicker('setDate', dt)
-      return $filter('date')(value, 'shortDate')
+      return $filter('date')(value, shortDate)
+
+    controller.$parsers.push (value) ->
+      console.log('parsers', value, controller)
+      return moment.utc(value, shortDate.toUpperCase()).format('YYYY-MM-DD')
 
     el.on 'blur', (evt) ->
       dp = calendar.data('datepicker')
@@ -339,8 +349,8 @@ uiKatrid.directive 'datepicker', ['$filter', ($filter) ->
           val = new Date(dt.getFullYear(), s, dt.getDay())
       if val
         calendar.datepicker('setDate', val)
-        el.val($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
-        controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), 'shortDate'))
+        el.val($filter('date')(dp._utc_to_local(dp.viewDate), shortDate))
+        controller.$setViewValue($filter('date')(dp._utc_to_local(dp.viewDate), shortDate))
 ]
 
 uiKatrid.directive 'ajaxChoices', ($location) ->

@@ -9,6 +9,7 @@
       server: '',
       servicesProtocol: 'http',
       UI: {
+        dateInputMask: true,
         defaultView: 'list',
         goToDefaultViewAfterCancelInsert: true,
         goToDefaultViewAfterCancelEdit: false
@@ -21,6 +22,7 @@
       additionalModules: []
     },
     i18n: {
+      languageCode: 'pt-BR',
       formats: {},
       catalog: {},
       initialize: function(plural, catalog, formats) {

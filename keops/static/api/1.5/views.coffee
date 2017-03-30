@@ -334,7 +334,7 @@ class SearchView
     @query.remove(obj)
 
   change: ->
-    if @query.groups.length or @scope.dataSource.groups.length
+    if @query.groups.length or (@scope.dataSource.groups and @scope.dataSource.groups.length)
       @scope.action.applyGroups(@query.groups)
     if @query.groups.length is 0
       @scope.action.setSearchParams(@query.getParams())
