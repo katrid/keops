@@ -157,7 +157,7 @@
     };
 
     WindowAction.prototype.doViewAction = function(viewAction, target, confirmation) {
-      return this._doViewAction(this.scope, viewAction, targe, confirmation);
+      return this._doViewAction(this.scope, viewAction, target, confirmation);
     };
 
     WindowAction.prototype._doViewAction = function(scope, viewAction, target, confirmation) {
@@ -167,7 +167,6 @@
           target: target
         }).done(function(res) {
           var j, k, len, len1, msg, ref, ref1, results, results1;
-          console.log(res);
           if (res.status === 'open') {
             return window.open(res.open);
           } else if (res.status === 'fail') {

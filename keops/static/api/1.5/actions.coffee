@@ -111,13 +111,12 @@ class WindowAction extends Action
     @scope.dataSource.groupBy(groups[0])
 
   doViewAction: (viewAction, target, confirmation) ->
-    @_doViewAction(@scope, viewAction, targe, confirmation)
+    @_doViewAction(@scope, viewAction, target, confirmation)
 
   _doViewAction: (scope, viewAction, target, confirmation) ->
     if not confirmation or (confirmation and confirm(confirmation))
       scope.model.doViewAction({ action_name: viewAction, target: target })
       .done (res) ->
-        console.log(res)
         if res.status is 'open'
           window.open(res.open)
         else if res.status is 'fail'
