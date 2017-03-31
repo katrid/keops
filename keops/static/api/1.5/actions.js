@@ -105,7 +105,7 @@
       var r;
       if (this.views != null) {
         this.scope.view = this.views[this.viewType];
-        return this.apply();
+        this.apply();
       } else {
         r = this.scope.model.loadViews();
         r.done((function(_this) {
@@ -120,7 +120,9 @@
             });
           };
         })(this));
-        return r;
+      }
+      if (this.viewType !== 'list') {
+        return this.scope.dataSource.groupBy();
       }
     };
 
@@ -151,13 +153,16 @@
     };
 
     WindowAction.prototype.applyGroups = function(groups) {
-      console.log('set grupo', groups);
       return this.scope.dataSource.groupBy(groups[0]);
     };
 
     WindowAction.prototype.doViewAction = function(viewAction, target, confirmation) {
+      return this._doViewAction(this.scope, viewAction, targe, confirmation);
+    };
+
+    WindowAction.prototype._doViewAction = function(scope, viewAction, target, confirmation) {
       if (!confirmation || (confirmation && confirm(confirmation))) {
-        return this.scope.model.doViewAction({
+        return scope.model.doViewAction({
           action_name: viewAction,
           target: target
         }).done(function(res) {

@@ -83,7 +83,10 @@ class WindowAction extends Action
           @scope.views = views
           @scope.view = views[@viewType]
           @apply()
-      return r
+
+    if @viewType isnt 'list'
+      @scope.dataSource.groupBy()
+
 
   render: (scope, html, viewType) ->
     scope.setContent(Katrid.UI.Utils.Templates['preRender_' + viewType](scope, html))
@@ -105,12 +108,14 @@ class WindowAction extends Action
     @scope.dataSource.search(params)
 
   applyGroups: (groups) ->
-    console.log('set grupo', groups)
     @scope.dataSource.groupBy(groups[0])
 
   doViewAction: (viewAction, target, confirmation) ->
+    @_doViewAction(@scope, viewAction, targe, confirmation)
+
+  _doViewAction: (scope, viewAction, target, confirmation) ->
     if not confirmation or (confirmation and confirm(confirmation))
-      @scope.model.doViewAction({ action_name: viewAction, target: target })
+      scope.model.doViewAction({ action_name: viewAction, target: target })
       .done (res) ->
         console.log(res)
         if res.status is 'open'

@@ -147,6 +147,7 @@ uiKatrid.directive 'grid', ($compile) ->
   link: (scope, element, attrs) ->
     # Load remote field model info
     field = scope.$parent.view.fields[attrs.name]
+    scope.action = scope.$parent.action
     scope.fieldName = attrs.name
     scope.field = field
     scope.records = []
@@ -192,6 +193,9 @@ uiKatrid.directive 'grid', ($compile) ->
         scope.gridDialog = null
         scope.recordIndex = -1
       return false
+
+    scope.doViewAction = (viewAction, target, confirmation) ->
+      return scope.action._doViewAction(scope, viewAction, target, confirmation)
 
     scope._incChanges = ->
       scope.parent.record['$' + scope.fieldName] = ++scope._changeCount

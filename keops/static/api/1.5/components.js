@@ -170,6 +170,7 @@
       link: function(scope, element, attrs) {
         var field, masterChanged, p, renderDialog;
         field = scope.$parent.view.fields[attrs.name];
+        scope.action = scope.$parent.action;
         scope.fieldName = attrs.name;
         scope.field = field;
         scope.records = [];
@@ -216,6 +217,9 @@
             return scope.recordIndex = -1;
           });
           return false;
+        };
+        scope.doViewAction = function(viewAction, target, confirmation) {
+          return scope.action._doViewAction(scope, viewAction, target, confirmation);
         };
         scope._incChanges = function() {
           scope.parent.record['$' + scope.fieldName] = ++scope._changeCount;
