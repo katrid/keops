@@ -215,9 +215,9 @@ def report(request, report_file=None):
                 val2 = param.get('value2')
                 if param['type'] == 'datetime':
                     if val1:
-                        val1 = "TO_DATE('%s', 'dd/mm/yyyy')" % val1
+                        val1 = "TO_DATE('%s', 'yyyy-mm-dd')" % val1
                     if val2:
-                        val2 = "TO_DATE('%s', 'dd/mm/yyyy')" % val2
+                        val2 = "TO_DATE('%s', 'yyyy-mm-dd')" % val2
                 if param['operation'] == 'contains':
                     sqls.append("upper({0}) like upper('%{1}%')".format(param['name'], param['value1']))
                 elif param['operation'] == 'startsWith':

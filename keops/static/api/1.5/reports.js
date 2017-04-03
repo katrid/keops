@@ -365,9 +365,9 @@
       },
       datetime: function(param) {
         if (param.operation === 'between') {
-          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" datepicker ng-model=\"param.value1\" class=\"form-control\"></div>\n<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "-2\" datepicker ng-model=\"param.value2\" class=\"form-control\"></div>";
+          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label>\n<div class=\"input-group date\"><input id=\"rep-param-id-" + param.id + "\" datepicker ng-model=\"param.value1\" class=\"form-control\">\n<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div>\n</div></div>\n<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label>\n<div class=\"input-group date\"><input id=\"rep-param-id-" + param.id + "-2\" datepicker ng-model=\"param.value2\" class=\"form-control\">\n<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div>\n</div>\n</div>";
         } else {
-          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" datepicker ng-model=\"param.value1\" class=\"form-control\"></div>";
+          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label>\n<div class=\"input-group date\"><input id=\"rep-param-id-" + param.id + "\" datepicker ng-model=\"param.value1\" class=\"form-control\">\n<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div>\n</div>\n</div>";
         }
       },
       sqlchoices: function(param) {
