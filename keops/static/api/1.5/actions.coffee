@@ -75,7 +75,9 @@ class WindowAction extends Action
       @scope.view = @views[@viewType]
       @apply()
     else
-      r = @scope.model.loadViews()
+      r = @scope.model.loadViews
+        views: @info.views
+        action: @info.id
       r.done (res) =>
         views = res.result
         @views = views
@@ -141,8 +143,26 @@ class WindowAction extends Action
 
 class ReportAction extends Action
   @actionType: 'sys.action.report'
+
+  constructor: (info, scope) ->
+    super info, scope
+    @userReport = {}
+
+  userReportChanged: (report) ->
+    @location.search
+      user_report: report
+
   routeUpdate: (search) ->
-    @scope.setContent(@info.content)
+    @userReport.id = search.user_report
+    if @userReport.id
+      svc = new Katrid.Services.Model('sys.action.report')
+      svc.post 'load_user_report', null, { kwargs: { user_report: @userReport.id } }
+      .done (res) =>
+        @userReport.params = res.result
+        @scope.setContent(@info.content)
+    else
+      @scope.setContent(@info.content)
+    return
 
 
 class ViewAction extends Action

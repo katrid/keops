@@ -1,6 +1,8 @@
+import json
 from django.contrib.auth import get_user_model, models as auth
 
 from keops.api import site, services
+from keops.models import reports
 from . import models
 
 
@@ -43,6 +45,11 @@ class ReportService(services.ModelService):
 class ReportActionService(services.ModelService):
     model = models.ReportAction
 
+    @services.service_method
+    def load_user_report(self, user_report):
+        user_report = reports.UserReport.objects.get(pk=user_report)
+        return json.loads(user_report.user_params)
+
 
 class ActionService(services.ModelService):
     model = models.Action
@@ -51,8 +58,8 @@ class ActionService(services.ModelService):
 site.register_service(UserService)
 site.register_service(GroupService)
 site.register_service(MenuService)
-site.register_service(WindowActionService)
+site.register_service(WindowActionService, 'sys.action.window')
 site.register_service(RuleService)
 site.register_service(ReportService)
-site.register_service(ReportActionService)
+site.register_service(ReportActionService, 'sys.action.report')
 site.register_service(ActionService)

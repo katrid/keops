@@ -107,7 +107,10 @@
         this.scope.view = this.views[this.viewType];
         this.apply();
       } else {
-        r = this.scope.model.loadViews();
+        r = this.scope.model.loadViews({
+          views: this.info.views,
+          action: this.info.id
+        });
         r.done((function(_this) {
           return function(res) {
             var views;
@@ -215,14 +218,37 @@
   ReportAction = (function(superClass) {
     extend(ReportAction, superClass);
 
-    function ReportAction() {
-      return ReportAction.__super__.constructor.apply(this, arguments);
-    }
-
     ReportAction.actionType = 'sys.action.report';
 
+    function ReportAction(info, scope) {
+      ReportAction.__super__.constructor.call(this, info, scope);
+      this.userReport = {};
+    }
+
+    ReportAction.prototype.userReportChanged = function(report) {
+      return this.location.search({
+        user_report: report
+      });
+    };
+
     ReportAction.prototype.routeUpdate = function(search) {
-      return this.scope.setContent(this.info.content);
+      var svc;
+      this.userReport.id = search.user_report;
+      if (this.userReport.id) {
+        svc = new Katrid.Services.Model('sys.action.report');
+        svc.post('load_user_report', null, {
+          kwargs: {
+            user_report: this.userReport.id
+          }
+        }).done((function(_this) {
+          return function(res) {
+            _this.userReport.params = res.result;
+            return _this.scope.setContent(_this.info.content);
+          };
+        })(this));
+      } else {
+        this.scope.setContent(this.info.content);
+      }
     };
 
     return ReportAction;

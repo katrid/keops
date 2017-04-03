@@ -1,15 +1,15 @@
 <div>
-  <form id="report-form" action="/web/reports/report/" method="get">
+  <form id="report-form" action="#" method="get">
     <div class="col-sm-12">
       <table class="col-sm-12" style="margin-top: 20px;">
         <tr>
           <td colspan="2" style="padding-top: 8px;">
             <label>{{ _('My reports') }}</label>
             <input type="hidden" name="file" value="{{ report_file or "" }}">
-            <select name="load" class="form-control" onchange="this.form.submit()">
+            <select class="form-control" ng-change="action.userReportChanged(action.userReport.id)" ng-model="action.userReport.id">
                 <option></option>
               {% for rep in user_reports %}
-                <option value="{{ rep.id }}"{% if user_report.pk == rep.id %} selected{% endif %}>{{ rep.name }}</option>
+                <option value="{{ rep.id }}">{{ rep.name }}</option>
               {% endfor %}
             </select>
           </td>
@@ -44,10 +44,13 @@
   </form>
 
   <script>
-  console.log('startup script');
     var cont = $('#report-params');
     var scope = angular.element(cont).scope();
     {% if report %}
+      if (scope.action.userReport.params) {
+        console.log('load items', scope.action.userReport.params);
+        Katrid.Reports.Reports.currentUserReport.params = scope.action.userReport.params;
+      }
     {% if user_params %}
       Katrid.Reports.Reports.currentUserReport.params = {{ user_report.user_params|safe }};
     {% endif %}
