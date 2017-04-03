@@ -48,7 +48,6 @@
     var scope = angular.element(cont).scope();
     {% if report %}
       if (scope.action.userReport.params) {
-        console.log('load items', scope.action.userReport.params);
         Katrid.Reports.Reports.currentUserReport.params = scope.action.userReport.params;
       }
     {% if user_params %}
