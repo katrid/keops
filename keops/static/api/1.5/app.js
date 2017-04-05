@@ -71,8 +71,12 @@
     $scope.$set = function(field, value) {
       var control;
       control = $scope.form[field];
-      control.$setViewValue(value);
-      control.$render();
+      if (control) {
+        control.$setViewValue(value);
+        control.$render();
+      } else {
+        $scope.record[field] = value;
+      }
     };
     $scope.setContent = function(content) {
       var el;
