@@ -33,6 +33,7 @@
               widget = 'TextareaField';
             } else if (tp === 'BooleanField') {
               widget = 'CheckBox';
+              cols = 3;
             } else if (tp === 'DecimalField') {
               widget = 'DecimalField';
               cols = 3;
@@ -175,7 +176,7 @@
         scope.field = field;
         scope.records = [];
         scope.recordIndex = -1;
-        scope._viewCache = {};
+        scope._cachedViews = {};
         scope._changeCount = 0;
         scope.dataSet = [];
         scope.parent = scope.$parent;
@@ -191,19 +192,19 @@
         }
         scope.dataSource.fieldName = scope.fieldName;
         scope.gridDialog = null;
-        scope.model.getViewInfo({
-          view_type: 'list'
-        }).done(function(res) {
+        scope.model.loadViews().done(function(res) {
           return scope.$apply(function() {
             var html;
-            scope.view = res.result;
+            scope._cachedViews = res.result;
+            console.log(res.result);
+            scope.view = scope._cachedViews.list;
             html = Katrid.UI.Utils.Templates.renderGrid(scope, $(scope.view.content), attrs, 'openItem($index)');
             return element.replaceWith($compile(html)(scope));
           });
         });
         renderDialog = function() {
           var el, html;
-          html = scope._viewCache.form.content;
+          html = scope._cachedViews.form.content;
           html = $(Katrid.UI.Utils.Templates.gridDialog().replace('<!-- view content -->', html));
           el = $compile(html)(scope);
           scope.formElement = el.find('form').first();
@@ -287,7 +288,7 @@
           } else {
             scope.recordIndex = -1;
           }
-          if (scope._viewCache.form) {
+          if (scope._cachedViews.form) {
             setTimeout(function() {
               return renderDialog();
             });
@@ -296,7 +297,7 @@
               view_type: 'form'
             }).done(function(res) {
               if (res.ok) {
-                scope._viewCache.form = res.result;
+                scope._cachedViews.form = res.result;
                 return renderDialog();
               }
             });

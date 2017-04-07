@@ -42,6 +42,8 @@ class Widget
     return ''
 
   labelTemplate: (scope, el, attrs, field) ->
+    if attrs.nolabel
+      return ''
     return """<label for="#{attrs._id}" class="form-label">#{field.caption}</label>"""
 
   spanTemplate: (scope, el, attrs, field) ->
@@ -157,7 +159,7 @@ class ManyToManyField extends Widget
 
 class CheckBox extends InputWidget
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly" ng-show="!dataSource.changing">
+    return """<span class="form-field-readonly bool-text" ng-show="!dataSource.changing">
 &nbsp;${ record.#{attrs.name} ? Katrid.i18n.gettext('yes') : Katrid.i18n.gettext('no') }
 </span>"""
 
@@ -174,7 +176,7 @@ class CheckBox extends InputWidget
   labelTemplate: (scope, el, attrs, field) ->
     if field.help_text
       return super(scope, el, attrs, field)
-    return ''
+    return """<label for="#{attrs._id}" class="form-label"><span ng-show="!dataSource.changing">#{field.caption}</span>&nbsp;</label>"""
 
 
 class FileField extends InputWidget

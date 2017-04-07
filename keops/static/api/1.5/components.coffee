@@ -34,6 +34,7 @@ uiKatrid.directive 'field', ($compile) ->
           widget = 'TextareaField'
         else if tp is 'BooleanField'
           widget = 'CheckBox'
+          cols = 3
         else if tp is 'DecimalField'
           widget = 'DecimalField'
           cols = 3
@@ -152,7 +153,7 @@ uiKatrid.directive 'grid', ($compile) ->
     scope.field = field
     scope.records = []
     scope.recordIndex = -1
-    scope._viewCache = {}
+    scope._cachedViews = {}
     scope._changeCount = 0
     scope.dataSet = []
     scope.parent = scope.$parent
@@ -169,15 +170,17 @@ uiKatrid.directive 'grid', ($compile) ->
 
     scope.dataSource.fieldName = scope.fieldName
     scope.gridDialog = null
-    scope.model.getViewInfo({ view_type: 'list' })
+    scope.model.loadViews()
     .done (res) ->
       scope.$apply ->
-        scope.view = res.result
+        scope._cachedViews = res.result
+        console.log(res.result)
+        scope.view = scope._cachedViews.list
         html = Katrid.UI.Utils.Templates.renderGrid(scope, $(scope.view.content), attrs, 'openItem($index)')
         element.replaceWith($compile(html)(scope))
 
     renderDialog = ->
-      html = scope._viewCache.form.content
+      html = scope._cachedViews.form.content
       html = $(Katrid.UI.Utils.Templates.gridDialog().replace('<!-- view content -->', html))
       el = $compile(html)(scope)
 
@@ -253,14 +256,14 @@ uiKatrid.directive 'grid', ($compile) ->
       else
         scope.recordIndex = -1
 
-      if scope._viewCache.form
+      if scope._cachedViews.form
         setTimeout ->
           renderDialog()
       else
         scope.model.getViewInfo({ view_type: 'form' })
         .done (res) ->
           if res.ok
-            scope._viewCache.form = res.result
+            scope._cachedViews.form = res.result
             renderDialog()
 
       return

@@ -69,6 +69,9 @@
     };
 
     Widget.prototype.labelTemplate = function(scope, el, attrs, field) {
+      if (attrs.nolabel) {
+        return '';
+      }
       return "<label for=\"" + attrs._id + "\" class=\"form-label\">" + field.caption + "</label>";
     };
 
@@ -304,7 +307,7 @@
     }
 
     CheckBox.prototype.spanTemplate = function(scope, el, attrs, field) {
-      return "<span class=\"form-field-readonly\" ng-show=\"!dataSource.changing\">\n&nbsp;${ record." + attrs.name + " ? Katrid.i18n.gettext('yes') : Katrid.i18n.gettext('no') }\n</span>";
+      return "<span class=\"form-field-readonly bool-text\" ng-show=\"!dataSource.changing\">\n&nbsp;${ record." + attrs.name + " ? Katrid.i18n.gettext('yes') : Katrid.i18n.gettext('no') }\n</span>";
     };
 
     CheckBox.prototype.widgetTemplate = function(scope, el, attrs, field) {
@@ -324,7 +327,7 @@
       if (field.help_text) {
         return CheckBox.__super__.labelTemplate.call(this, scope, el, attrs, field);
       }
-      return '';
+      return "<label for=\"" + attrs._id + "\" class=\"form-label\"><span ng-show=\"!dataSource.changing\">" + field.caption + "</span>&nbsp;</label>";
     };
 
     return CheckBox;
