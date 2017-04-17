@@ -51,6 +51,16 @@ class DataSource
     el = @scope.formElement
     if @validate()
       data = @getModifiedData(@scope.form, el, @scope.record)
+      @scope.form.data = data
+
+      beforeSubmit = el.attr('before-submit')
+      console.log('before submit', beforeSubmit)
+      if beforeSubmit
+        beforeSubmit = @scope.$eval(beforeSubmit)
+
+      console.log(@scope.form.data)
+
+      #@scope.form.data = null
 
       if data
         @uploading++
@@ -133,7 +143,7 @@ class DataSource
     rec = @findById(obj.id)
     @scope.records.indexOf(rec)
 
-  search: (params, page) ->
+  search: (params, page, fields) ->
     @_params = params
     @_page = page
     @_clearTimeout()
@@ -145,6 +155,7 @@ class DataSource
       count: true
       page: page
       params: params
+      fields: fields
 
     def = new $.Deferred()
 

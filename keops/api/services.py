@@ -52,7 +52,6 @@ class ModelService(ViewService):
     list_fields = None
     extra_fields = None
     search_fields = None
-    group_fields = None
     field_dependencies = None
     select_related = None
 
@@ -167,6 +166,7 @@ class ModelService(ViewService):
         if post_data:
             for f, v in post_data.items():
                 self._save_children(f, v, instance.pk)
+        return instance
 
     def serialize_value(self, instance, field):
         try:
