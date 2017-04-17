@@ -88,6 +88,9 @@ class Model extends Service
 
   groupBy: (grouping) ->
     @post('group_by', null, { kwargs: grouping })
+    
+  autoReport: ->
+    @post 'auto_report', null, null
 
   onFieldChange: (field, record) ->
     @post('field_change', null, { kwargs: { field: field, record: record } })

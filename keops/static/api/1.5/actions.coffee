@@ -42,26 +42,31 @@ class WindowAction extends Action
         @scope.record = null
         @viewType = search.view_type
         @execute()
-
-      if search.view_type is 'list' and not search.page
-        @location.search('page', 1)
         return
 
-      filter = {}
-      if search.q?
-        filter.q = search.q
+      if search.view_type in ['list', 'card'] and not search.page
+        @location.search('page', 1)
+      else
 
-      if search.view_type is 'list' and search.page isnt @scope.dataSource.pageIndex
-        @scope.dataSource.pageIndex = parseInt(search.page)
-        @scope.dataSource.search(filter, search.page)
-      else if search.view_type is 'list' and search.q?
-        @scope.dataSource.search(filter, search.page)
+        filter = {}
+        if search.q?
+          filter.q = search.q
 
-      if search.id and ((@scope.record? and @scope.record.id != search.id) or not @scope.record?)
-        @scope.record = null
-        @scope.dataSource.get(search.id)
+        fields = _.keys(@scope.view.fields)
+
+        if search.view_type in ['list', 'card'] and search.page isnt @scope.dataSource.pageIndex
+          @scope.dataSource.pageIndex = parseInt(search.page)
+          @scope.dataSource.search(filter, search.page, fields)
+        else if search.view_type in ['list', 'card'] and search.q?
+          @scope.dataSource.search(filter, search.page, fields)
+
+        if search.id and ((@scope.record? and @scope.record.id != search.id) or not @scope.record?)
+          console.log('set id', search.id)
+          @scope.record = null
+          @scope.dataSource.get(search.id)
     else
       @setViewType(@viewModes[0])
+    return
 
   setViewType: (viewType) ->
     @location.search
@@ -69,6 +74,7 @@ class WindowAction extends Action
 
   apply: ->
     @render(@scope, @scope.view.content, @viewType)
+    @routeUpdate(@location.$$search)
 
   execute: ->
     if @views?
@@ -112,12 +118,15 @@ class WindowAction extends Action
   applyGroups: (groups) ->
     @scope.dataSource.groupBy(groups[0])
 
-  doViewAction: (viewAction, target, confirmation) ->
-    @_doViewAction(@scope, viewAction, target, confirmation)
+  doViewAction: (viewAction, target, confirmation, prompt) ->
+    @_doViewAction(@scope, viewAction, target, confirmation, prompt)
 
-  _doViewAction: (scope, viewAction, target, confirmation) ->
+  _doViewAction: (scope, viewAction, target, confirmation, prompt) ->
+    promptValue = null
+    if prompt
+      promptValue = window.prompt(prompt)
     if not confirmation or (confirmation and confirm(confirmation))
-      scope.model.doViewAction({ action_name: viewAction, target: target })
+      scope.model.doViewAction({ action_name: viewAction, target: target, prompt: promptValue })
       .done (res) ->
         if res.status is 'open'
           window.open(res.open)
@@ -139,6 +148,9 @@ class WindowAction extends Action
     else
       @scope.dataSource.setRecordIndex(index)
       @location.search({view_type: 'form', id: row.id})
+      
+  autoReport: ->
+    @scope.model.autoReport()
 
 
 class ReportAction extends Action

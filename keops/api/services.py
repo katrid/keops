@@ -131,6 +131,8 @@ class ModelService(ViewService):
                 except (ValueError, TypeError):
                     continue
         elif isinstance(field, CharField):
+            if value is None:
+                value = ''
             value = str(value)
 
         setattr(instance, field_name, value)
@@ -442,8 +444,8 @@ class ModelService(ViewService):
         return qs
 
     @service_method
-    def do_view_action(self, action_name, target):
-        return self.dispatch_view_action(action_name, target)
+    def do_view_action(self, action_name, target, **kwargs):
+        return self.dispatch_view_action(action_name, target, **kwargs)
 
     @service_method
     def copy(self, id):

@@ -114,7 +114,7 @@ class Templates
 <div class="content no-padding">
 <div class="panel panel-default data-panel">
 <div class="card-view animated fadeIn">
-  <div ng-repeat="record in records" class="card-item card-link" ng-click="action.listRowClick($index, record)">
+  <div ng-repeat="record in records" class="panel panel-default card-item card-link" ng-click="action.listRowClick($index, record)">
     #{html}
   </div>
 
@@ -143,7 +143,9 @@ class Templates
         if act.confirm
           confirmation = ", '" + act.confirm + "'"
         else
-          confirmation = ''
+          confirmation = ', null'
+        if act.prompt
+          confirmation += ", '" + act.prompt + "'"
         actions += """<li><a href="javascript:void(0)" ng-click="action.doViewAction('#{act.name}', record.id#{confirmation})">#{act.title}</a></li>"""
     return """
 <div ng-form="form"><div class=\"data-heading panel panel-default\">
@@ -186,11 +188,20 @@ class Templates
 </div>
 </div>
     </div>
-  </div><div class=\"content container animated fadeIn\"><div class=\"panel panel-default data-panel\">
-<div class=\"panel-body\"><div class=\"row\">#{html}</div></div></div></div></div>"""
+  </div><div class=\"content container animated fadeIn\"><div class="panel panel-default data-panel browsing" ng-class="{ browsing: dataSource.browsing, editing: dataSource.changing }">
+<div class=\"panel-body\"><div class="row">#{html}</div></div></div></div></div>"""
     return html
 
   preRender_list: (scope, html) ->
+    reports = """
+  <div class="btn-group">
+    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true">
+      #{Katrid.i18n.gettext 'Print'} <span class="caret"></span></button>
+    <ul class=\"dropdown-menu animated flipInX\">
+      <li><a href='javascript:void(0)' ng-click="action.autoReport()"><i class="fa fa-fw fa-file"></i> #{Katrid.i18n.gettext 'Auto Report'}</a></li>
+    </ul>
+  </div>
+"""
     buttons = @getViewButtons(scope)
     """<div class=\"data-heading panel panel-default\">
     <div class=\"panel-body\">
@@ -209,10 +220,11 @@ class Templates
         <button class=\"btn btn-primary\" type=\"button\" ng-click=\"action.createNew()\">#{Katrid.i18n.gettext 'Create'}</button>
         <span ng-show="dataSource.loading" class="badge page-badge-ref fadeIn animated">${dataSource.pageIndex}</span>
 
-  <div class=\"btn-group\">
-    <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\">
+  #{reports}
+  <div class="btn-group">
+    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true">
       #{Katrid.i18n.gettext 'Action'} <span class=\"caret\"></span></button>
-    <ul class=\"dropdown-menu animated flipInX\">
+    <ul class="dropdown-menu animated flipInX">
       <li><a href='javascript:void(0)' ng-click=\"action.deleteSelection()\"><i class="fa fa-fw fa-trash"></i> #{Katrid.i18n.gettext 'Delete'}</a></li>
     </ul>
   </div>

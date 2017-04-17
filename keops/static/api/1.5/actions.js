@@ -57,7 +57,7 @@
     };
 
     WindowAction.prototype.routeUpdate = function(search) {
-      var filter;
+      var fields, filter, ref, ref1, ref2;
       if (search.view_type != null) {
         if (this.scope.records == null) {
           this.scope.records = [];
@@ -67,27 +67,30 @@
           this.scope.record = null;
           this.viewType = search.view_type;
           this.execute();
-        }
-        if (search.view_type === 'list' && !search.page) {
-          this.location.search('page', 1);
           return;
         }
-        filter = {};
-        if (search.q != null) {
-          filter.q = search.q;
-        }
-        if (search.view_type === 'list' && search.page !== this.scope.dataSource.pageIndex) {
-          this.scope.dataSource.pageIndex = parseInt(search.page);
-          this.scope.dataSource.search(filter, search.page);
-        } else if (search.view_type === 'list' && (search.q != null)) {
-          this.scope.dataSource.search(filter, search.page);
-        }
-        if (search.id && (((this.scope.record != null) && this.scope.record.id !== search.id) || (this.scope.record == null))) {
-          this.scope.record = null;
-          return this.scope.dataSource.get(search.id);
+        if (((ref = search.view_type) === 'list' || ref === 'card') && !search.page) {
+          this.location.search('page', 1);
+        } else {
+          filter = {};
+          if (search.q != null) {
+            filter.q = search.q;
+          }
+          fields = _.keys(this.scope.view.fields);
+          if (((ref1 = search.view_type) === 'list' || ref1 === 'card') && search.page !== this.scope.dataSource.pageIndex) {
+            this.scope.dataSource.pageIndex = parseInt(search.page);
+            this.scope.dataSource.search(filter, search.page, fields);
+          } else if (((ref2 = search.view_type) === 'list' || ref2 === 'card') && (search.q != null)) {
+            this.scope.dataSource.search(filter, search.page, fields);
+          }
+          if (search.id && (((this.scope.record != null) && this.scope.record.id !== search.id) || (this.scope.record == null))) {
+            console.log('set id', search.id);
+            this.scope.record = null;
+            this.scope.dataSource.get(search.id);
+          }
         }
       } else {
-        return this.setViewType(this.viewModes[0]);
+        this.setViewType(this.viewModes[0]);
       }
     };
 
@@ -98,7 +101,8 @@
     };
 
     WindowAction.prototype.apply = function() {
-      return this.render(this.scope, this.scope.view.content, this.viewType);
+      this.render(this.scope, this.scope.view.content, this.viewType);
+      return this.routeUpdate(this.location.$$search);
     };
 
     WindowAction.prototype.execute = function() {
@@ -159,15 +163,21 @@
       return this.scope.dataSource.groupBy(groups[0]);
     };
 
-    WindowAction.prototype.doViewAction = function(viewAction, target, confirmation) {
-      return this._doViewAction(this.scope, viewAction, target, confirmation);
+    WindowAction.prototype.doViewAction = function(viewAction, target, confirmation, prompt) {
+      return this._doViewAction(this.scope, viewAction, target, confirmation, prompt);
     };
 
-    WindowAction.prototype._doViewAction = function(scope, viewAction, target, confirmation) {
+    WindowAction.prototype._doViewAction = function(scope, viewAction, target, confirmation, prompt) {
+      var promptValue;
+      promptValue = null;
+      if (prompt) {
+        promptValue = window.prompt(prompt);
+      }
       if (!confirmation || (confirmation && confirm(confirmation))) {
         return scope.model.doViewAction({
           action_name: viewAction,
-          target: target
+          target: target,
+          prompt: promptValue
         }).done(function(res) {
           var j, k, len, len1, msg, ref, ref1, results, results1;
           if (res.status === 'open') {
@@ -209,6 +219,10 @@
           id: row.id
         });
       }
+    };
+
+    WindowAction.prototype.autoReport = function() {
+      return this.scope.model.autoReport();
     };
 
     return WindowAction;
