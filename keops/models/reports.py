@@ -1,4 +1,5 @@
-from keops import models
+from . import fields as models
+from django.db.models import CASCADE
 
 
 class Report(models.Model):
@@ -6,7 +7,6 @@ class Report(models.Model):
 
     class Meta:
         db_table = 'keops_report'
-        managed = False
 
     def __str__(self):
         return self.name
@@ -14,7 +14,7 @@ class Report(models.Model):
 
 class UserReport(models.Model):
     name = models.CharField(max_length=256)
-    report = models.ForeignKey(Report, on_delete=models.CASCADE)
+    report = models.ForeignKey(Report, on_delete=CASCADE)
     empresa_id = models.IntegerField(blank=True, null=True)
     user_id = models.IntegerField(blank=True, null=True)
     user_params = models.TextField(blank=True, null=True)
