@@ -21,7 +21,6 @@ class UserReport(models.Model):
 
     class Meta:
         db_table = 'keops_user_report'
-        managed = False
 
     def __str__(self):
         return self.name
