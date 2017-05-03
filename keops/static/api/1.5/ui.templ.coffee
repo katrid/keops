@@ -61,9 +61,9 @@ class Templates
     <div class=\"panel-body\">
       <div class='row'>
         <div class="col-sm-6">
-        <ol class="breadcrumb">
-          <li>${ action.info.display_name }</li>
-        </ol>
+        <h2>
+          ${ action.info.display_name }
+        </h2>
         </div>
         <search-view class="col-md-6"/>
         <!--<p class=\"help-block\">${ action.info.usage }&nbsp;</p>-->
@@ -95,7 +95,7 @@ class Templates
   </div>
 
   <div class=\"pull-right\">
-            <div class="pagination-area">
+            <div class="btn-group pagination-area">
               <span class="paginator">${dataSource.offset|number} - ${dataSource.offsetLimit|number}</span> / <span class="total-pages">${dataSource.recordCount|number}</span>
             </div>
     <div class=\"btn-group\">
@@ -153,15 +153,10 @@ class Templates
       <div>
         <a href=\"javascript:void(0)\" title=\"Add to favorite\"><i class=\"fa star fa-star-o pull-right\"></i></a>
         <ol class=\"breadcrumb\">
-          <li><a href=\"javascript:void(0)\" ng-click=\"action.setViewType(\'list\')\">${ action.info.display_name }</a></li>
+          <li><h2><a href=\"javascript:void(0)\" ng-click=\"action.setViewType(\'list\')\">${ action.info.display_name }</a></h2></li>
           <li>${ (dataSource.loadingRecord && Katrid.i18n.gettext('Loading...')) || record.display_name }</li>
         </ol>
-        <div class=\"pull-right\">
-            <span ng-show="records.length">
-              ${dataSource.recordIndex} / ${records.length}
-            </span>
-        </div>
-        <p class=\"help-block\">${ action.info.usage }&nbsp;</p>
+        <p class=\"help-block\">${ action.info.usage }</p>
       </div>
       <div class=\"toolbar\">
   <button class=\"btn btn-primary\" type=\"button\" ng-disabled="dataSource.uploading" ng-click=\"dataSource.saveChanges()\" ng-show="dataSource.changing">#{Katrid.i18n.gettext 'Save'}</button>
@@ -178,6 +173,11 @@ class Templates
     </ul>
   </div>
   <div class=\"pull-right\">
+    <div class="btn-group pagination-area">
+        <span ng-show="records.length">
+          ${dataSource.recordIndex} / ${records.length}
+        </span>
+    </div>
     <div class=\"btn-group\" role=\"group\">
       <button class=\"btn btn-default\" type=\"button\" ng-click=\"dataSource.prior(\'form\')\"><i class=\"fa fa-chevron-left\"></i>
       </button>
@@ -207,9 +207,7 @@ class Templates
     <div class=\"panel-body\">
       <div class='row'>
         <div class="col-sm-6">
-        <ol class="breadcrumb">
-          <li>${ action.info.display_name }</li>
-        </ol>
+          <h2>${ action.info.display_name }</h2>
         </div>
         <search-view class="col-md-6"/>
         <!--<p class=\"help-block\">${ action.info.usage }&nbsp;</p>-->
@@ -242,7 +240,7 @@ class Templates
   </div>
 
   <div class=\"pull-right\">
-            <div class="pagination-area">
+            <div class="btn-group pagination-area">
               <span class="paginator">${dataSource.offset|number} - ${dataSource.offsetLimit|number}</span> / <span class="total-pages">${dataSource.recordCount|number}</span>
             </div>
     <div class=\"btn-group\">
@@ -275,7 +273,7 @@ class Templates
       name = col.attr('name')
       if not name
         cols += """<td>#{col.html()}</td>"""
-        ths += """<th><label>${col.attr('caption')}</label></th>"""
+        ths += """<th><span>${col.attr('caption')}</span></th>"""
         continue
 
       if col.attr('visible') is 'False'
@@ -291,7 +289,7 @@ class Templates
           fieldInfo._listChoices[choice[0]] = choice[1]
 
       cls = """#{fieldInfo.type} list-column"""
-      ths += """<th class="#{cls}" name="#{name}"><label>${view.fields.#{name}.caption}</label></th>"""
+      ths += """<th class="#{cls}" name="#{name}"><span>${view.fields.#{name}.caption}</span></th>"""
       cls = """#{fieldInfo.type} field-#{name}"""
 
       colHtml = col.html()
@@ -328,6 +326,133 @@ class Templates
   renderGrid: (scope, element, attrs, rowClick) ->
     tbl = @renderList(scope, element, attrs, rowClick, true)
     return """<div><div><button class="btn btn-xs btn-info" ng-click="addItem()" ng-show="parent.dataSource.changing" type="button">#{Katrid.i18n.gettext 'Add'}</button></div>#{tbl}</div>"""
+
+  renderReportDialog: (scope) ->
+    """<div ng-controller="ReportController">
+  <form id="report-form" method="get">
+    <div class="data-heading panel panel-default">
+      <div class="panel-body">
+      <h2>${ report.name }</h3>
+      <div class="toolbar">
+        <button class="btn btn-primary" type="button" ng-click="report.preview()"><span class="fa fa-print fa-fw"></span> #{ Katrid.i18n.gettext 'Preview' }</button>
+
+        <div class="btn-group">
+          <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">#{ Katrid.i18n.gettext 'Export'  } <span class="caret"></span></button>
+          <ul class="dropdown-menu">
+            <li><a ng-click="Katrid.Reports.Reports.preview()">PDF</a></li>
+            <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('docx')">Word</a></li>
+            <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('xlsx')">Excel</a></li>
+            <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('pptx')">PowerPoint</a></li>
+            <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('csv')">CSV</a></li>
+            <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('txt')">#{ Katrid.i18n.gettext 'Text File' }</a></li>
+          </ul>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">#{ Katrid.i18n.gettext 'My reports'  } <span class="caret"></span></button>
+          <ul class="dropdown-menu">
+            <li><a ng-click="Katrid.Reports.Reports.preview()">PDF</a></li>
+            <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('docx')">Word</a></li>
+            <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('xlsx')">Excel</a></li>
+            <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('pptx')">PowerPoint</a></li>
+            <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('csv')">CSV</a></li>
+            <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.export('txt')">#{ Katrid.i18n.gettext 'Text File' }</a></li>
+          </ul>
+        </div>
+
+      <div class="pull-right btn-group">
+        <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false"><i class="fa fa-gear fa-fw"></i></button>
+        <ul class="dropdown-menu">
+          <li><a href="javascript:void(0)" ng-click="Katrid.Reports.Reports.saveDialog()">#{ Katrid.i18n.gettext 'Save' }</a></li>
+          <li><a href="#">#{ Katrid.i18n.gettext 'Load' }</a></li>
+        </ul>
+      </div>
+
+      </div>
+    </div>
+    </div>
+    <div class="col-sm-12">
+      <table class="col-sm-12" style="margin-top: 20px; display:none;">
+        <tr>
+          <td colspan="2" style="padding-top: 8px;">
+            <label>#{ Katrid.i18n.gettext 'My reports' }</label>
+
+            <select class="form-control" ng-change="action.userReportChanged(action.userReport.id)" ng-model="action.userReport.id">
+                <option value=""></option>
+                <option ng-repeat="rep in userReports" value="${ rep.id }">${ rep.name }</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+<div id="report-params">
+  <div id="params-fields" class="col-sm-12 form-group">
+    <div class="checkbox"><label><input type="checkbox" ng-model="paramsAdvancedOptions"> #{ Katrid.i18n.gettext 'Advanced options' }</label></div>
+    <div ng-show="paramsAdvancedOptions">
+      <div class="form-group">
+        <label>#{ Katrid.i18n.gettext 'Printable Fields' }</label>
+        <input type="hidden" id="report-id-fields"/>
+      </div>
+      <div class="form-group">
+        <label>#{ Katrid.i18n.gettext 'Totalizing Fields' }</label>
+        <input type="hidden" id="report-id-totals"/>
+      </div>
+    </div>
+  </div>
+
+  <div id="params-sorting" class="col-sm-12 form-group">
+    <label class="control-label">#{ Katrid.i18n.gettext 'Sorting' }</label>
+    <select multiple id="report-id-sorting"></select>
+  </div>
+
+  <div id="params-grouping" class="col-sm-12 form-group">
+    <label class="control-label">#{ Katrid.i18n.gettext 'Grouping' }</label>
+    <select multiple id="report-id-grouping"></select>
+  </div>
+
+  <div class="clearfix"></div>
+
+  </div>
+    <hr>
+      <table class="col-sm-12">
+        <tr>
+          <td class="col-sm-4">
+            <select class="form-control" ng-model="newParam">
+              <option value="">--- #{ Katrid.i18n.gettext 'FILTERS' } ---</option>
+              <option ng-repeat="field in report.fields" value="${ field.name }">${ field.label }</option>
+            </select>
+          </td>
+          <td class="col-sm-8">
+            <button
+                class="btn btn-default" type="button"
+                ng-click="report.addParam(newParam)">
+              <i class="fa fa-plus fa-fw"></i> #{ Katrid.i18n.gettext 'Add Parameter' }
+            </button>
+          </td>
+        </tr>
+      </table>
+  <div class="clearfix"></div>
+  <hr>
+  <div id="params-params">
+    <div ng-repeat="param in report.params" ng-controller="ReportParamController" class="row form-group">
+      <div class="col-sm-12">
+      <div class="col-sm-4">
+        <label class="control-label">${param.label}</label>
+        <select ng-model="param.operation" class="form-control" ng-change="param.setOperation(param.operation)">
+          <option ng-repeat="op in param.operations" value="${op.id}">${op.text}</option>
+        </select>
+      </div>
+      <div class="col-sm-8" id="param-widget"></div>
+      </div>
+    </div>
+  </div>
+  </form>
+</div>
+"""
+
 
 @Katrid.UI.Utils =
   Templates: new Templates()

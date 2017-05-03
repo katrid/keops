@@ -11,55 +11,7 @@
 
     Reports.currentUserReport = {};
 
-    Reports.getUserParams = function() {
-      var fields, grouping, params, sorting, totals;
-      params = {
-        data: [],
-        file: $('#id-report-file').val()
-      };
-      $('[data-param]').each(function() {
-        var param, pt, scope;
-        scope = angular.element(this).scope();
-        param = scope.param;
-        pt = $(this).data('param');
-        param.name = pt.name;
-        param.type = pt.type;
-        return params.data.push(param);
-      });
-      fields = $('#report-id-fields').val();
-      params['fields'] = fields;
-      totals = $('#report-id-totals').val();
-      params['totals'] = totals;
-      sorting = $('#report-id-sorting').val();
-      params['sorting'] = sorting;
-      grouping = $('#report-id-grouping').val();
-      params['grouping'] = grouping;
-      return params;
-    };
-
-    Reports.preview = function(format) {
-      var params;
-      params = this.getUserParams();
-      params['format'] = format;
-      $.ajax({
-        type: 'POST',
-        url: $('#report-form').attr('action'),
-        contentType: "application/json; charset=utf-8",
-        dataType: 'json',
-        data: JSON.stringify(params)
-      }).then(function(res) {
-        if (res.open) {
-          return window.open(res.open);
-        }
-      });
-      return false;
-    };
-
-    Reports["export"] = function(format) {
-      return this.preview(format);
-    };
-
-    Reports.saveDialog = function() {
+    Reports.saveDialog = function(report) {
       var name, params;
       params = this.getUserParams();
       name = window.prompt(Katrid.i18n.gettext('Report name'), Katrid.Reports.Reports.currentUserReport.name);
@@ -67,7 +19,7 @@
         Katrid.Reports.Reports.currentUserReport.name = name;
         $.ajax({
           type: 'POST',
-          url: $('#report-form').attr('action') + '?save=' + name,
+          url: report.container.find('#report-form').attr('action') + '?save=' + name,
           contentType: "application/json; charset=utf-8",
           dataType: 'json',
           data: JSON.stringify(params)
@@ -78,15 +30,33 @@
 
     Reports.get = function(repName) {};
 
+    Reports.renderDialog = function(action) {
+      return Katrid.UI.Utils.Templates.renderReportDialog(action);
+    };
+
     return Reports;
 
   })();
 
   Report = (function() {
-    function Report(info, scope1) {
-      this.info = info;
+    function Report(action1, scope1) {
+      this.action = action1;
       this.scope = scope1;
+      this.info = this.action.info;
       Katrid.Reports.Reports.currentReport = this;
+      if (Params.Labels == null) {
+        Params.Labels = {
+          exact: Katrid.i18n.gettext('Is equal'),
+          "in": Katrid.i18n.gettext('Selection'),
+          contains: Katrid.i18n.gettext('Contains'),
+          startswith: Katrid.i18n.gettext('Starting with'),
+          endswith: Katrid.i18n.gettext('Ending with'),
+          gt: Katrid.i18n.gettext('Greater-than'),
+          lt: Katrid.i18n.gettext('Less-than'),
+          between: Katrid.i18n.gettext('Between'),
+          isnull: Katrid.i18n.gettext('Is Null')
+        };
+      }
       this.name = this.info.name;
       this.id = ++_counter;
       this.values = {};
@@ -94,15 +64,77 @@
       this.groupables = [];
       this.sortables = [];
       this.totals = [];
-      this.load();
     }
 
-    Report.prototype.load = function() {
-      var i, len, p, ref, results;
-      ref = this.info.fields;
-      results = [];
+    Report.prototype.getUserParams = function() {
+      var fields, grouping, i, len, p, params, ref, report, sorting, totals;
+      report = this;
+      params = {
+        data: [],
+        file: report.container.find('#id-report-file').val()
+      };
+      ref = this.params;
       for (i = 0, len = ref.length; i < len; i++) {
         p = ref[i];
+        params.data.push({
+          name: p.name,
+          op: p.operation,
+          value1: p.value1,
+          value2: p.value2,
+          type: p.type
+        });
+      }
+      fields = report.container.find('#report-id-fields').val();
+      params['fields'] = fields;
+      totals = report.container.find('#report-id-totals').val();
+      params['totals'] = totals;
+      sorting = report.container.find('#report-id-sorting').val();
+      params['sorting'] = sorting;
+      grouping = report.container.find('#report-id-grouping').val();
+      params['grouping'] = grouping;
+      return params;
+    };
+
+    Report.prototype.loadFromXml = function(xml) {
+      var f, fields, groupable, i, label, len, name, param, ref, sortable, total;
+      if (_.isString(xml)) {
+        xml = $(xml);
+      }
+      fields = [];
+      ref = xml.find('field');
+      for (i = 0, len = ref.length; i < len; i++) {
+        f = ref[i];
+        f = $(f);
+        name = f.attr('name');
+        console.log(this.info);
+        label = f.attr('label') || (this.info.fields[name] && this.info.fields[name].caption) || name;
+        groupable = f.attr('groupable');
+        sortable = f.attr('sortable');
+        total = f.attr('total');
+        param = f.attr('param');
+        console.log(name, label, f);
+        fields.push({
+          name: name,
+          label: label,
+          groupable: groupable,
+          sortable: sortable,
+          total: total,
+          param: param
+        });
+      }
+      console.log('field', f);
+      return this.load(fields);
+    };
+
+    Report.prototype.load = function(fields) {
+      var i, len, p, results;
+      if (!fields) {
+        fields = this.info.fields;
+      }
+      this.fields = fields;
+      results = [];
+      for (i = 0, len = fields.length; i < len; i++) {
+        p = fields[i];
         if (p.groupable) {
           this.groupables.push(p);
         }
@@ -110,11 +142,22 @@
           this.sortables.push(p);
         }
         if (p.total) {
-          this.totals.push(p);
+          results.push(this.totals.push(p));
+        } else {
+          results.push(void 0);
         }
+      }
+      return results;
+    };
+
+    Report.prototype.loadParams = function() {
+      var i, len, p, ref, results;
+      ref = this.fields;
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        p = ref[i];
         if (p.param != null) {
-          p = new Param(p, this);
-          results.push(this.params.push(p));
+          results.push(this.addParam(p.name));
         } else {
           results.push(void 0);
         }
@@ -124,14 +167,13 @@
 
     Report.prototype.addParam = function(paramName) {
       var i, len, p, ref, results;
-      ref = this.info.fields;
+      ref = this.fields;
       results = [];
       for (i = 0, len = ref.length; i < len; i++) {
         p = ref[i];
         if (p.name === paramName) {
           p = new Param(p, this);
           this.params.push(p);
-          $(p.render(this.elParams));
           break;
         } else {
           results.push(void 0);
@@ -143,14 +185,28 @@
     Report.prototype.getValues = function() {};
 
     Report.prototype["export"] = function(format) {
+      var params, svc;
       if (format == null) {
         format = 'pdf';
       }
-      return this.preview(format);
+      params = this.getUserParams();
+      svc = new Katrid.Services.Model('sys.action.report');
+      svc.post('export_report', null, {
+        args: [this.info.id],
+        kwargs: {
+          format: format,
+          params: params
+        }
+      }).done(function(res) {
+        if (res.result.open) {
+          return window.open(res.result.open);
+        }
+      });
+      return false;
     };
 
     Report.prototype.preview = function() {
-      return console.log('Report preview');
+      return this["export"]();
     };
 
     Report.prototype.renderFields = function() {
@@ -158,7 +214,7 @@
       el = $('<div></div>');
       flds = ((function() {
         var i, len, ref, results;
-        ref = this.info.fields;
+        ref = this.fields;
         results = [];
         for (i = 0, len = ref.length; i < len; i++) {
           p = ref[i];
@@ -168,7 +224,7 @@
       }).call(this)).join('');
       aggs = ((function() {
         var i, len, ref, results;
-        ref = this.info.fields;
+        ref = this.fields;
         results = [];
         for (i = 0, len = ref.length; i < len; i++) {
           p = ref[i];
@@ -178,9 +234,23 @@
         }
         return results;
       }).call(this)).join('');
-      el = $('#report-params');
+      el = this.container.find('#report-params');
       sel = el.find('#report-id-fields');
-      sel.append($(flds)).select2().select2("container").find("ul.select2-choices").sortable({
+      sel.append($(flds)).select2({
+        tags: (function() {
+          var i, len, ref, results;
+          ref = this.fields;
+          results = [];
+          for (i = 0, len = ref.length; i < len; i++) {
+            p = ref[i];
+            results.push({
+              id: p.name,
+              text: p.label
+            });
+          }
+          return results;
+        }).call(this)
+      }).select2("container").find("ul.select2-choices").sortable({
         containment: 'parent',
         start: function() {
           return sel.select2("onSortStart");
@@ -194,7 +264,23 @@
         sel.select2('val', Katrid.Reports.Reports.currentUserReport.params.fields);
       }
       sel = el.find('#report-id-totals');
-      sel.append(aggs).select2().select2("container").find("ul.select2-choices").sortable({
+      sel.append(aggs).select2({
+        tags: (function() {
+          var i, len, ref, results;
+          ref = this.fields;
+          results = [];
+          for (i = 0, len = ref.length; i < len; i++) {
+            p = ref[i];
+            if (p.total) {
+              results.push({
+                id: p.name,
+                text: p.label
+              });
+            }
+          }
+          return results;
+        }).call(this)
+      }).select2("container").find("ul.select2-choices").sortable({
         containment: 'parent',
         start: function() {
           return sel.select2("onSortStart");
@@ -284,6 +370,7 @@
 
     Report.prototype.render = function(container) {
       var el;
+      this.container = container;
       el = this.renderFields();
       if (this.sortables.length) {
         el = this.renderSorting(container);
@@ -306,72 +393,86 @@
     function Params() {}
 
     Params.Operations = {
-      equals: 'equals',
+      exact: 'exact',
       "in": 'in',
       contains: 'contains',
-      startsWith: 'startsWith',
-      endsWith: 'endsWith',
-      greaterThan: 'greaterThan',
-      lessThan: 'lessThan',
-      between: 'between'
-    };
-
-    Params.Labels = {
-      equals: Katrid.i18n.gettext('É igual'),
-      "in": Katrid.i18n.gettext('Seleção'),
-      contains: Katrid.i18n.gettext('Contendo'),
-      startsWith: Katrid.i18n.gettext('Começando com'),
-      endsWith: Katrid.i18n.gettext('Terminando com'),
-      greaterThan: Katrid.i18n.gettext('Maior que'),
-      lessThan: Katrid.i18n.gettext('Menor que'),
-      between: Katrid.i18n.gettext('Entre')
+      startswith: 'startswith',
+      endswith: 'endswith',
+      gt: 'gt',
+      lt: 'lt',
+      between: 'between',
+      isnull: 'isnull'
     };
 
     Params.DefaultOperations = {
-      str: Params.Operations.equals,
-      int: Params.Operations.equals,
-      datetime: Params.Operations.between,
-      float: Params.Operations.between,
-      decimal: Params.Operations.between,
-      sqlchoices: Params.Operations.equals
+      CharField: Params.Operations.exact,
+      IntegerField: Params.Operations.exact,
+      DateTimeField: Params.Operations.between,
+      DateField: Params.Operations.between,
+      FloatField: Params.Operations.between,
+      DecimalField: Params.Operations.between,
+      ForeignKey: Params.Operations.exact,
+      sqlchoices: Params.Operations.exact
     };
 
     Params.TypeOperations = {
-      str: [Params.Operations.equals, Params.Operations["in"], Params.Operations.contains, Params.Operations.startsWith, Params.Operations.endsWith],
-      int: [Params.Operations.equals, Params.Operations["in"], Params.Operations.greaterThan, Params.Operations.lessThan, Params.Operations.between],
-      float: [Params.Operations.equals, Params.Operations["in"], Params.Operations.greaterThan, Params.Operations.lessThan, Params.Operations.between],
-      decimal: [Params.Operations.equals, Params.Operations["in"], Params.Operations.greaterThan, Params.Operations.lessThan, Params.Operations.between],
-      datetime: [Params.Operations.equals, Params.Operations["in"], Params.Operations.greaterThan, Params.Operations.lessThan, Params.Operations.between],
-      sqlchoices: [Params.Operations.equals, Params.Operations["in"]]
+      CharField: [Params.Operations.exact, Params.Operations["in"], Params.Operations.contains, Params.Operations.startswith, Params.Operations.endswith, Params.Operations.isnull],
+      IntegerField: [Params.Operations.exact, Params.Operations["in"], Params.Operations.gt, Params.Operations.lt, Params.Operations.between, Params.Operations.isnull],
+      FloatField: [Params.Operations.exact, Params.Operations["in"], Params.Operations.gt, Params.Operations.lt, Params.Operations.between, Params.Operations.isnull],
+      DecimalField: [Params.Operations.exact, Params.Operations["in"], Params.Operations.gt, Params.Operations.lt, Params.Operations.between, Params.Operations.isnull],
+      DateTimeField: [Params.Operations.exact, Params.Operations["in"], Params.Operations.gt, Params.Operations.lt, Params.Operations.between, Params.Operations.isnull],
+      DateField: [Params.Operations.exact, Params.Operations["in"], Params.Operations.gt, Params.Operations.lt, Params.Operations.between, Params.Operations.isnull],
+      ForeignKey: [Params.Operations.exact, Params.Operations["in"], Params.Operations.isnull],
+      sqlchoices: [Params.Operations.exact, Params.Operations["in"], Params.Operations.isnull]
     };
 
     Params.Widgets = {
-      str: function(param) {
-        return "<div class=\"col-sm-8\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" ng-model=\"param.value1\" type=\"text\" class=\"form-control\"></div>";
+      CharField: function(param) {
+        return "<div><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" ng-model=\"param.value1\" type=\"text\" class=\"form-control\"></div>";
       },
-      int: function(param) {
+      IntegerField: function(param) {
+        var secondField;
+        secondField = '';
         if (param.operation === 'between') {
-          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" ng-model=\"param.value1\" type=\"text\" class=\"form-control\"></div>\n<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "-2\" ng-model=\"param.value2\" type=\"text\" class=\"form-control\"></div>";
-        } else {
-          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" type=\"number\" ng-model=\"param.value1\" class=\"form-control\"></div>";
+          secondField = "<div class=\"col-xs-6\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "-2\" ng-model=\"param.value2\" type=\"text\" class=\"form-control\"></div>";
         }
+        return "<div class=\"row\"><div class=\"col-sm-6\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" type=\"number\" ng-model=\"param.value1\" class=\"form-control\"></div>" + secondField + "</div>";
       },
-      decimal: function(param) {
+      DecimalField: function(param) {
+        var secondField;
+        secondField = '';
         if (param.operation === 'between') {
-          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" ng-model=\"param.value1\" type=\"text\" class=\"form-control\"></div>\n<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "-2\" ng-model=\"param.value2\" type=\"text\" class=\"form-control\"></div>";
-        } else {
-          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" type=\"number\" ng-model=\"param.value1\" class=\"form-control\"></div>";
+          secondField = "<div class=\"col-xs-6\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "-2\" ng-model=\"param.value2\" type=\"text\" class=\"form-control\"></div>";
         }
+        return "<div class=\"col-sm-6\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" type=\"number\" ng-model=\"param.value1\" class=\"form-control\"></div>" + secondField;
       },
-      datetime: function(param) {
+      DateTimeField: function(param) {
+        var secondField;
+        secondField = '';
         if (param.operation === 'between') {
-          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label>\n<div class=\"input-group date\"><input id=\"rep-param-id-" + param.id + "\" datepicker ng-model=\"param.value1\" class=\"form-control\">\n<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div>\n</div></div>\n<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label>\n<div class=\"input-group date\"><input id=\"rep-param-id-" + param.id + "-2\" datepicker ng-model=\"param.value2\" class=\"form-control\">\n<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div>\n</div>\n</div>";
-        } else {
-          return "<div class=\"col-sm-4\"><label class=\"control-label\">&nbsp;</label>\n<div class=\"input-group date\"><input id=\"rep-param-id-" + param.id + "\" datepicker ng-model=\"param.value1\" class=\"form-control\">\n<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div>\n</div>\n</div>";
+          secondField = "<div class=\"col-xs-6\"><label class=\"control-label\">&nbsp;</label>\n<div class=\"input-group date\"><input id=\"rep-param-id-" + param.id + "-2\" datepicker ng-model=\"param.value2\" class=\"form-control\">\n<div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div>\n</div>\n</div>";
         }
+        return "<div class=\"row\">><div class=\"col-xs-6\"><label class=\"control-label\">&nbsp;</label><div class=\"input-group date\"><input id=\"rep-param-id-" + param.id + "\" datepicker ng-model=\"param.value1\" class=\"form-control\"><div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div></div></div>" + secondField + "</div";
+      },
+      DateField: function(param) {
+        var secondField;
+        secondField = '';
+        if (param.operation === 'between') {
+          secondField = "<div class=\"col-xs-6\"><label class=\"control-label\">&nbsp;</label><div class=\"input-group date\"><input id=\"rep-param-id-" + param.id + "-2\" datepicker ng-model=\"param.value2\" class=\"form-control\"><div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div></div></div>";
+        }
+        return "<div class=\"row\"><div class=\"col-xs-6\"><label class=\"control-label\">&nbsp;</label><div class=\"input-group date\"><input id=\"rep-param-id-" + param.id + "\" datepicker ng-model=\"param.value1\" class=\"form-control\"><div class=\"input-group-addon\"><span class=\"glyphicon glyphicon-th\"></span></div></div></div>" + secondField + "</div>";
+      },
+      ForeignKey: function(param) {
+        var multiple, serviceName;
+        serviceName = param.params.info.model;
+        multiple = '';
+        if (param.operation === 'in') {
+          multiple = 'multiple';
+        }
+        return "<div><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" ajax-choices=\"/api/rpc/" + serviceName + "/get_field_choices/\" field=\"" + param.name + "\" ng-model=\"param.value1\" " + multiple + "></div>";
       },
       sqlchoices: function(param) {
-        return "<div class=\"col-sm-8\"><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" report-file=\"" + param.params.info.file + "\" ajax-choices=\"/api/reports/choices/\" sql-choices=\"" + param.name + "\" ng-model=\"param.value1\"></div>";
+        return "<div><label class=\"control-label\">&nbsp;</label><input id=\"rep-param-id-" + param.id + "\" ajax-choices=\"/api/reports/choices/\" sql-choices=\"" + param.name + "\" ng-model=\"param.value1\"></div>";
       }
     };
 
@@ -386,13 +487,14 @@
       this.name = this.info.name;
       this.label = this.info.label;
       this["static"] = this.info.param === 'static';
-      this.type = this.info.type || 'str';
+      this.field = this.params.info.fields && this.params.info.fields[this.name];
+      this.type = this.info.type || (this.field && this.field.type) || 'CharField';
       if (this.info.sql_choices) {
         this.type = 'sqlchoices';
       }
       this.defaultOperation = this.info.default_operation || Params.DefaultOperations[this.type];
       this.operation = this.defaultOperation;
-      this.operations = this.info.operations || Params.TypeOperations[this.type];
+      this.operations = this.getOperations();
       this.exclude = this.info.exclude;
       this.id = ++_counter;
     }
@@ -401,17 +503,14 @@
       return null;
     };
 
-    Param.prototype.change = function() {
-      var op, ops;
-      ops = this.el.find("#param-op-" + this.id);
-      op = ops.val();
-      this.operation = op;
-      return this.createControls(this.el.scope());
+    Param.prototype.setOperation = function(op) {
+      this.createControls(this.scope);
+      this.el.find('#rep-param-id-' + this.id).focus();
     };
 
     Param.prototype.createControls = function(scope) {
       var el, widget;
-      el = this.el.find("#param-widget-" + this.id);
+      el = this.el.find("#param-widget");
       el.empty();
       widget = Params.Widgets[this.type](this);
       widget = this.params.scope.compile(widget)(scope);
@@ -419,15 +518,17 @@
     };
 
     Param.prototype.getOperations = function() {
-      var i, label, len, op, operations, opts;
-      operations = Params.TypeOperations[this.type];
-      opts = '';
-      for (i = 0, len = operations.length; i < len; i++) {
-        op = operations[i];
-        label = Params.Labels[op];
-        opts += "<option value=\"" + op + "\">" + label + "</option>";
+      var i, len, op, ref, results;
+      ref = Params.TypeOperations[this.type];
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        op = ref[i];
+        results.push({
+          id: op,
+          text: Params.Labels[op]
+        });
       }
-      return opts;
+      return results;
     };
 
     Param.prototype.operationTemplate = function() {
@@ -454,8 +555,20 @@
 
   })();
 
-  Katrid.uiKatrid.controller('ParamController', function($scope, $element, $compile) {
-    return $scope.param = {};
+  Katrid.uiKatrid.controller('ReportController', function($scope, $element, $compile) {
+    var report, xmlReport;
+    xmlReport = $scope.$parent.action.info.content;
+    report = new Report($scope.$parent.action, $scope);
+    report.loadFromXml(xmlReport);
+    $scope.report = report;
+    report.render($element);
+    return report.loadParams();
+  });
+
+  Katrid.uiKatrid.controller('ReportParamController', function($scope, $element) {
+    $scope.$parent.param.el = $element;
+    $scope.$parent.param.scope = $scope;
+    return $scope.$parent.param.setOperation($scope.$parent.param.operation);
   });
 
   this.Katrid.Reports = {

@@ -222,7 +222,11 @@
     };
 
     WindowAction.prototype.autoReport = function() {
-      return this.scope.model.autoReport();
+      return this.scope.model.autoReport().done(function(res) {
+        if (res.ok && res.result.open) {
+          return window.open(res.result.open);
+        }
+      });
     };
 
     return WindowAction;
@@ -247,6 +251,7 @@
 
     ReportAction.prototype.routeUpdate = function(search) {
       var svc;
+      console.log('report action', this.info);
       this.userReport.id = search.user_report;
       if (this.userReport.id) {
         svc = new Katrid.Services.Model('sys.action.report');
@@ -261,7 +266,7 @@
           };
         })(this));
       } else {
-        this.scope.setContent(this.info.content);
+        this.scope.setContent(Katrid.Reports.Reports.renderDialog(this));
       }
     };
 

@@ -15,7 +15,7 @@
       restrict: 'E',
       replace: true,
       link: function(scope, element, attrs, ctrl, transclude) {
-        var att, cols, fcontrol, field, fieldAttrs, form, templ, templAttrs, tp, v;
+        var att, cols, fcontrol, field, fieldAttrs, form, templ, templAttrs, templTag, tp, v;
         field = scope.view.fields[attrs.name];
         if (element.parent('list').length === 0) {
           element.removeAttr('name');
@@ -66,14 +66,15 @@
               widget = 'TextField';
             }
           }
-          widget = new Katrid.UI.Widgets[widget];
+          widget = new Katrid.UI.Widgets[widget]();
           field = scope.view.fields[attrs.name];
           templAttrs = [];
           if (attrs.ngShow) {
             templAttrs.push(' ng-show="' + attrs.ngShow + '"');
           }
           templAttrs = templAttrs.join(' ');
-          templ = ("<section class=\"section-field-" + attrs.name + " form-group\" " + templAttrs + ">") + widget.template(scope, element, attrs, field) + '</section>';
+          templTag = 'section';
+          templ = ("<" + templTag + " class=\"section-field-" + attrs.name + " form-group\" " + templAttrs + ">") + widget.template(scope, element, attrs, field) + '</#{templTag}>';
           templ = $compile(templ)(scope);
           element.replaceWith(templ);
           templ.addClass("col-md-" + (attrs.cols || cols || 6));
@@ -439,25 +440,29 @@
             data: function(term, page) {
               return {
                 q: term,
-                t: 1,
-                p: page - 1,
-                file: attrs.reportFile,
-                sql_choices: attrs.sqlChoices
+                count: 1,
+                page: page - 1,
+                field: attrs.field
               };
             },
             results: function(data, page) {
-              var more;
-              console.log(data);
-              data = data.items;
-              more = (page * 10) < data.count;
-              if (!multiple && (page === 1)) {
-                data.splice(0, 0, {
-                  id: null,
-                  text: '---------'
-                });
-              }
+              var item, more, res;
+              res = data.result;
+              data = res.items;
+              more = (page * Katrid.Settings.Services.choicesPageLimit) < res.count;
               return {
-                results: data,
+                results: (function() {
+                  var j, len, results;
+                  results = [];
+                  for (j = 0, len = data.length; j < len; j++) {
+                    item = data[j];
+                    results.push({
+                      id: item[0],
+                      text: item[1]
+                    });
+                  }
+                  return results;
+                })(),
                 more: more
               };
             }
@@ -572,17 +577,21 @@
             url: '/api/rpc/' + serviceName + '/get_field_choices/?args=' + attrs.name,
             data: function(term, page) {
               return {
+                count: 1,
+                page: page - 1,
                 q: term
               };
             },
             results: function(data, page) {
-              var item, msg, r;
+              var item, more, msg, r, res;
+              console.log('load page', page, data);
+              res = data.result;
+              data = res.items;
               r = (function() {
-                var j, len, ref, results;
-                ref = data.result;
+                var j, len, results;
                 results = [];
-                for (j = 0, len = ref.length; j < len; j++) {
-                  item = ref[j];
+                for (j = 0, len = data.length; j < len; j++) {
+                  item = data[j];
                   results.push({
                     id: item[0],
                     text: item[1]
@@ -590,7 +599,8 @@
                 }
                 return results;
               })();
-              if (!multiple) {
+              more = (page * Katrid.Settings.Services.choicesPageLimit) < res.count;
+              if (!multiple && !more) {
                 msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...');
                 if (sel.data('select2').search.val()) {
                   r.push({
@@ -600,7 +610,8 @@
                 }
               }
               return {
-                results: r
+                results: r,
+                more: more
               };
             }
           },
@@ -989,6 +1000,15 @@
           return results;
         })()).join(', ');
       }
+    };
+  });
+
+  uiKatrid.filter('moment', function() {
+    return function(input, format) {
+      if (format) {
+        return moment().format(format);
+      }
+      return moment(input).fromNow();
     };
   });
 

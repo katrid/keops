@@ -148,9 +148,12 @@ class WindowAction extends Action
     else
       @scope.dataSource.setRecordIndex(index)
       @location.search({view_type: 'form', id: row.id})
-      
+
   autoReport: ->
     @scope.model.autoReport()
+    .done (res) ->
+      if res.ok and res.result.open
+        window.open(res.result.open)
 
 
 class ReportAction extends Action
@@ -165,6 +168,7 @@ class ReportAction extends Action
       user_report: report
 
   routeUpdate: (search) ->
+    console.log('report action', @info)
     @userReport.id = search.user_report
     if @userReport.id
       svc = new Katrid.Services.Model('sys.action.report')
@@ -173,7 +177,7 @@ class ReportAction extends Action
         @userReport.params = res.result
         @scope.setContent(@info.content)
     else
-      @scope.setContent(@info.content)
+      @scope.setContent(Katrid.Reports.Reports.renderDialog(@))
     return
 
 

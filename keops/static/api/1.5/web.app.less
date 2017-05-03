@@ -202,11 +202,10 @@ table tbody tr td.bool-text {
     position: relative;
     min-width: 150px;
     margin: 4px;
+    padding: 8px;
 
     background-color: #fff;
-    box-shadow: 0 0 1px 1px #666666;
 
-    padding: 8px 8px;
     -ms-flex: 1 1 300px;
     -moz-flex: 1 1 300px;
     -webkit-box-flex: 1;
@@ -217,6 +216,11 @@ table tbody tr td.bool-text {
       text-align: center;
       float: left;
       width: 64px;
+
+      img {
+        max-height: 64px;
+        max-width: 64px;
+      }
     }
 
     .card-details {
@@ -277,6 +281,15 @@ table tbody tr td.bool-text {
       background-color: transparent;
     }
   }
+
+  section.form-group {
+    padding-bottom: 4px;
+    margin-bottom: 0;
+  }
+
+  .media-left {
+    padding-left: 15px;
+  }
 }
 
 #loading-msg {
@@ -329,13 +342,17 @@ td.DecimalField, th.DecimalField {
 .select2-container .select2-choice {
   border-radius: 2px;
   height: 30px;
-  background: transparent;
+  background: #ffffff;
   border: 1px solid #d5d5d5;
+}
+
+.select2-container-multi .select2-choices .select2-search-field input {
+  padding: 4px 5px;
 }
 
 .select2-container .select2-choice .select2-arrow {
   border-radius: 0 2px 2px 0;
-  background: transparent;
+  background: #ffffff;
   border-left: none;
 }
 
@@ -367,15 +384,14 @@ section div.checkbox {
 }
 
 .form-label {
-  font-weight: 600;
+  //font-weight: 600;
 }
 
 .form-field-readonly {
   display: block;
   white-space: nowrap;
   overflow: hidden;
-  border-bottom: 1px solid #e7e7e7;
-  border-left: 3px solid #e7e7e7;
+  font-weight: 600;
 }
 
 .table > tbody > tr > td.list-column-delete,
@@ -394,9 +410,8 @@ label.checkbox {
 }
 
 section.form-group {
-  min-height: 59px;
+  //min-height: 59px;
 }
-
 
 input[type=text].form-field:required {
   background-color: #eaebff;
@@ -421,4 +436,30 @@ ul.ui-autocomplete {
 
 .form-control.readonly {
   background-color: #f6f6f6;
+}
+
+label.prepend-icon {
+  margin-bottom: 0;
+}
+
+.image-box.image-field {
+  width: 120px;
+}
+
+.data-panel.browsing {
+  .image-box:hover .image-box-buttons {
+      visibility: hidden;
+  }
+}
+
+.data-panel.editing {
+  .image-box:hover .image-box-buttons {
+      visibility: visible;
+  }
+}
+
+.data-heading {
+  h2 {
+    margin-top: 0;
+  }
 }

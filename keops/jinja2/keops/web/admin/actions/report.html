@@ -55,6 +55,7 @@
     {% endif %}
     var report = {{ report|safe }};
     report = new Katrid.Reports.Report(report, scope);
+      report.load();
     var el = report.render(cont, scope);
     {% endif %}
   </script>

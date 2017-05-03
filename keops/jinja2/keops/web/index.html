@@ -63,13 +63,12 @@
     <aside id="left-menu" class="sidebar skin">
       <div class="logo-area">
         <a href="index.html" class="avatar">
-          <img id="avatar" src="/static/assets/img/logo.png" alt="avatar">
+          <img id="avatar" src="/static/assets/img/user-avatar.jpg" alt="avatar" class="img-circle">
         </a>
-        <div class="clearfix"></div>
         <div class="user-info">
           <span>&nbsp;</span><br>
-          <span class="user-value">0</span><span> Mensagens</span><br>
-          <span class="user-value">0</span><span> Pendências</span>
+          <span class="user-value">0</span><span> Messages</span><br>
+          <span class="user-value">0</span><span> Notifications</span>
         </div>
         <a class="user-profile-menu dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <span>{{ request.user }}</span>
@@ -132,4 +131,51 @@
 
   </div>
 
+{% endblock %}
+{% block page_loaded %}
+  <script src="/static/api/1.5/views.js"></script>
+  <script src="/static/api/1.5/speech.js"></script>
+  <script>
+  $('li.menu-item a').click(function () {
+    if ($(this).attr('href') && ($(this).attr('href') != 'javascript:void(0)')) {
+      $('li.menu-item a.selected').removeClass('selected');
+      $(this).addClass('selected');
+    }
+    return true;
+  })
+
+
+  $(document).ready(function () {
+    // start metisMenu
+    $('#left-side-menu').metisMenu({toggle: false});
+
+    // navbar search
+    var items = [];
+    $('.menu-item>a').each(function (idx, el) {
+      el = $(el);
+      items.push({href: el.attr('href'), name: el.text().trim()});
+    });
+    Katrid.Speech.voiceCommand.addCommands(items);
+    var el = $('#navbar-search').autocomplete(
+        {
+          source: function (request, response) {
+            var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+            response($.grep(items, function (value) {
+              return matcher.test(value.name);
+            }));
+          },
+          select: function (ev, ui) {
+            if (ui.item) window.location.href = ui.item.href;
+            el.val(ui.item.name);
+          }
+        });
+    el.data('ui-autocomplete')._renderItem = function (ul, item) {
+      console.log('<a href="' + item.href + '">' + item.name + '</a>');
+      return $('<li></li>')
+          .data('item.autocomplete', item)
+          .append('<div>' + item.name + '</div>')
+          .appendTo(ul);
+    };
+  });
+  </script>
 {% endblock %}

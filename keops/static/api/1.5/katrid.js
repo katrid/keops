@@ -12,7 +12,11 @@
         dateInputMask: true,
         defaultView: 'list',
         goToDefaultViewAfterCancelInsert: true,
-        goToDefaultViewAfterCancelEdit: false
+        goToDefaultViewAfterCancelEdit: false,
+        horizontalForms: true
+      },
+      Services: {
+        choicesPageLimit: 10
       },
       Speech: {
         enabled: false

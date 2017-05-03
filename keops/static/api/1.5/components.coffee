@@ -65,7 +65,7 @@ uiKatrid.directive 'field', ($compile) ->
         else
           widget = 'TextField'
 
-      widget = new Katrid.UI.Widgets[widget]
+      widget = new Katrid.UI.Widgets[widget]()
       field = scope.view.fields[attrs.name]
 
       templAttrs = []
@@ -73,9 +73,11 @@ uiKatrid.directive 'field', ($compile) ->
         templAttrs.push(' ng-show="' + attrs.ngShow + '"')
       templAttrs = templAttrs.join(' ')
 
-      templ = """<section class="section-field-#{attrs.name} form-group" #{templAttrs}>""" +
+      templTag = 'section'
+
+      templ = """<#{templTag} class="section-field-#{attrs.name} form-group" #{templAttrs}>""" +
         widget.template(scope, element, attrs, field) +
-        '</section>'
+        '</#{templTag}>'
       templ = $compile(templ)(scope)
       element.replaceWith(templ)
       templ.addClass("col-md-#{attrs.cols or cols or 6}")
@@ -88,6 +90,8 @@ uiKatrid.directive 'field', ($compile) ->
         ctrl = angular.element(fcontrol).data().$ngModelController
         if ctrl
           form.$addControl(ctrl)
+
+      #templ.find('.field').addClass("col-md-#{attrs.cols or cols or 6}")
 
       widget.link(scope, templ, fieldAttrs, $compile, field)
 
@@ -373,17 +377,17 @@ uiKatrid.directive 'ajaxChoices', ($location) ->
         quietMillis: 500
         data: (term, page) ->
           q: term,
-          t: 1,
-          p: page - 1
-          file: attrs.reportFile
-          sql_choices: attrs.sqlChoices
+          count: 1,
+          page: page - 1
+          #file: attrs.reportFile
+          field: attrs.field
         results: (data, page) ->
-          console.log(data)
-          data = data.items
-          more = (page * 10) < data.count
-          if not multiple and (page is 1)
-            data.splice(0, 0, {id: null, text: '---------'})
-          results: data
+          res = data.result
+          data = res.items
+          more = (page * Katrid.Settings.Services.choicesPageLimit) < res.count
+          #if not multiple and (page is 1)
+          #  data.splice(0, 0, {id: null, text: '---------'})
+          results: ({ id: item[0], text: item[1] } for item in data)
           more: more
       escapeMarkup: (m) ->
         m
@@ -462,7 +466,7 @@ Katrid.uiKatrid.directive 'foreignkey', ->
     else
       serviceName = scope.model.name
 
-    newItem = () ->
+    newItem = ->
 
     config =
       allowClear: true
@@ -470,15 +474,24 @@ Katrid.uiKatrid.directive 'foreignkey', ->
         url: '/api/rpc/' + serviceName + '/get_field_choices/?args=' + attrs.name
 
         data: (term, page) ->
+          count: 1
+          page: page - 1
           q: term
 
         results: (data, page) ->
-          r = ({id: item[0], text: item[1]} for item in data.result)
-          if not multiple
+          console.log('load page', page, data)
+          res = data.result
+          data = res.items
+          r = ({ id: item[0], text: item[1] } for item in data)
+          more = (page * Katrid.Settings.Services.choicesPageLimit) < res.count
+          if not multiple and not more
             msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...')
             if sel.data('select2').search.val()
-              r.push({id: newItem, text: msg})
+              r.push
+                id: newItem
+                text: msg
           results: r
+          more: more
 
       formatResult: (state) ->
         s = sel.data('select2').search.val()
@@ -773,6 +786,13 @@ uiKatrid.filter 'm2m', ->
       return (obj[1] for obj in input).join(', ')
 
 
+uiKatrid.filter 'moment', ->
+  return (input, format) ->
+    if format
+      return moment().format(format)
+    return moment(input).fromNow()
+
+
 uiKatrid.directive 'fileReader', ->
   restrict: 'A'
   require: 'ngModel'
@@ -783,3 +803,4 @@ uiKatrid.directive 'fileReader', ->
       reader.onload = (event) ->
         controller.$setViewValue event.target.result
       reader.readAsDataURL(event.target.files[0])
+

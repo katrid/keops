@@ -6,7 +6,7 @@
   <action id="action-view-window-action" name="Window Actions" type="base.windowaction" model="base.windowaction"/>
   <action id="action-view-report-action" name="Report Actions" type="base.windowaction" model="base.reportaction"/>
   <action id="action-view-report" name="Reports" type="base.windowaction" model="keops.report"/>
-  <menuitem id="sys-menu" name="System">
+  <menuitem id="sys-menu" name="System" sequence="999">
     <menuitem id="sys-menu-sec" name="Security">
       <menuitem id="sys-menu-user" name="Users" action="action-view-auth-user"/>
       <menuitem id="sys-menu-group" name="Groups" action="action-view-auth-group"/>
