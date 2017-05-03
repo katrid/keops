@@ -426,7 +426,9 @@ class ModelService(ViewService):
                 else:
                     params = {service.title_field + '__icontains': q}
             d = service.search_names(params=params)
-            return d
+            return {
+                'items': d
+            }
 
     @service_method
     def group_by(self, grouping, *args, **kwargs):
