@@ -3,7 +3,7 @@
 
 A new way to build amazing Django Admin panels, dashboards or even ERP/CRM apps.
 
-Highlights:
+Features:
 - Easy integration with legacy Django projects
 - Ajax based
 - Flexible widgets using AngularJS 1.x
