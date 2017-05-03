@@ -60,7 +60,8 @@
             } else if (tp === 'ManyToManyField') {
               widget = tp;
             } else if (tp === 'FileField') {
-              console.log('file field');
+              widget = tp;
+            } else if (tp === 'ImageField') {
               widget = tp;
             } else {
               widget = 'TextField';
@@ -74,7 +75,7 @@
           }
           templAttrs = templAttrs.join(' ');
           templTag = 'section';
-          templ = ("<" + templTag + " class=\"section-field-" + attrs.name + " form-group\" " + templAttrs + ">") + widget.template(scope, element, attrs, field) + '</#{templTag}>';
+          templ = ("<" + templTag + " class=\"section-field-" + attrs.name + " form-group\" " + templAttrs + ">") + widget.template(scope, element, attrs, field) + ("</" + templTag + ">");
           templ = $compile(templ)(scope);
           element.replaceWith(templ);
           templ.addClass("col-md-" + (attrs.cols || cols || 6));
@@ -578,7 +579,7 @@
             data: function(term, page) {
               return {
                 count: 1,
-                page: page - 1,
+                page: page,
                 q: term
               };
             },
@@ -1016,8 +1017,12 @@
     return {
       restrict: 'A',
       require: 'ngModel',
+      scope: {},
       link: function(scope, element, attrs, controller) {
-        console.log('link file read');
+        if (attrs.accept === 'image/*') {
+          console.log('test');
+          element.tag === 'INPUT';
+        }
         return element.bind('change', function() {
           var reader;
           reader = new FileReader();

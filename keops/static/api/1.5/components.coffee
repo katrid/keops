@@ -60,13 +60,15 @@ uiKatrid.directive 'field', ($compile) ->
         else if tp is 'ManyToManyField'
           widget = tp
         else if tp is 'FileField'
-          console.log('file field')
+          widget = tp
+        else if tp is 'ImageField'
           widget = tp
         else
           widget = 'TextField'
 
       widget = new Katrid.UI.Widgets[widget]()
       field = scope.view.fields[attrs.name]
+
 
       templAttrs = []
       if attrs.ngShow
@@ -77,7 +79,7 @@ uiKatrid.directive 'field', ($compile) ->
 
       templ = """<#{templTag} class="section-field-#{attrs.name} form-group" #{templAttrs}>""" +
         widget.template(scope, element, attrs, field) +
-        '</#{templTag}>'
+        "</#{templTag}>"
       templ = $compile(templ)(scope)
       element.replaceWith(templ)
       templ.addClass("col-md-#{attrs.cols or cols or 6}")
@@ -455,7 +457,6 @@ Katrid.uiKatrid.directive 'foreignkey', ->
   restrict: 'A'
   require: 'ngModel'
   link: (scope, el, attrs, controller) ->
-
     #f = scope.view.fields['model']
     sel = el
 
@@ -475,7 +476,7 @@ Katrid.uiKatrid.directive 'foreignkey', ->
 
         data: (term, page) ->
           count: 1
-          page: page - 1
+          page: page
           q: term
 
         results: (data, page) ->
@@ -796,11 +797,15 @@ uiKatrid.filter 'moment', ->
 uiKatrid.directive 'fileReader', ->
   restrict: 'A'
   require: 'ngModel'
+  scope: {}
   link: (scope, element, attrs, controller) ->
-    console.log('link file read')
+
+    if attrs.accept is 'image/*'
+      console.log('test')
+      element.tag is 'INPUT'
+
     element.bind 'change', ->
       reader = new FileReader()
       reader.onload = (event) ->
         controller.$setViewValue event.target.result
       reader.readAsDataURL(event.target.files[0])
-
