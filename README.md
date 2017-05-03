@@ -15,7 +15,7 @@ AngularJS based admin framework.
 
 [View Demo App](http://demo.katrid.com/web/)
 
-User: demo
-Password: demo12345
+- User: demo
+- Password: demo12345
 
 Demo app source-code available: https//github.com/katrid/keops-demo
