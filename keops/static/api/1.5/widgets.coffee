@@ -204,16 +204,20 @@ class FileField extends InputWidget
 
 
 class ImageField extends FileField
+  tag: 'input file-reader accept="image/*"'
+
   template: (scope, el, attrs, field, type='file') ->
     return super(scope, el, attrs, field, type)
+
+  spanTemplate: -> ''
 
   widgetTemplate: (scope, el, attrs, field, type) ->
     html = super(scope, el, attrs, field, type)
     html = """<div class="image-box image-field">
-<img src="/static/web/static/assets/img/avatar.png"/>
+<img ng-src="${record.#{field.name} || '/static/web/static/assets/img/avatar.png'}" />
   <div class="text-right image-box-buttons">
-  <button class="btn btn-default" type="button" title="#{Katrid.i18n.gettext 'Change'}"><i class="fa fa-pencil"></i></button>
-  <button class="btn btn-default" type="button" title="#{Katrid.i18n.gettext 'Clear'}"><i class="fa fa-trash"></i></button>
+  <button class="btn btn-default" type="button" title="#{Katrid.i18n.gettext 'Change'}" onclick="$(this).closest('.image-box').find('input').trigger('click')"><i class="fa fa-pencil"></i></button>
+  <button class="btn btn-default" type="button" title="#{Katrid.i18n.gettext 'Clear'}" ng-click="$set('#{field.name}', null)"><i class="fa fa-trash"></i></button>
   </div>
     #{html}</div>"""
     return html
@@ -240,3 +244,4 @@ class PasswordField extends InputWidget
   ManyToManyField: ManyToManyField
   FileField: FileField
   PasswordField: PasswordField
+  ImageField: ImageField

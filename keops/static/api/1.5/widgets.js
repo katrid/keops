@@ -387,6 +387,8 @@
       return ImageField.__super__.constructor.apply(this, arguments);
     }
 
+    ImageField.prototype.tag = 'input file-reader accept="image/*"';
+
     ImageField.prototype.template = function(scope, el, attrs, field, type) {
       if (type == null) {
         type = 'file';
@@ -394,10 +396,14 @@
       return ImageField.__super__.template.call(this, scope, el, attrs, field, type);
     };
 
+    ImageField.prototype.spanTemplate = function() {
+      return '';
+    };
+
     ImageField.prototype.widgetTemplate = function(scope, el, attrs, field, type) {
       var html;
       html = ImageField.__super__.widgetTemplate.call(this, scope, el, attrs, field, type);
-      html = "<div class=\"image-box image-field\">\n<img src=\"/static/web/static/assets/img/avatar.png\"/>\n  <div class=\"text-right image-box-buttons\">\n  <button class=\"btn btn-default\" type=\"button\" title=\"" + (Katrid.i18n.gettext('Change')) + "\"><i class=\"fa fa-pencil\"></i></button>\n  <button class=\"btn btn-default\" type=\"button\" title=\"" + (Katrid.i18n.gettext('Clear')) + "\"><i class=\"fa fa-trash\"></i></button>\n  </div>\n    " + html + "</div>";
+      html = "<div class=\"image-box image-field\">\n<img ng-src=\"${record." + field.name + " || '/static/web/static/assets/img/avatar.png'}\" />\n  <div class=\"text-right image-box-buttons\">\n  <button class=\"btn btn-default\" type=\"button\" title=\"" + (Katrid.i18n.gettext('Change')) + "\" onclick=\"$(this).closest('.image-box').find('input').trigger('click')\"><i class=\"fa fa-pencil\"></i></button>\n  <button class=\"btn btn-default\" type=\"button\" title=\"" + (Katrid.i18n.gettext('Clear')) + "\" ng-click=\"$set('" + field.name + "', null)\"><i class=\"fa fa-trash\"></i></button>\n  </div>\n    " + html + "</div>";
       return html;
     };
 
@@ -440,7 +446,8 @@
     OneToManyField: OneToManyField,
     ManyToManyField: ManyToManyField,
     FileField: FileField,
-    PasswordField: PasswordField
+    PasswordField: PasswordField,
+    ImageField: ImageField
   };
 
 }).call(this);

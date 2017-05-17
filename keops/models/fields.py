@@ -24,7 +24,9 @@ class FloatField(models.FloatField):
 
 class CharField(models.CharField):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('max_length', 256)
+        if args and isinstance(args[0], int):
+            kwargs['max_length'] = args[0]
+            args = args[1:]
         _adjust_field(self, kwargs)
         super(CharField, self).__init__(*args, **kwargs)
 
@@ -89,6 +91,7 @@ class ImageField(models.ImageField):
 class ForeignKey(models.ForeignKey):
     def __init__(self, *args, **kwargs):
         _adjust_field(self, kwargs)
+        kwargs.setdefault('related_name', '+')
         super(ForeignKey, self).__init__(*args, **kwargs)
 
 
