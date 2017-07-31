@@ -141,7 +141,7 @@ class BaseTemplate
     </ul>
   </div>
 
-  <button class="btn btn-default" ng-click="dataSource.refresh()"><i class="fa fa-refresh"></i> Atualizar</button>
+  <button class="btn btn-default" ng-click="dataSource.refresh()"><i class="fa fa-refresh"></i> #{ Katrid.i18n.gettext 'Refresh' }</button>
 
 </div>
 <div class="col-sm-6">
@@ -294,7 +294,7 @@ class BaseTemplate
     </ul>
   </div>
 
-  <button class="btn btn-default" ng-click="dataSource.refresh()"><i class="fa fa-refresh"></i> Atualizar</button>
+  <button class="btn btn-default" ng-click="dataSource.refresh()"><i class="fa fa-refresh"></i> #{ Katrid.i18n.gettext 'Refresh' }</button>
 
 </div>
 <div class="col-sm-6">
