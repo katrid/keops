@@ -1,5 +1,32 @@
 
 
+class RequestManager
+  constructor: ->
+    @requestId = 0
+    @requests = {}
+
+  request: ->
+    reqId = ++requestManager.requestId
+    def = new $.Deferred()
+    @requests[reqId] = def
+    def.requestId = reqId
+    return def
+
+
+if Katrid.socketio
+  console.log('socketio defined')
+  requestManager = new RequestManager()
+
+  Katrid.socketio.on 'connect', ->
+    console.log("I'm connected!")
+
+  Katrid.socketio.on 'api', (data) ->
+    if _.isString(data)
+      data = JSON.parse(data)
+    def = requestManager.requests[data['req-id']]
+    def.resolve(data)
+
+
 class Service
   constructor: (@name) ->
 
@@ -14,14 +41,24 @@ class Service
       $.get(rpcName, params)
 
   post: (name, params, data) ->
-    console.log('post', name, params, data)
-    if Katrid.Settings.servicesProtocol is 'ws'
-      Katrid.socketio.emit('api', { channel: 'rpc', service: @name, method: name, data: data, args: params })
+    # Check if protocol is socket.io
+    if Katrid.Settings.servicesProtocol is 'io'
+      def = requestManager.request()
+      Katrid.socketio.emit 'api',
+        "req-id": def.requestId
+        "req-method": 'POST'
+        service: @name
+        method: name
+        data: data
+        args: params
+      return def
+
+    # Else, using ajax
     else
       rpcName = Katrid.Settings.server + '/api/rpc/' + @name + '/' + name + '/'
       if params
         rpcName += '?' + $.param(params)
-      $.ajax
+      return $.ajax
         method: 'POST'
         url: rpcName
         data: JSON.stringify(data)
@@ -34,7 +71,7 @@ class Model extends Service
     @post('search_name', { name: name })
 
   createName: (name) ->
-    @post('create_name', null, { name: name })
+    @post('create_name', null, { kwargs: { name: name } })
 
   search: (data, params) ->
     data = { kwargs: data }
@@ -46,8 +83,8 @@ class Model extends Service
   getById: (id) ->
     @post('get', null, { kwargs: { id: id } })
 
-  getDefaults: ->
-    @post('get_defaults')
+  getDefaults: (context) ->
+    @post('get_defaults', null, { kwargs: { context: context } })
 
   copy: (id) ->
     @post('copy', null, { args: [id] })
@@ -88,9 +125,9 @@ class Model extends Service
 
   groupBy: (grouping) ->
     @post('group_by', null, { kwargs: grouping })
-    
+
   autoReport: ->
-    @post 'auto_report', null, null
+    @post 'auto_report', null, { kwargs: {} }
 
   onFieldChange: (field, record) ->
     @post('field_change', null, { kwargs: { field: field, record: record } })

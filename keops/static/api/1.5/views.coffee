@@ -2,7 +2,8 @@
 class SearchMenu
   constructor: (@element, @parent, @options) ->
     @input = @parent.find('.search-view-input')
-    @input.on 'keyup', (evt) =>
+    @input.on 'input', (evt) =>
+      console.log('change val')
       if @input.val().length
         @show()
       else
@@ -23,6 +24,7 @@ class SearchMenu
 
   show: ->
     @element.show()
+    @searchView.first()
 
   close: ->
     @element.hide()
@@ -85,7 +87,6 @@ class SearchQuery
     r = []
     for i in @items
       r = r.concat(i.getParamValues())
-    console.log('params', r)
     return r
 
 
@@ -153,10 +154,14 @@ class SearchItem
     @itemEl = html.find('.search-menu-item').click (evt) ->
       evt.preventDefault()
     .mousedown (evt) =>
-      evt.stopPropagation()
-      evt.preventDefault()
-      @menu.select(evt, @)
-      @menu.close()
+      @select(evt)
+    .mouseover (evt) ->
+      el = html.parent().find('>li.active')
+      if el != html
+        el.removeClass('active')
+        html.addClass('active')
+
+    @element.data('searchItem', @)
 
     @expand = html.find('.expandable').on 'mousedown', (evt) =>
       @expanded = not @expanded
@@ -171,8 +176,14 @@ class SearchItem
       evt.preventDefault()
     return false
 
+  select: (evt) ->
+    if evt
+      evt.stopPropagation()
+      evt.preventDefault()
+    @menu.select(evt, @)
+    @menu.close()
+
   getFacetLabel: ->
-    console.log('get facet label')
     return @label
 
   getDisplayValue: ->
@@ -261,10 +272,47 @@ class SearchView
     <span class="search-view-more fa fa-search-plus"></span>
   </div>
   <div class="col-sm-12">
-  <ul class="dropdown-menu search-view-menu" role="menu"></ul>
+  <ul class="search-dropdown-menu search-view-menu" role="menu"></ul>
   </div>
 </div>
 """
+
+  inputKeyDown: (ev) =>
+    switch ev.keyCode
+      when Katrid.UI.keyCode.DOWN
+        @move(1)
+        ev.preventDefault()
+      when Katrid.UI.keyCode.UP
+        @move(-1)
+        ev.preventDefault()
+      when Katrid.UI.keyCode.ENTER
+        @selectItem(ev, @element.find('.search-view-menu > li.active'))
+    return
+
+  move: (distance) ->
+    fw = distance > 0
+    distance = Math.abs(distance)
+    while distance isnt 0
+      distance--
+      el = @element.find('.search-view-menu > li.active')
+      if el.length
+        el.removeClass('active')
+        if fw
+          el = el.next()
+        else
+          el = el.prev()
+        el.addClass('active')
+      else
+        if fw
+          el = @element.find('.search-view-menu > li').first()
+        else
+          el = @element.find('.search-view-menu > li').last()
+        el.addClass('active')
+    return
+
+  selectItem: (ev, el) ->
+    el.data('searchItem').select(ev)
+    return
 
   link: (scope, el, attrs, controller, $compile) ->
     html = $compile(@template())(scope)
@@ -276,10 +324,13 @@ class SearchView
     @viewContent = $(@view.content)
     @element = html
     @searchView = html.find('.search-view')
+    @searchView.find('.search-view-input').keydown @inputKeyDown
+
+
     html.find('.search-view-more').click (evt) =>
       $(evt.target).toggleClass('fa-search-plus fa-search-minus')
       @viewMoreToggle()
-    @menu = @createMenu(scope, $(html.find('.dropdown-menu.search-view-menu')), html)
+    @menu = @createMenu(scope, $(html.find('.search-dropdown-menu.search-view-menu')), html)
     @menu.searchView = @
     @menu.link()
 
@@ -326,6 +377,10 @@ class SearchView
     @scope.$apply =>
       console.log(@viewMore)
       @scope.search.viewMoreButtons = @viewMore
+
+  first: ->
+    @element.find('.search-view-menu > li.active').removeClass('active')
+    @element.find('.search-view-menu > li').first().addClass('active')
 
   onSelectItem: (evt, obj) =>
     @query.add(obj)

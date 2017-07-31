@@ -7,7 +7,7 @@
   this.Katrid = {
     Settings: {
       server: '',
-      servicesProtocol: 'http',
+      servicesProtocol: (typeof io !== "undefined" && io !== null) && io.connect ? 'io' : 'http',
       UI: {
         dateInputMask: true,
         defaultView: 'list',
@@ -136,6 +136,10 @@
       }
     }
   };
+
+  if (Katrid.Settings.servicesProtocol === 'io') {
+    Katrid.socketio = io.connect('//' + document.domain + ':' + location.port + '/rpc');
+  }
 
 }).call(this);
 

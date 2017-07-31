@@ -17,13 +17,16 @@ class Widget
     if field.required
       r['required'] = null
     r['ng-model'] = @ngModel(attrs)
-    r['ng-show'] = 'dataSource.changing'
-    for attr, v of attrs when attr.startsWith 'field'
-      attrName = attrs.$attr[attr]
+    if field.attrs
+      for attr, v of field.attrs when not attr.startsWith('container-') and attr isnt 'ng-show' and attr isnt 'ng-readonly'
+        r[attr] = v
+
+    for attr, attrName of attrs.$attr when not attrName.startsWith('container-') and attr isnt 'ngShow' and attr isnt 'ngReadonly'
+      v = attrs[attr]
       if attrName.startsWith('field-')
         attrName = attrName.substr(6, attrName.length - 6)
       r[attrName] = v
-    if attrs.readonly?
+    if attrs.readonly? or field.readonly
       r['readonly'] = ''
     if @classes
       r['class'] = @classes.join(' ')
@@ -34,8 +37,11 @@ class Widget
     attributes = @widgetAttrs(scope, el, attrs, field)
     for att, v of attributes
       html += ' ' + att
-      if v
-        html += '="' + v + '"'
+      if v or v is false
+        if _.isString(v) and v.indexOf('"') > -1
+          html += "='" + v + "'"
+        else
+          html += '="' + v + '"'
     if @placeholder
       html += " placeholder=\"#{@placeholder}\" "
     return html
@@ -54,7 +60,7 @@ class Widget
     return """<label for="#{attrs._id}" class="form-label">#{label}</label>"""
 
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly" ng-show="!dataSource.changing">${ record.#{attrs.name} || '--' }</span>"""
+    return """<span class="form-field-readonly">${ record.#{attrs.name}.toString() || '--' }</span>"""
 
   widgetTemplate: (scope, el, attrs, field, type) ->
     if @tag.startsWith('input')
@@ -99,7 +105,7 @@ class InputWidget extends Widget
     prependIcon = attrs.icon
     html = super(scope, el, attrs, field, type)
     if prependIcon
-      return """<label class="prepend-icon" ng-show="dataSource.changing"><i class="icon #{prependIcon}"></i>#{html}</label>"""
+      return """<label class="prepend-icon"><i class="icon #{prependIcon}"></i>#{html}</label>"""
     return html
 
 
@@ -115,7 +121,7 @@ class SelectField extends InputWidget
   tag: 'select'
 
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly" ng-show="!dataSource.changing">${ view.fields.#{attrs.name}.displayChoices[record.#{attrs.name}] || '--' }</span>"""
+    return """<span class="form-field-readonly">${ view.fields.#{attrs.name}.displayChoices[record.#{attrs.name}] || '--' }</span>"""
 
   innerHtml: (scope, el, attrs, field) ->
     return """<option ng-repeat="choice in view.fields.#{attrs.name}.choices" value="${choice[0]}">${choice[1]}</option>"""
@@ -125,7 +131,13 @@ class ForeignKey extends Widget
   tag: 'input foreignkey'
 
   spanTemplate: (scope, el, attrs, field) ->
-    return """<a href="javascript:void(0)" class="form-field-readonly" ng-show="!dataSource.changing">${ record.#{attrs.name}[1] || '--' }</a>"""
+    allowOpen = true
+    if (attrs.allowOpen? and attrs.allowOpen is 'false') or (not attrs.allowOpen? and field.attrs and field.attrs['allow-open'] is false)
+      allowOpen = false
+    if !allowOpen
+      return """<span class="form-field-readonly">${ record.#{attrs.name}[1] || '--' }</span>"""
+    else
+      return """<span class="form-field-readonly"><a href="#/action/#{ field.model }/view/?id=${ record.#{attrs.name}[0] }&title=#{ field.caption }" ng-click="action.openObject('#{ field.model }', record.#{attrs.name}[0], $event, '#{ field.caption }')">${ record.#{attrs.name}[1] }</a><span ng-if="!record.#{attrs.name}[1]">--</span></span>"""
 
   template: (scope, el, attrs, field) ->
     return super(scope, el, attrs, field, 'hidden')
@@ -139,14 +151,14 @@ class DecimalField extends TextField
   tag: 'input decimal'
 
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly" ng-show="!dataSource.changing">${ (record.#{attrs.name}|number:2) || '--' }</span>"""
+    return """<span class="form-field-readonly">${ (record.#{attrs.name}|number:2) || '--' }</span>"""
 
 
 class DateField extends TextField
   tag: 'input datepicker'
 
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly" ng-show="!dataSource.changing">${ (record.#{attrs.name}|date:'#{Katrid.i18n.gettext('yyyy-mm-dd').replace(/[m]/g, 'M')}') || '--' }</span>"""
+    return """<span class="form-field-readonly">${ (record.#{attrs.name}|date:'#{Katrid.i18n.gettext('yyyy-mm-dd').replace(/[m]/g, 'M')}') || '--' }</span>"""
 
   widgetTemplate: (scope, el, attrs, field, type) ->
     html = super(scope, el, attrs, field, type)
@@ -168,7 +180,7 @@ class ManyToManyField extends Widget
   tag: 'input foreignkey multiple'
 
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly" ng-show="!dataSource.changing">${ record.#{attrs.name}|m2m }</span>"""
+    return """<span class="form-field-readonly">${ record.#{attrs.name}|m2m }</span>"""
 
   template: (scope, el, attrs, field) ->
     return super(scope, el, attrs, field, 'hidden')
@@ -176,8 +188,8 @@ class ManyToManyField extends Widget
 
 class CheckBox extends InputWidget
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly bool-text" ng-show="!dataSource.changing">
-${ record.#{attrs.name} ? Katrid.i18n.gettext('yes') : Katrid.i18n.gettext('no') }
+    return """<span class="form-field-readonly bool-text">
+${ (record.#{attrs.name} && Katrid.i18n.gettext('yes')) || ((record.#{attrs.name} === false) && Katrid.i18n.gettext('no')) || (!record.#{attrs.name} && '--') }
 </span>"""
 
   widgetTemplate: (scope, el, attrs, field) ->
@@ -193,7 +205,7 @@ ${ record.#{attrs.name} ? Katrid.i18n.gettext('yes') : Katrid.i18n.gettext('no')
   labelTemplate: (scope, el, attrs, field) ->
     if field.help_text
       return super(scope, el, attrs, field)
-    return """<label for="#{attrs._id}" class="form-label"><span ng-show="!dataSource.changing">#{field.caption}</span></label>"""
+    return """<label for="#{attrs._id}" class="form-label"><span ng-show="!dataSource.changing">#{field.caption}</span>&nbsp;</label>"""
 
 
 class FileField extends InputWidget
@@ -222,12 +234,20 @@ class ImageField extends FileField
     #{html}</div>"""
     return html
 
+
 class PasswordField extends InputWidget
   template: (scope, el, attrs, field, type='password') ->
     return super(scope, el, attrs, field, type)
 
   spanTemplate: (scope, el, attrs, field) ->
-    return """<span class="form-field-readonly" ng-show="!dataSource.changing">*******************</span>"""
+    return """<span class="form-field-readonly">*******************</span>"""
+
+
+class StatusField extends InputWidget
+  tag: 'input status-field'
+
+  template: (scope, el, attrs, field) ->
+    return super(scope, el, attrs, field, 'hidden')
 
 
 @Katrid.UI.Widgets =
@@ -245,3 +265,4 @@ class PasswordField extends InputWidget
   FileField: FileField
   PasswordField: PasswordField
   ImageField: ImageField
+  StatusField: StatusField

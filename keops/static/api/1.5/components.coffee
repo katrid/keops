@@ -19,14 +19,18 @@ uiKatrid.directive 'field', ($compile) ->
   link: (scope, element, attrs, ctrl, transclude) ->
     field = scope.view.fields[attrs.name]
 
+    # Check if field depends from another
+    if field.depends? and field.depends.length
+      scope.action.addNotifyField(field)
+
     if element.parent('list').length is 0
       element.removeAttr('name')
       widget = attrs.widget
-      if widget
-        console.log(widget)
       if not widget
         tp = field.type
-        if tp is 'ForeignKey'
+        if field.name is 'status'
+          widget = 'StatusField'
+        else if tp is 'ForeignKey'
           widget = tp
         else if field.choices
           widget = 'SelectField'
@@ -73,6 +77,11 @@ uiKatrid.directive 'field', ($compile) ->
       templAttrs = []
       if attrs.ngShow
         templAttrs.push(' ng-show="' + attrs.ngShow + '"')
+      if attrs.ngReadonly or field.readonly
+        templAttrs.push(' ng-readonly="' + (attrs.ngReadonly or field.readonly) + '"')
+      if field.attrs
+        for k, v of field.attrs when k.startsWith('container') or (k is 'ng-show' and not attrs.ngShow)
+          templAttrs.push(k + '="' + v + '"')
       templAttrs = templAttrs.join(' ')
 
       templTag = 'section'
@@ -124,7 +133,6 @@ uiKatrid.directive 'list', ($compile, $http) ->
   restrict: 'E'
   priority: 700
   link: (scope, element, attrs) ->
-    console.log('im list', 1)
     html = Katrid.UI.Utils.Templates.renderList(scope, element, attrs)
     element.replaceWith($compile(html)(scope))
 
@@ -167,6 +175,7 @@ uiKatrid.directive 'grid', ($compile) ->
 
     # Set parent/master data source
     scope.dataSource = new Katrid.Data.DataSource(scope)
+    scope.dataSource.readonly = attrs.readonly
     p = scope.$parent
     while p
       if p.dataSource
@@ -176,31 +185,39 @@ uiKatrid.directive 'grid', ($compile) ->
 
     scope.dataSource.fieldName = scope.fieldName
     scope.gridDialog = null
+    gridEl = null
     scope.model.loadViews()
     .done (res) ->
       scope.$apply ->
         scope._cachedViews = res.result
-        console.log(res.result)
         scope.view = scope._cachedViews.list
         html = Katrid.UI.Utils.Templates.renderGrid(scope, $(scope.view.content), attrs, 'openItem($index)')
-        element.replaceWith($compile(html)(scope))
+        gridEl = $compile(html)(scope)
+        element.replaceWith(gridEl)
+        if attrs.inline
+          renderDialog()
 
     renderDialog = ->
       html = scope._cachedViews.form.content
-      html = $(Katrid.UI.Utils.Templates.gridDialog().replace('<!-- view content -->', html))
-      el = $compile(html)(scope)
+      if attrs.inline
+        el = $compile(html)(scope)
+        gridEl.find('.inline-input-dialog').append(el)
+      else
+        html = $(Katrid.UI.Utils.Templates.gridDialog().replace('<!-- view content -->', html))
+        el = $compile(html)(scope)
 
       # Get the first form controller
       scope.formElement = el.find('form').first()
       scope.form = scope.formElement.controller('form')
-
       scope.gridDialog = el
-      el.modal('show')
-      el.on 'hidden.bs.modal', ->
-        scope.dataSource.setState(Katrid.Data.DataSourceState.browsing)
-        el.remove()
-        scope.gridDialog = null
-        scope.recordIndex = -1
+
+      if not attrs.inline
+        el.modal('show')
+        el.on 'hidden.bs.modal', ->
+          scope.dataSource.setState(Katrid.Data.DataSourceState.browsing)
+          el.remove()
+          scope.gridDialog = null
+          scope.recordIndex = -1
       return false
 
     scope.doViewAction = (viewAction, target, confirmation) ->
@@ -212,11 +229,15 @@ uiKatrid.directive 'grid', ($compile) ->
 
     scope.addItem = ->
       scope.dataSource.newRecord()
-      scope.showDialog()
+      if not attrs.inline
+        scope.showDialog()
+
+    scope.cancelChanges = ->
+      scope.dataSource.setState(Katrid.Data.DataSourceState.browsing)
 
     scope.openItem = (index) ->
       scope.showDialog(index)
-      if scope.parent.dataSource.changing
+      if scope.parent.dataSource.changing && !scope.dataSource.readonly
         scope.dataSource.editRecord()
 
     scope.removeItem = (idx) ->
@@ -240,7 +261,8 @@ uiKatrid.directive 'grid', ($compile) ->
           rec[attr] = v
       else if scope.recordIndex is -1
         scope.records.push(scope.record)
-      scope.gridDialog.modal('toggle')
+      if not attrs.inline
+        scope.gridDialog.modal('toggle')
       scope._incChanges()
       return
 
@@ -298,6 +320,7 @@ uiKatrid.directive 'ngEnter', ->
 
 uiKatrid.directive 'datepicker', ['$filter', ($filter) ->
   restrict: 'A'
+  priority: 1
   require: '?ngModel'
   link: (scope, element, attrs, controller) ->
     el = element
@@ -323,13 +346,24 @@ uiKatrid.directive 'datepicker', ['$filter', ($filter) ->
       el = el.mask(Katrid.Settings.UI.dateInputMask)
 
     controller.$formatters.push (value) ->
-      dt = new Date(value)
-      calendar.datepicker('setDate', dt)
-      return $filter('date')(value, shortDate)
+      if value
+        dt = new Date(value)
+        calendar.datepicker('setDate', dt)
+        return $filter('date')(value, shortDate)
+      return
 
     controller.$parsers.push (value) ->
-      console.log('parsers', value, controller)
-      return moment.utc(value, shortDate.toUpperCase()).format('YYYY-MM-DD')
+      if _.isDate(value)
+        return moment.utc(value).format('YYYY-MM-DD')
+      if _.isString(value)
+        return moment.utc(value, shortDate.toUpperCase()).format('YYYY-MM-DD')
+
+    controller.$render = ->
+      if _.isDate(controller.$viewValue)
+        v = $filter('date')(controller.$viewValue, shortDate)
+        el.val(v)
+      else
+        el.val(controller.$viewValue)
 
     el.on 'blur', (evt) ->
       dp = calendar.data('datepicker')
@@ -453,12 +487,20 @@ uiKatrid.directive 'decimal', ($filter) ->
         element.val('')
 
 
-Katrid.uiKatrid.directive 'foreignkey', ->
+Katrid.uiKatrid.directive 'foreignkey', ($compile, $controller) ->
   restrict: 'A'
   require: 'ngModel'
   link: (scope, el, attrs, controller) ->
     #f = scope.view.fields['model']
     sel = el
+    field = scope.view.fields[attrs.name]
+    if attrs.domain?
+      domain = attrs.domain
+    else if field.domain
+      domain = field.domain
+
+    if _.isString(domain)
+      domain = $.parseJSON(domain)
 
     el.addClass 'form-field'
 
@@ -468,35 +510,68 @@ Katrid.uiKatrid.directive 'foreignkey', ->
       serviceName = scope.model.name
 
     newItem = ->
+    newEditItem = ->
+    _timeout = null
 
     config =
       allowClear: true
+
+      query: (query) ->
+        data =
+          args: [attrs.name]
+          kwargs:
+            count: 1
+            page: query.page
+            q: query.term
+            domain: domain
+            name_fields: (attrs.nameFields and attrs.nameFields.split(',')) or null
+
+        f = ->
+          $.ajax
+            url: config.ajax.url
+            type: config.ajax.type
+            dataType: config.ajax.dataType
+            contentType: config.ajax.contentType
+            data: JSON.stringify(data)
+            success: (data) ->
+              res = data.result
+              data = res.items
+              r = ({ id: item[0], text: item[1] } for item in data)
+              more = (query.page * Katrid.Settings.Services.choicesPageLimit) < res.count
+              if not multiple and not more
+                v = sel.data('select2').search.val()
+                if ((attrs.allowCreate and attrs.allowCreate isnt 'false') or not attrs.allowCreate?) and v
+                  msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...')
+                  r.push
+                    id: newItem
+                    text: msg
+                if ((attrs.allowCreateEdit and attrs.allowCreateEdit isnt 'false') or not attrs.allowCreateEdit) and v
+                  msg = Katrid.i18n.gettext('Create and Edit...')
+                  r.push
+                    id: newEditItem
+                    text: msg
+              query.callback({results: r, more: more})
+        if _timeout
+          clearTimeout _timeout
+        _timeout = setTimeout f, 400
+
       ajax:
-        url: '/api/rpc/' + serviceName + '/get_field_choices/?args=' + attrs.name
+        url: '/api/rpc/' + serviceName + '/get_field_choices/'
+        contentType: 'application/json'
+        dataType: 'json'
+        type: 'POST'
 
-        data: (term, page) ->
-          count: 1
-          page: page
-          q: term
-
-        results: (data, page) ->
-          console.log('load page', page, data)
-          res = data.result
-          data = res.items
-          r = ({ id: item[0], text: item[1] } for item in data)
-          more = (page * Katrid.Settings.Services.choicesPageLimit) < res.count
-          if not multiple and not more
-            msg = Katrid.i18n.gettext('Create <i>"{0}"</i>...')
-            if sel.data('select2').search.val()
-              r.push
-                id: newItem
-                text: msg
-          results: r
-          more: more
+      formatSelection: (val) ->
+        if val.id is newItem or val.id is newEditItem
+          return Katrid.i18n.gettext 'Creating...'
+        return val.text
 
       formatResult: (state) ->
         s = sel.data('select2').search.val()
         if state.id is newItem
+          state.str = s
+          return '<strong>' + state.text.format(s) + '</strong>'
+        else if state.id is newEditItem
           state.str = s
           return '<strong>' + state.text.format(s) + '</strong>'
         return state.text
@@ -504,10 +579,10 @@ Katrid.uiKatrid.directive 'foreignkey', ->
       initSelection: (el, cb) ->
         v = controller.$modelValue
         if multiple
-          v = ({id: obj[0], text: obj[1]} for obj in v)
+          v = ({ id: obj[0], text: obj[1] } for obj in v)
           cb(v)
         else if v
-          cb({id: v[0], text: v[1]})
+          cb({ id: v[0], text: v[1] })
 
     multiple = attrs.multiple
 
@@ -519,12 +594,51 @@ Katrid.uiKatrid.directive 'foreignkey', ->
     sel.on 'change', (e) ->
       v = sel.select2('data')
       if v.id is newItem
-        service = new Katrid.Services.Model(scope.view.fields[attrs.name].model)
+        service = new Katrid.Services.Model(field.model)
         service.createName(v.str)
-        .then (res) ->
+        .done (res) ->
           controller.$setDirty()
           controller.$setViewValue res.result
-          sel.select2('val', {id: res.result[0], text: res.result[1]})
+          sel.select2('val', { id: res.result[0], text: res.result[1] })
+      else if v.id is newEditItem
+        service = new Katrid.Services.Model(field.model)
+        service.loadViews({ views: { form: null } })
+        .done (res) ->
+          if res.ok and res.result.form
+            elScope = scope.$new()
+            elScope.parentAction = scope.action
+            elScope.views = res.result
+            elScope.isDialog = true
+            elScope.dialogTitle = Katrid.i18n.gettext 'Create: '
+            el = $(Katrid.UI.Utils.Templates.windowDialog(elScope))
+            elScope.root = el.find('.modal-dialog-body')
+            $controller 'ActionController',
+              $scope: elScope
+              action:
+                model: [null, field.model]
+                action_type: "sys.action.window"
+                view_mode: 'form'
+                view_type: 'form'
+                display_name: field.caption
+
+            el = $compile(el)(elScope)
+
+            el.modal('show').on 'shown.bs.modal', ->
+              el.find('.form-field').first().focus()
+
+            el.modal('show').on 'hide.bs.modal', ->
+              if elScope.result
+                $.get '/api/rpc/' + serviceName + '/get_field_choices/',
+                  args: attrs.name
+                  ids: elScope.result[0]
+                .done (res) ->
+                  if res.ok
+                    result = res.result.items[0]
+                    controller.$setDirty()
+                    controller.$setViewValue result
+                    console.log('result', { id: result[0], text: result[1] })
+                    sel.select2('val', { id: result[0], text: result[1] })
+
       else if v and multiple
         v = (obj.id for obj in v)
         controller.$setViewValue v
@@ -801,7 +915,6 @@ uiKatrid.directive 'fileReader', ->
   link: (scope, element, attrs, controller) ->
 
     if attrs.accept is 'image/*'
-      console.log('test')
       element.tag is 'INPUT'
 
     element.bind 'change', ->
@@ -809,3 +922,23 @@ uiKatrid.directive 'fileReader', ->
       reader.onload = (event) ->
         controller.$setViewValue event.target.result
       reader.readAsDataURL(event.target.files[0])
+
+
+uiKatrid.directive 'statusField', ['$compile', '$timeout', ($compile, $timeout) ->
+  restrict: 'A'
+  require: 'ngModel'
+  scope: {}
+  link: (scope, element, attrs, controller) ->
+    field = scope.$parent.view.fields[attrs.name]
+    html = $compile(Katrid.UI.Utils.Templates.renderStatusField(field.name))(scope)
+    scope.choices = field.choices
+    $timeout ->
+      # append element into status bar
+      element.closest('.content.jarviswidget').find('header').append(html)
+      # remove old element
+      $(element).closest('section').remove()
+
+    if not attrs.readonly
+      scope.itemClick = ->
+        console.log('status field item click')
+]

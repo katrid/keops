@@ -39,14 +39,27 @@ class DataSource
       @scope.action.setViewType('list')
     else
       if @state is DataSourceState.editing
-        @refresh([@scope.record.id]).then =>
+        r = @refresh([@scope.record.id])
+        if r and $.isFunction(r.promise)
+          r.done =>
+            @setState(DataSourceState.browsing)
+        else
           @setState(DataSourceState.browsing)
       else
         @scope.record = null
         @setState(DataSourceState.browsing)
     return
 
-  saveChanges: ->
+  saveAndClose: ->
+    # Save changes and close dialog
+    r = @saveChanges(false)
+    if r and $.isFunction(r.promise)
+      r.done (res) =>
+        if res.ok and res.result
+          @scope.result = res.result
+        $(@scope.root).closest('.modal').modal('toggle')
+
+  saveChanges: (autoRefresh=true) ->
     # Submit fields with dirty state only
     el = @scope.formElement
     if @validate()
@@ -54,17 +67,14 @@ class DataSource
       @scope.form.data = data
 
       beforeSubmit = el.attr('before-submit')
-      console.log('before submit', beforeSubmit)
       if beforeSubmit
         beforeSubmit = @scope.$eval(beforeSubmit)
-
-      console.log(@scope.form.data)
 
       #@scope.form.data = null
 
       if data
         @uploading++
-        @scope.model.write([data])
+        return @scope.model.write([data])
         .done (res) =>
           if res.ok
             @scope.form.$setPristine()
@@ -72,7 +82,8 @@ class DataSource
             for child in @children
               delete child.modifiedData
             @setState(DataSourceState.browsing)
-            @refresh(res.result)
+            if autoRefresh
+              @refresh(res.result)
           else
             s = "<span>#{Katrid.i18n.gettext 'The following fields are invalid:'}<hr></span>"
             if res.message
@@ -101,7 +112,6 @@ class DataSource
   copy: (id) ->
     @scope.model.copy(id)
     .done (res) =>
-      console.log(res)
       @setState(DataSourceState.inserting)
       @scope.record = {}
       @scope.$apply =>
@@ -119,9 +129,10 @@ class DataSource
 
   refresh: (data) ->
     if data
-      return @get(data[0])
+      # Refresh current record
+      @scope.action.location.search 'id', data[0]
     else
-      return @search(@_params, @_page)
+      return @search @_params, @_page
 
   validate: ->
     if @scope.form.$invalid
@@ -151,11 +162,16 @@ class DataSource
     @loading = true
     page = page or 1
     @pageIndex = page
+    domain = @scope.action.info.domain
+    if domain
+      domain = JSON.parse(domain)
     params =
       count: true
       page: page
       params: params
       fields: fields
+      domain: domain
+      limit: @limit
 
     def = new $.Deferred()
 
@@ -217,7 +233,7 @@ class DataSource
     newIndex = @recordIndex + index - 1
     if newIndex > -1 and newIndex < @scope.records.length
       @recordIndex = newIndex + 1
-      @scope.location.search('id', @scope.records[newIndex].id)
+      @scope.action.location.search('id', @scope.records[newIndex].id)
 
   _clearTimeout: ->
     if @pendingRequest
@@ -246,7 +262,6 @@ class DataSource
 
       @modifiedData = ds
       @masterSource.scope.form.$setDirty()
-    console.log(@modifiedData)
     return data
 
   getModifiedData: (form, element, record) ->
@@ -257,11 +272,12 @@ class DataSource
           $deleted: true
         }
       return
-    if form.$dirty
+    if form.$dirty or @_modifiedFields.length
       data = {}
       for el in $(element).find('.form-field.ng-dirty')
         nm = el.name
-        data[nm] = record[nm]
+        if nm
+          data[nm] = record[nm]
 
       for child in @children
         subData = data[child.fieldName] or []
@@ -281,10 +297,16 @@ class DataSource
           subData.push(obj)
         if subData
           data[child.fieldName] = subData
+
+      # Check invisible fields
+      for f in @_modifiedFields
+        data[f] = record[f]
+
       if data
         if record.id
           data.id = record.id
         return data
+
     return
 
   get: (id, timeout) ->
@@ -298,7 +320,6 @@ class DataSource
       .fail (res) =>
         def.reject(res)
       .done (res) =>
-        console.log(res)
         @scope.$apply =>
           @_setRecord(res.result.data[0])
         def.resolve(res)
@@ -316,10 +337,10 @@ class DataSource
 
   newRecord: ->
     @setState(DataSourceState.inserting)
-    @scope.record = {}
-    @scope.record.display_name = Katrid.i18n.gettext '(New)'
-    @scope.model.getDefaults()
+    @scope.model.getDefaults(@scope.getContext())
     .done (res) =>
+      @scope.record = {}
+      @scope.record.display_name = Katrid.i18n.gettext '(New)'
       if res.result
         @scope.$apply =>
           @setFields(res.result)
@@ -328,6 +349,8 @@ class DataSource
     for attr, v of values
       control = @scope.form[attr]
       if control
+        if v
+          v = @toClientValue(attr, v)
         control.$setViewValue v
         control.$render()
         # Force dirty (bug fix for boolean (false) value
@@ -335,12 +358,23 @@ class DataSource
           @scope.record[attr] = v
           control.$setDirty()
       else
+        @_modifiedFields.push(attr)
         @scope.record[attr] = v
 
   editRecord: ->
     @setState(DataSourceState.editing)
 
+  toClientValue: (attr, value) ->
+    console.log(attr, value)
+    field = @scope.view.fields[attr]
+    if field
+      if field.type is 'DateTimeField'
+        value = new Date(value)
+    return value
+
   setState: (state) ->
+    # Clear modified fields information
+    @_modifiedFields = []
     @state = state
     @changing =  @state in [DataSourceState.editing, DataSourceState.inserting]
 
@@ -360,11 +394,11 @@ class DataSource
     if Math.floor(p)
       p++
     if p > @pageIndex + 1
-      @scope.location.search('page', @pageIndex + 1)
+      @scope.action.location.search('page', @pageIndex + 1)
 
   prevPage: ->
     if @pageIndex > 1
-      @scope.location.search('page', @pageIndex - 1)
+      @scope.action.location.search('page', @pageIndex - 1)
 
   setRecordIndex: (index) ->
     @recordIndex = index + 1

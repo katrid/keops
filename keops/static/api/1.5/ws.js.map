@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "ws.js",
+  "sourceRoot": "",
+  "sources": [
+    "ws.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;;AAAA"
+}

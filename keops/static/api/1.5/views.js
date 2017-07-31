@@ -12,8 +12,9 @@
       this.parent = parent1;
       this.options = options1;
       this.input = this.parent.find('.search-view-input');
-      this.input.on('keyup', (function(_this) {
+      this.input.on('input', (function(_this) {
         return function(evt) {
+          console.log('change val');
           if (_this.input.val().length) {
             return _this.show();
           } else {
@@ -45,7 +46,8 @@
     };
 
     SearchMenu.prototype.show = function() {
-      return this.element.show();
+      this.element.show();
+      return this.searchView.first();
     };
 
     SearchMenu.prototype.close = function() {
@@ -153,7 +155,6 @@
         i = ref1[j];
         r = r.concat(i.getParamValues());
       }
-      console.log('params', r);
       return r;
     };
 
@@ -266,12 +267,17 @@
         return evt.preventDefault();
       }).mousedown((function(_this) {
         return function(evt) {
-          evt.stopPropagation();
-          evt.preventDefault();
-          _this.menu.select(evt, _this);
-          return _this.menu.close();
+          return _this.select(evt);
         };
-      })(this));
+      })(this)).mouseover(function(evt) {
+        var el;
+        el = html.parent().find('>li.active');
+        if (el !== html) {
+          el.removeClass('active');
+          return html.addClass('active');
+        }
+      });
+      this.element.data('searchItem', this);
       this.expand = html.find('.expandable').on('mousedown', (function(_this) {
         return function(evt) {
           _this.expanded = !_this.expanded;
@@ -290,8 +296,16 @@
       return false;
     };
 
+    SearchItem.prototype.select = function(evt) {
+      if (evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+      }
+      this.menu.select(evt, this);
+      return this.menu.close();
+    };
+
     SearchItem.prototype.getFacetLabel = function() {
-      console.log('get facet label');
       return this.label;
     };
 
@@ -425,6 +439,7 @@
       this.scope = scope1;
       this.onRemoveItem = bind(this.onRemoveItem, this);
       this.onSelectItem = bind(this.onSelectItem, this);
+      this.inputKeyDown = bind(this.inputKeyDown, this);
       this.query = new SearchQuery(this);
       this.items = [];
     }
@@ -440,7 +455,52 @@
 
     SearchView.prototype.template = function() {
       var html;
-      return html = "<div class=\"search-area\">\n  <div class=\"search-view\">\n    <div class=\"search-view-facets\"></div>\n    <input class=\"search-view-input\" role=\"search\" placeholder=\"" + (Katrid.i18n.gettext('Search...')) + "\" ng-model=\"search.text\">\n    <span class=\"search-view-more fa fa-search-plus\"></span>\n  </div>\n  <div class=\"col-sm-12\">\n  <ul class=\"dropdown-menu search-view-menu\" role=\"menu\"></ul>\n  </div>\n</div>";
+      return html = "<div class=\"search-area\">\n  <div class=\"search-view\">\n    <div class=\"search-view-facets\"></div>\n    <input class=\"search-view-input\" role=\"search\" placeholder=\"" + (Katrid.i18n.gettext('Search...')) + "\" ng-model=\"search.text\">\n    <span class=\"search-view-more fa fa-search-plus\"></span>\n  </div>\n  <div class=\"col-sm-12\">\n  <ul class=\"search-dropdown-menu search-view-menu\" role=\"menu\"></ul>\n  </div>\n</div>";
+    };
+
+    SearchView.prototype.inputKeyDown = function(ev) {
+      switch (ev.keyCode) {
+        case Katrid.UI.keyCode.DOWN:
+          this.move(1);
+          ev.preventDefault();
+          break;
+        case Katrid.UI.keyCode.UP:
+          this.move(-1);
+          ev.preventDefault();
+          break;
+        case Katrid.UI.keyCode.ENTER:
+          this.selectItem(ev, this.element.find('.search-view-menu > li.active'));
+      }
+    };
+
+    SearchView.prototype.move = function(distance) {
+      var el, fw;
+      fw = distance > 0;
+      distance = Math.abs(distance);
+      while (distance !== 0) {
+        distance--;
+        el = this.element.find('.search-view-menu > li.active');
+        if (el.length) {
+          el.removeClass('active');
+          if (fw) {
+            el = el.next();
+          } else {
+            el = el.prev();
+          }
+          el.addClass('active');
+        } else {
+          if (fw) {
+            el = this.element.find('.search-view-menu > li').first();
+          } else {
+            el = this.element.find('.search-view-menu > li').last();
+          }
+          el.addClass('active');
+        }
+      }
+    };
+
+    SearchView.prototype.selectItem = function(ev, el) {
+      el.data('searchItem').select(ev);
     };
 
     SearchView.prototype.link = function(scope, el, attrs, controller, $compile) {
@@ -453,13 +513,14 @@
       this.viewContent = $(this.view.content);
       this.element = html;
       this.searchView = html.find('.search-view');
+      this.searchView.find('.search-view-input').keydown(this.inputKeyDown);
       html.find('.search-view-more').click((function(_this) {
         return function(evt) {
           $(evt.target).toggleClass('fa-search-plus fa-search-minus');
           return _this.viewMoreToggle();
         };
       })(this));
-      this.menu = this.createMenu(scope, $(html.find('.dropdown-menu.search-view-menu')), html);
+      this.menu = this.createMenu(scope, $(html.find('.search-dropdown-menu.search-view-menu')), html);
       this.menu.searchView = this;
       this.menu.link();
       this.menu.input.on('keydown', function(evt) {});
@@ -524,6 +585,11 @@
           return _this.scope.search.viewMoreButtons = _this.viewMore;
         };
       })(this));
+    };
+
+    SearchView.prototype.first = function() {
+      this.element.find('.search-view-menu > li.active').removeClass('active');
+      return this.element.find('.search-view-menu > li').first().addClass('active');
     };
 
     SearchView.prototype.onSelectItem = function(evt, obj) {

@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "alerts.js",
+  "sourceRoot": "",
+  "sources": [
+    "alerts.coffee"
+  ],
+  "names": [],
+  "mappings": ";AACA;AAAA,MAAA;;EAAM;;;qBACJ,OAAA,GAAS,SAAC,GAAD;aACP,MAAO,CAAA,SAAA,CAAP,CAAkB,GAAlB;IADO;;;;;;EAGX,MAAM,CAAC,OAAO,CAAC,MAAf,GAAwB;AAJxB"
+}

@@ -57,16 +57,22 @@
     }
 
     DataSource.prototype.cancelChanges = function() {
+      var r;
       if (this.state === DataSourceState.inserting && Katrid.Settings.UI.goToDefaultViewAfterCancelInsert) {
         this.scope.record = null;
         this.scope.action.setViewType('list');
       } else {
         if (this.state === DataSourceState.editing) {
-          this.refresh([this.scope.record.id]).then((function(_this) {
-            return function() {
-              return _this.setState(DataSourceState.browsing);
-            };
-          })(this));
+          r = this.refresh([this.scope.record.id]);
+          if (r && $.isFunction(r.promise)) {
+            r.done((function(_this) {
+              return function() {
+                return _this.setState(DataSourceState.browsing);
+              };
+            })(this));
+          } else {
+            this.setState(DataSourceState.browsing);
+          }
         } else {
           this.scope.record = null;
           this.setState(DataSourceState.browsing);
@@ -74,21 +80,37 @@
       }
     };
 
-    DataSource.prototype.saveChanges = function() {
+    DataSource.prototype.saveAndClose = function() {
+      var r;
+      r = this.saveChanges(false);
+      if (r && $.isFunction(r.promise)) {
+        return r.done((function(_this) {
+          return function(res) {
+            if (res.ok && res.result) {
+              _this.scope.result = res.result;
+            }
+            return $(_this.scope.root).closest('.modal').modal('toggle');
+          };
+        })(this));
+      }
+    };
+
+    DataSource.prototype.saveChanges = function(autoRefresh) {
       var beforeSubmit, data, el;
+      if (autoRefresh == null) {
+        autoRefresh = true;
+      }
       el = this.scope.formElement;
       if (this.validate()) {
         data = this.getModifiedData(this.scope.form, el, this.scope.record);
         this.scope.form.data = data;
         beforeSubmit = el.attr('before-submit');
-        console.log('before submit', beforeSubmit);
         if (beforeSubmit) {
           beforeSubmit = this.scope.$eval(beforeSubmit);
         }
-        console.log(this.scope.form.data);
         if (data) {
           this.uploading++;
-          this.scope.model.write([data]).done((function(_this) {
+          return this.scope.model.write([data]).done((function(_this) {
             return function(res) {
               var child, elfield, field, fld, i, j, len, len1, msg, msgs, ref, s;
               if (res.ok) {
@@ -100,7 +122,9 @@
                   delete child.modifiedData;
                 }
                 _this.setState(DataSourceState.browsing);
-                return _this.refresh(res.result);
+                if (autoRefresh) {
+                  return _this.refresh(res.result);
+                }
               } else {
                 s = "<span>" + (Katrid.i18n.gettext('The following fields are invalid:')) + "<hr></span>";
                 if (res.message) {
@@ -141,7 +165,6 @@
     DataSource.prototype.copy = function(id) {
       return this.scope.model.copy(id).done((function(_this) {
         return function(res) {
-          console.log(res);
           _this.setState(DataSourceState.inserting);
           _this.scope.record = {};
           return _this.scope.$apply(function() {
@@ -179,7 +202,7 @@
 
     DataSource.prototype.refresh = function(data) {
       if (data) {
-        return this.get(data[0]);
+        return this.scope.action.location.search('id', data[0]);
       } else {
         return this.search(this._params, this._page);
       }
@@ -215,7 +238,7 @@
     };
 
     DataSource.prototype.search = function(params, page, fields) {
-      var def;
+      var def, domain;
       this._params = params;
       this._page = page;
       this._clearTimeout();
@@ -223,11 +246,17 @@
       this.loading = true;
       page = page || 1;
       this.pageIndex = page;
+      domain = this.scope.action.info.domain;
+      if (domain) {
+        domain = JSON.parse(domain);
+      }
       params = {
         count: true,
         page: page,
         params: params,
-        fields: fields
+        fields: fields,
+        domain: domain,
+        limit: this.limit
       };
       def = new $.Deferred();
       this.pendingRequest = setTimeout((function(_this) {
@@ -311,7 +340,7 @@
       newIndex = this.recordIndex + index - 1;
       if (newIndex > -1 && newIndex < this.scope.records.length) {
         this.recordIndex = newIndex + 1;
-        return this.scope.location.search('id', this.scope.records[newIndex].id);
+        return this.scope.action.location.search('id', this.scope.records[newIndex].id);
       }
     };
 
@@ -350,12 +379,11 @@
         this.modifiedData = ds;
         this.masterSource.scope.form.$setDirty();
       }
-      console.log(this.modifiedData);
       return data;
     };
 
     DataSource.prototype.getModifiedData = function(form, element, record) {
-      var attr, child, data, el, i, j, len, len1, nm, obj, ref, ref1, ref2, subData;
+      var attr, child, data, el, f, i, j, k, len, len1, len2, nm, obj, ref, ref1, ref2, ref3, subData;
       if (record.$deleted) {
         if (record.id) {
           return {
@@ -365,13 +393,15 @@
         }
         return;
       }
-      if (form.$dirty) {
+      if (form.$dirty || this._modifiedFields.length) {
         data = {};
         ref = $(element).find('.form-field.ng-dirty');
         for (i = 0, len = ref.length; i < len; i++) {
           el = ref[i];
           nm = el.name;
-          data[nm] = record[nm];
+          if (nm) {
+            data[nm] = record[nm];
+          }
         }
         ref1 = this.children;
         for (j = 0, len1 = ref1.length; j < len1; j++) {
@@ -402,6 +432,11 @@
             data[child.fieldName] = subData;
           }
         }
+        ref3 = this._modifiedFields;
+        for (k = 0, len2 = ref3.length; k < len2; k++) {
+          f = ref3[k];
+          data[f] = record[f];
+        }
         if (data) {
           if (record.id) {
             data.id = record.id;
@@ -422,7 +457,6 @@
           return _this.scope.model.getById(id).fail(function(res) {
             return def.reject(res);
           }).done(function(res) {
-            console.log(res);
             _this.scope.$apply(function() {
               return _this._setRecord(res.result.data[0]);
             });
@@ -446,10 +480,10 @@
 
     DataSource.prototype.newRecord = function() {
       this.setState(DataSourceState.inserting);
-      this.scope.record = {};
-      this.scope.record.display_name = Katrid.i18n.gettext('(New)');
-      return this.scope.model.getDefaults().done((function(_this) {
+      return this.scope.model.getDefaults(this.scope.getContext()).done((function(_this) {
         return function(res) {
+          _this.scope.record = {};
+          _this.scope.record.display_name = Katrid.i18n.gettext('(New)');
           if (res.result) {
             return _this.scope.$apply(function() {
               return _this.setFields(res.result);
@@ -466,6 +500,9 @@
         v = values[attr];
         control = this.scope.form[attr];
         if (control) {
+          if (v) {
+            v = this.toClientValue(attr, v);
+          }
           control.$setViewValue(v);
           control.$render();
           if (v === false) {
@@ -475,6 +512,7 @@
             results.push(void 0);
           }
         } else {
+          this._modifiedFields.push(attr);
           results.push(this.scope.record[attr] = v);
         }
       }
@@ -485,8 +523,21 @@
       return this.setState(DataSourceState.editing);
     };
 
+    DataSource.prototype.toClientValue = function(attr, value) {
+      var field;
+      console.log(attr, value);
+      field = this.scope.view.fields[attr];
+      if (field) {
+        if (field.type === 'DateTimeField') {
+          value = new Date(value);
+        }
+      }
+      return value;
+    };
+
     DataSource.prototype.setState = function(state) {
       var ref;
+      this._modifiedFields = [];
       this.state = state;
       return this.changing = (ref = this.state) === DataSourceState.editing || ref === DataSourceState.inserting;
     };
@@ -512,13 +563,13 @@
         p++;
       }
       if (p > this.pageIndex + 1) {
-        return this.scope.location.search('page', this.pageIndex + 1);
+        return this.scope.action.location.search('page', this.pageIndex + 1);
       }
     };
 
     DataSource.prototype.prevPage = function() {
       if (this.pageIndex > 1) {
-        return this.scope.location.search('page', this.pageIndex - 1);
+        return this.scope.action.location.search('page', this.pageIndex - 1);
       }
     };
 

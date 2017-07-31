@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "dialogs.js",
+  "sourceRoot": "",
+  "sources": [
+    "dialogs.coffee"
+  ],
+  "names": [],
+  "mappings": ";AACA;AAAA,MAAA;;EAAM;;;qBACJ,OAAA,GAAS,SAAC,GAAD;aACP,MAAO,CAAA,SAAA,CAAP,CAAkB,GAAlB;IADO;;qBAGT,IAAA,GAAM,SAAC,GAAD;aACJ,MAAO,CAAA,SAAA,CAAP,CAAkB,GAAlB;IADI;;qBAGN,KAAA,GAAO,SAAC,GAAD;aACL,MAAO,CAAA,OAAA,CAAP,CAAgB,GAAhB;IADK;;;;;;EAIT,MAAM,CAAC,OAAP,GACE;IAAA,MAAA,EAAY,IAAA,MAAA,CAAA,CAAZ;;AAZF"
+}
